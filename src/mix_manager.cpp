@@ -529,6 +529,38 @@ Mix MixManager::getRandomAvailableMix() {
     return available_mixes[dis(gen)];
 }
 
+Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre) {
+    if (available_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Filter available mixes by genre (case-insensitive)
+    std::vector<Mix> genre_mixes;
+    std::string genre_lower = genre;
+    std::transform(genre_lower.begin(), genre_lower.end(), genre_lower.begin(), ::tolower);
+    
+    for (const auto& mix : available_mixes) {
+        if (!mix.genre.empty()) {
+            std::string mix_genre_lower = mix.genre;
+            std::transform(mix_genre_lower.begin(), mix_genre_lower.end(), mix_genre_lower.begin(), ::tolower);
+            if (mix_genre_lower == genre_lower) {
+                genre_mixes.push_back(mix);
+            }
+        }
+    }
+    
+    if (genre_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Use a simple random selection from genre mixes
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, genre_mixes.size() - 1);
+    
+    return genre_mixes[dis(gen)];
+}
+
 std::vector<Mix> MixManager::getAvailableMixes() {
     return available_mixes;
 }
@@ -618,10 +650,8 @@ std::vector<std::string> MixManager::getAvailableGenres() {
     
     for (const auto& mix : all_mixes) {
         if (!mix.genre.empty()) {
-            // Convert to lowercase for consistent comparison
-            std::string genre_lower = mix.genre;
-            std::transform(genre_lower.begin(), genre_lower.end(), genre_lower.begin(), ::tolower);
-            genres.insert(genre_lower);
+            // Use original casing from database
+            genres.insert(mix.genre);
         }
     }
     

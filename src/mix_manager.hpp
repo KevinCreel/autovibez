@@ -59,6 +59,7 @@ public:
     
     // Available mixes (not yet downloaded)
     Mix getRandomAvailableMix();
+    Mix getRandomAvailableMixByGenre(const std::string& genre);
     std::vector<Mix> getAvailableMixes();
     
     // User data updates

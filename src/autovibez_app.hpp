@@ -123,7 +123,6 @@ public:
     projectm_handle projectM();
     void setFps(size_t fps);
     size_t fps() const;
-    std::string toTitleCase(const std::string& str);
 
     // Help and UI
     void toggleHelp();

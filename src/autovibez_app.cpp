@@ -372,9 +372,35 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     auto genres = _mixManager->getAvailableGenres();
                     printf("🎼 Available genres (%zu):\n", genres.size());
                     for (const auto& genre : genres) {
-                        printf("  • %s\n", toTitleCase(genre).c_str());
+                        // Create a local copy for Title Case display only
+                        std::string display_genre = genre;
+                        bool capitalize = true;
+                        for (char& c : display_genre) {
+                            if (capitalize && std::isalpha(c)) {
+                                c = std::toupper(c);
+                                capitalize = false;
+                            } else if (std::isspace(c) || c == '-') {
+                                capitalize = true;
+                            } else if (std::isalpha(c)) {
+                                c = std::tolower(c);
+                            }
+                        }
+                        printf("  • %s\n", display_genre.c_str());
                     }
-                    printf("🎼 Current genre: %s\n", toTitleCase(_currentMix.genre).c_str());
+                    // Create a local copy for current genre Title Case display only
+                    std::string display_current_genre = _currentMix.genre;
+                    bool capitalize = true;
+                    for (char& c : display_current_genre) {
+                        if (capitalize && std::isalpha(c)) {
+                            c = std::toupper(c);
+                            capitalize = false;
+                        } else if (std::isspace(c) || c == '-') {
+                            capitalize = true;
+                        } else if (std::isalpha(c)) {
+                            c = std::tolower(c);
+                        }
+                    }
+                    printf("🎼 Current genre: %s\n", display_current_genre.c_str());
                     printf("\n");
                 } else {
                     // G: Random mix in current mix's genre
@@ -401,24 +427,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 
 
     }
-}
-
-std::string AutoVibezApp::toTitleCase(const std::string& str) {
-    std::string result = str;
-    bool capitalize = true;
-    
-    for (char& c : result) {
-        if (capitalize && std::isalpha(c)) {
-            c = std::toupper(c);
-            capitalize = false;
-        } else if (std::isspace(c) || c == '-') {
-            capitalize = true;
-        } else if (std::isalpha(c)) {
-            c = std::tolower(c);
-        }
-    }
-    
-    return result;
 }
 
 void AutoVibezApp::addFakePCM()
@@ -776,7 +784,9 @@ void AutoVibezApp::initMixManager()
         _mixManager->setCrossfadeDuration(config.getCrossfadeDuration());
         
         // Set initial genre from config
-        _mixManager->setCurrentGenre(config.getPreferredGenre());
+        std::string preferred_genre = config.getPreferredGenre();
+        printf("🎼 Setting preferred genre from config: '%s'\n", preferred_genre.c_str());
+        _mixManager->setCurrentGenre(preferred_genre);
     }
     
     // Load mix metadata from YAML
@@ -935,11 +945,15 @@ void AutoVibezApp::autoPlayOrDownload()
         return;
     }
     
-    // Step 1: Check for existing downloaded mixes and play one
+    // Step 1: Check for existing downloaded mixes and play one from preferred genre
     auto downloadedMixes = _mixManager->getDownloadedMixes();
     if (!downloadedMixes.empty()) {
-        // Play a random downloaded mix
-        Mix randomMix = _mixManager->getRandomMix();
+        // Play a random downloaded mix from current genre (preferred genre)
+        Mix randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+        if (randomMix.id.empty()) {
+            // If no mixes in preferred genre, fall back to any random mix
+            randomMix = _mixManager->getRandomMix();
+        }
         if (!randomMix.id.empty()) {
             if (_mixManager->playMix(randomMix)) {
                 _currentMix = randomMix;
@@ -957,11 +971,16 @@ void AutoVibezApp::autoPlayOrDownload()
         return;
     }
     
-    // Step 2: No existing mixes, download and play one
+    // Step 2: No existing mixes, download and play one from preferred genre
     printf("📥 Downloading first mix...\n");
     printf("\n");
     
-    Mix randomMix = _mixManager->getRandomAvailableMix();
+    // Try to get a mix from the preferred genre first
+    Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre());
+    if (randomMix.id.empty()) {
+        // If no mixes in preferred genre, fall back to any random mix
+        randomMix = _mixManager->getRandomAvailableMix();
+    }
     if (randomMix.id.empty()) {
         printf("❌ No mixes available\n");
         printf("\n");
@@ -1000,15 +1019,23 @@ void AutoVibezApp::autoDownloadRandomMix()
         return;
     }
     
-    // First try to get a random mix from available (not yet downloaded) mixes
-    Mix randomMix = _mixManager->getRandomAvailableMix();
+    // First try to get a random mix from available (not yet downloaded) mixes in preferred genre
+    Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre());
     if (randomMix.id.empty()) {
-        // If no available mixes, try database (already downloaded)
+        // If no available mixes in preferred genre, try any available mix
+        randomMix = _mixManager->getRandomAvailableMix();
+    }
+    if (randomMix.id.empty()) {
+        // If no available mixes, try database (already downloaded) in preferred genre
+        randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+    }
+    if (randomMix.id.empty()) {
+        // If no mixes in preferred genre, try any random mix from database
         randomMix = _mixManager->getRandomMix();
-        if (randomMix.id.empty()) {
-            printf("❌ No mixes available for auto-download\n");
-            return;
-        }
+    }
+    if (randomMix.id.empty()) {
+        printf("❌ No mixes available for auto-download\n");
+        return;
     }
     
     printf("🎵 Auto-downloading and analyzing: %s by %s\n", 
