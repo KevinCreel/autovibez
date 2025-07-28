@@ -231,7 +231,7 @@ AutoVibezApp *setupSDLApp() {
         showFps = config.getShowFps();
         
         // Handle fullscreen setting
-        bool fullscreen = config.read<bool>("Fullscreen", false);
+        bool fullscreen = config.read<bool>("fullscreen", false);
         if (fullscreen) {
             SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
         } else {

@@ -192,4 +192,5 @@ private:
     bool _showMixStatus{false};
     int _mixStatusDisplayTime{0};
     bool _mixInfoDisplayed{false};
+    bool _volumeKeyPressed{false}; // Track if volume key is being held
 };

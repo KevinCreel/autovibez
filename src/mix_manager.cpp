@@ -297,15 +297,7 @@ bool MixManager::setVolume(int volume, bool suppress_output) {
         return false;
     }
     
-    // Suppress volume output during crossfade
-    if (suppress_output) {
-        _suppress_volume_output = true;
-    }
-    
-    bool result = player->setVolume(volume);
-    
-    // Reset suppression flag
-    _suppress_volume_output = false;
+    bool result = player->setVolume(volume, suppress_output);
     
     return result;
 }

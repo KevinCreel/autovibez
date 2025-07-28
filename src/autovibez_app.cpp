@@ -505,6 +505,15 @@ void AutoVibezApp::pollEvent()
             case SDL_KEYDOWN:
                 keyHandler(&evt);
                 break;
+                
+            case SDL_KEYUP:
+                // Handle volume key release
+                if (_volumeKeyPressed && (evt.key.keysym.sym == SDLK_UP || evt.key.keysym.sym == SDLK_DOWN)) {
+                    printf("🔊 Volume: %d%%\n", _mixManager->getVolume());
+                    printf("\n");
+                    _volumeKeyPressed = false;
+                }
+                break;
 
             case SDL_MOUSEBUTTONDOWN:
                 if (evt.button.button == SDL_BUTTON_LEFT)
@@ -872,7 +881,8 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             // ↑: Volume up
             {
                 int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume + 10);
+                _mixManager->setVolume(currentVolume + 10, true); // Always suppress output
+                _volumeKeyPressed = true;
             }
             return; // Return to prevent double handling
             
@@ -880,7 +890,8 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             // ↓: Volume down
             {
                 int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume - 10);
+                _mixManager->setVolume(currentVolume - 10, true); // Always suppress output
+                _volumeKeyPressed = true;
             }
             return; // Return to prevent double handling
             
