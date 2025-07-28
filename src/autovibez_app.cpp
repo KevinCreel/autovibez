@@ -159,6 +159,7 @@ void AutoVibezApp::scrollHandler(SDL_Event* sdl_evt)
     // handle mouse scroll wheel - up++
     if (sdl_evt->wheel.y > 0)
     {
+        _manualPresetChange = true;
         projectm_playlist_play_previous(_playlist, true);
         std::string preset_name = getActivePresetName();
         size_t last_slash = preset_name.find_last_of('/');
@@ -170,6 +171,7 @@ void AutoVibezApp::scrollHandler(SDL_Event* sdl_evt)
     // handle mouse scroll wheel - down--
     if (sdl_evt->wheel.y < 0)
     {
+        _manualPresetChange = true;
         projectm_playlist_play_next(_playlist, true);
         std::string preset_name = getActivePresetName();
         size_t last_slash = preset_name.find_last_of('/');
@@ -320,6 +322,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             
         case SDLK_LEFTBRACKET:
             // [: Previous preset
+            _manualPresetChange = true;
             projectm_playlist_play_previous(_playlist, true);
             {
                 std::string preset_name = getActivePresetName();
@@ -328,12 +331,12 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     preset_name = preset_name.substr(last_slash + 1);
                 }
                 printf("⏮️  Previous preset: %s\n", preset_name.c_str());
-                printf("\n");
             }
             break;
             
         case SDLK_RIGHTBRACKET:
             // ]: Next preset
+            _manualPresetChange = true;
             projectm_playlist_play_next(_playlist, true);
             {
                 std::string preset_name = getActivePresetName();
@@ -342,7 +345,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     preset_name = preset_name.substr(last_slash + 1);
                 }
                 printf("⏭️  Next preset: %s\n", preset_name.c_str());
-                printf("\n");
             }
             break;
             
@@ -650,8 +652,23 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
     auto presetName = projectm_playlist_item(app->_playlist, index);
     
     app->_presetName = presetName;
+    
+    // Only output for automatic changes (not manual ones)
+    if (!app->_manualPresetChange) {
+        // Extract just the filename for display
+        std::string preset_name = presetName;
+        size_t last_slash = preset_name.find_last_of('/');
+        if (last_slash != std::string::npos) {
+            preset_name = preset_name.substr(last_slash + 1);
+        }
+        
+        printf("🎨 Preset: %s\n", preset_name.c_str());
+    }
+    
+    // Reset the flag
+    app->_manualPresetChange = false;
+    
     projectm_playlist_free_string(presetName);
-
     app->UpdateWindowTitle();
 }
 
@@ -790,7 +807,11 @@ void AutoVibezApp::initMixManager()
         
         // Set initial genre from config
         std::string preferred_genre = config.getPreferredGenre();
-        printf("🎼 Setting preferred genre from config: '%s'\n", preferred_genre.c_str());
+        if (!preferred_genre.empty()) {
+            printf("🎼 Setting preferred genre from config: '%s'\n", preferred_genre.c_str());
+        } else {
+            printf("🎼 No preferred genre set in config - will use random genres\n");
+        }
         _mixManager->setCurrentGenre(preferred_genre);
     }
     
