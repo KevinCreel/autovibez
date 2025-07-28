@@ -320,9 +320,24 @@ AutoVibezApp *setupSDLApp() {
         ConfigFile config(configFilePath);
         std::string configPreset = config.getPresetPath();
         std::string configTexture = config.getTexturePath();
-        if (!configPreset.empty()) presetURL = expandTilde(configPreset);
-        if (!configTexture.empty()) textureURL = expandTilde(configTexture);
+        
+        // Only use config paths if they actually exist
+        if (!configPreset.empty()) {
+            std::string expandedPreset = expandTilde(configPreset);
+            if (std::filesystem::exists(expandedPreset)) {
+                presetURL = expandedPreset;
+            }
+        }
+        if (!configTexture.empty()) {
+            std::string expandedTexture = expandTilde(configTexture);
+            if (std::filesystem::exists(expandedTexture)) {
+                textureURL = expandedTexture;
+            }
+        }
     }
+
+    printf("🎨 Final preset path: %s\n", presetURL.c_str());
+    printf("🎨 Final texture path: %s\n", textureURL.c_str());
 
     // Default values for new config settings
     int audioDeviceIndex = 0;

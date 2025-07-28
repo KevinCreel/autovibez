@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AutoVibez
+Comment=Audio Visualizer
+Exec=autovibez
+Icon=icon
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+StartupNotify=true 

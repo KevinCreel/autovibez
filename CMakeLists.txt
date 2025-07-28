@@ -4,8 +4,8 @@ project(autovibez VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Define data directory path
-set(DATADIR_PATH "${CMAKE_INSTALL_PREFIX}/share/autovibez")
+# Set data directory path
+set(DATADIR_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/autovibez")
 
 # Find required packages
 find_package(PkgConfig REQUIRED)
@@ -80,9 +80,35 @@ install(TARGETS autovibez
 
 # Install assets (presets and textures)
 install(DIRECTORY assets/
-    DESTINATION share/autovibez
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/autovibez
     USE_SOURCE_PERMISSIONS
 )
+
+# Install rules
+install(TARGETS autovibez DESTINATION bin)
+
+# Install desktop file
+install(FILES assets/autovibez.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+
+# Install icon (if it exists) - support multiple formats
+if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon.svg")
+    install(FILES assets/icon.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-16.png")
+    install(FILES assets/icon-16.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/16x16/apps)
+endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-32.png")
+    install(FILES assets/icon-32.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/32x32/apps)
+endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-256.png")
+    install(FILES assets/icon-256.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps)
+endif()
+
+# Install data files
+install(DIRECTORY assets/ DESTINATION ${CMAKE_INSTALL_DATADIR}/autovibez FILES_MATCHING PATTERN "*.milk" PATTERN "*.jpg" PATTERN "*.png")
 
 # Include directories
 target_include_directories(autovibez PRIVATE ${PROJECTM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS} ${TAGLIB_INCLUDE_DIRS})
