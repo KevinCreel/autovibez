@@ -254,6 +254,9 @@ AutoVibezApp *setupSDLApp() {
 #endif
 
     app->init(win);
+    
+    // Synchronize fullscreen state after window initialization
+    app->syncFullscreenState();
 
 #if STEREOSCOPIC_SBS
     app->toggleFullScreen();

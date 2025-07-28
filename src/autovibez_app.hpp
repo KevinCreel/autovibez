@@ -110,6 +110,7 @@ public:
     void stretchMonitors();
     void nextMonitor();
     void toggleFullScreen();
+    void syncFullscreenState(); // Synchronize _isFullScreen with actual SDL state
     void resize(unsigned int width, unsigned int height);
     void touch(float x, float y, int pressure, int touchtype = 0);
     void touchDrag(float x, float y, int pressure);

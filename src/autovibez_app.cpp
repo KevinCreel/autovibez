@@ -132,6 +132,12 @@ void AutoVibezApp::nextMonitor()
     }
 }
 
+void AutoVibezApp::syncFullscreenState()
+{
+    Uint32 flags = SDL_GetWindowFlags(_sdlWindow);
+    _isFullScreen = (flags & SDL_WINDOW_FULLSCREEN) || (flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
+}
+
 void AutoVibezApp::toggleFullScreen()
 {
     if (_isFullScreen)
@@ -729,6 +735,7 @@ void AutoVibezApp::renderHelpOverlay()
         printf("%sN     - Play next mix%s\n", color_yellow, color_reset);
         printf("%sP     - Pause/Resume playback%s\n", color_green, color_reset);
         printf("%sF     - Toggle favorite%s\n", color_magenta, color_reset);
+        printf("%sV     - List favorite mixes%s\n", color_red, color_reset);
         printf("%sL     - List available mixes%s\n", color_cyan, color_reset);
         printf("%sG     - Play random mix in current genre%s\n", color_yellow, color_reset);
         printf("%sShift+G - Switch to random genre%s\n", color_green, color_reset);
@@ -929,6 +936,26 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 }
             }
             return; // Return to prevent double handling
+            
+        case SDLK_v:
+            // V: List favorite mixes
+            {
+                auto favoriteMixes = _mixManager->getFavoriteMixes();
+                const char* color_cyan = "\033[36m";
+                const char* color_yellow = "\033[33m";
+                const char* color_green = "\033[32m";
+                const char* color_magenta = "\033[35m";
+                const char* color_red = "\033[31m";
+                const char* color_reset = "\033[0m";
+                
+                printf("%s❤️  %sFavorite mixes (%zu):%s\n", color_red, color_green, favoriteMixes.size(), color_reset);
+                for (const auto& mix : favoriteMixes) {
+                    printf("  %s- %s%s%s: %s%s%s\n", 
+                           color_yellow, color_magenta, mix.artist.c_str(), color_reset,
+                           color_cyan, mix.title.c_str(), color_reset);
+                }
+            }
+            return; // Return to prevent double handling
     }
 }
 
@@ -956,11 +983,15 @@ void AutoVibezApp::autoPlayOrDownload()
         return;
     }
     
-    // Step 1: Check for existing downloaded mixes and play one from preferred genre
+    // Step 1: Check for existing downloaded mixes and play one, prioritizing favorites
     auto downloadedMixes = _mixManager->getDownloadedMixes();
     if (!downloadedMixes.empty()) {
-        // Play a random downloaded mix from current genre (preferred genre)
-        Mix randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+        // First try to play a favorite mix
+        Mix randomMix = _mixManager->getRandomFavoriteMix();
+        if (randomMix.id.empty()) {
+            // If no favorites, try a mix from preferred genre
+            randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+        }
         if (randomMix.id.empty()) {
             // If no mixes in preferred genre, fall back to any random mix
             randomMix = _mixManager->getRandomMix();
@@ -1037,7 +1068,11 @@ void AutoVibezApp::autoDownloadRandomMix()
         randomMix = _mixManager->getRandomAvailableMix();
     }
     if (randomMix.id.empty()) {
-        // If no available mixes, try database (already downloaded) in preferred genre
+        // If no available mixes, try database (already downloaded) - prioritize favorites
+        randomMix = _mixManager->getRandomFavoriteMix();
+    }
+    if (randomMix.id.empty()) {
+        // If no favorites, try database (already downloaded) in preferred genre
         randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
     }
     if (randomMix.id.empty()) {

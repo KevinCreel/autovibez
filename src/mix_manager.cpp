@@ -602,6 +602,22 @@ std::vector<Mix> MixManager::getFavoriteMixes() {
     return database ? database->getFavoriteMixes() : std::vector<Mix>();
 }
 
+Mix MixManager::getRandomFavoriteMix() {
+    if (!database) {
+        return Mix();
+    }
+    
+    std::vector<Mix> favorite_mixes = database->getFavoriteMixes();
+    if (favorite_mixes.empty()) {
+        return Mix();
+    }
+    
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, favorite_mixes.size() - 1);
+    return favorite_mixes[dis(gen)];
+}
+
 
 
 bool MixManager::toggleFavorite(const std::string& mix_id) {

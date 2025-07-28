@@ -50,6 +50,7 @@ public:
      */
     Mix getRandomMixByGenre(const std::string& genre);
     Mix getRandomMixByArtist(const std::string& artist);
+    Mix getRandomFavoriteMix();
     Mix getMixById(const std::string& id);
     std::vector<Mix> getAllMixes();
     std::vector<Mix> getMixesByGenre(const std::string& genre);
