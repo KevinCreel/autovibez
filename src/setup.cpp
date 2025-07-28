@@ -13,18 +13,31 @@
 #include <vector>
 #include <cstdlib>
 
-// Helper function to expand tilde in paths
+// Helper function to expand tilde in paths (cross-platform)
 std::string expandTilde(const std::string& path) {
     if (path.empty() || path[0] != '~') {
         return path;
     }
     
-    const char* home = std::getenv("HOME");
-    if (!home) {
-        return path; // Can't expand, return as-is
+#ifdef _WIN32
+    // Windows: Use %USERPROFILE% or %HOME%
+    const char* userprofile = std::getenv("USERPROFILE");
+    if (userprofile) {
+        return std::string(userprofile) + path.substr(1);
     }
+    const char* home = std::getenv("HOME");
+    if (home) {
+        return std::string(home) + path.substr(1);
+    }
+#else
+    // Unix-like systems: Use $HOME
+    const char* home = std::getenv("HOME");
+    if (home) {
+        return std::string(home) + path.substr(1);
+    }
+#endif
     
-    return std::string(home) + path.substr(1);
+    return path; // Can't expand, return as-is
 }
 
 #if OGL_DEBUG
@@ -277,7 +290,7 @@ AutoVibezApp *setupSDLApp() {
         SDL_GL_SetSwapInterval(1); // enable updates synchronized with vertical retrace
     }
 
-    std::string base_path = "/usr/local/share/autovibez";
+    std::string base_path = getAssetsDirectory();
 
     // load configuration file - use XDG config directory
     std::string configFilePath = findConfigFile();

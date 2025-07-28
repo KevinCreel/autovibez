@@ -37,7 +37,11 @@
 #include <thread>
 #include <random>
 #include <cstdlib>
+#if defined _MSC_VER
+#include <direct.h>
+#else
 #include <sys/stat.h>
+#endif
 
 AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath, int audioDeviceIndex, bool showFps)
     : _openGlContext(glCtx)

@@ -100,4 +100,25 @@ if(MSVC)
             VS_DPI_AWARE "PerMonitor"
         )
     endif()
+    
+    # Add Windows-specific compile definitions
+    target_compile_definitions(autovibez PRIVATE 
+        _CRT_SECURE_NO_WARNINGS
+        WIN32_LEAN_AND_MEAN
+    )
+    
+    # Link Windows libraries
+    target_link_libraries(autovibez PRIVATE
+        ws2_32
+        winmm
+        ole32
+        oleaut32
+    )
+endif()
+
+# Set properties for macOS
+if(APPLE)
+    target_compile_definitions(autovibez PRIVATE
+        __APPLE__
+    )
 endif() 

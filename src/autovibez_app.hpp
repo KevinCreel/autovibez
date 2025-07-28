@@ -55,6 +55,8 @@
 
 #if defined _MSC_VER
 #include <direct.h>
+#else
+#include <sys/stat.h>
 #endif
 
 #include <fstream>
@@ -62,7 +64,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
-#include <sys/stat.h>
 
 #ifdef WASAPI_LOOPBACK
 #include <windows.h>
