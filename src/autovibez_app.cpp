@@ -916,6 +916,50 @@ std::string AutoVibezApp::getCacheDirectory() {
     return cache_dir;
 }
 
+// Get XDG state directory for autovibez (cross-platform)
+std::string AutoVibezApp::getStateDirectory() {
+    std::string state_dir;
+    
+#ifdef _WIN32
+    // Windows: Use %LOCALAPPDATA%/autovibez/state
+    const char* localappdata = std::getenv("LOCALAPPDATA");
+    if (localappdata) {
+        state_dir = std::string(localappdata) + "/autovibez/state";
+    } else {
+        state_dir = "state"; // Fallback
+    }
+#elif defined(__APPLE__)
+    // macOS: Use ~/Library/Application Support/autovibez/state
+    const char* home = std::getenv("HOME");
+    if (home) {
+        state_dir = std::string(home) + "/Library/Application Support/autovibez/state";
+    } else {
+        state_dir = "state"; // Fallback
+    }
+#else
+    // Linux/Unix: Use XDG Base Directory Specification
+    const char* xdg_state_home = std::getenv("XDG_STATE_HOME");
+    if (xdg_state_home && strlen(xdg_state_home) > 0) {
+        state_dir = std::string(xdg_state_home) + "/autovibez";
+    } else {
+        // Fallback to default XDG location
+        const char* home = std::getenv("HOME");
+        if (home) {
+            state_dir = std::string(home) + "/.local/state/autovibez";
+        } else {
+            state_dir = "state"; // Last resort fallback
+        }
+    }
+#endif
+    
+    // Create directory if it doesn't exist
+    if (!std::filesystem::exists(state_dir)) {
+        std::filesystem::create_directories(state_dir);
+    }
+    
+    return state_dir;
+}
+
 // Get XDG assets directory for autovibez (cross-platform)
 std::string AutoVibezApp::getAssetsDirectory() {
     std::string assets_dir;
@@ -967,8 +1011,8 @@ void AutoVibezApp::initMixManager()
     
     // Initialize mix manager with XDG data directory
     std::string data_dir = getDataDirectory();
-    std::string db_path = data_dir + "/autovibez_mixes.db";
-    std::string cache_dir = data_dir + "/mix_cache";
+    std::string db_path = getStateDirectory() + "/autovibez_mixes.db";
+    std::string cache_dir = getCacheDirectory() + "/mix_cache";
     
     _mixManager = std::make_unique<MixManager>(db_path, cache_dir);
     _mixUI = std::make_unique<MixDisplay>();
@@ -1317,7 +1361,7 @@ void AutoVibezApp::startBackgroundDownloads()
     
     for (const auto& mix : availableMixes) {
         // Check if the mix file actually exists in cache
-        std::string cache_file = getDataDirectory() + "/mix_cache/" + mix.id + ".mp3";
+        std::string cache_file = getCacheDirectory() + "/mix_cache/" + mix.id + ".mp3";
         if (!std::filesystem::exists(cache_file)) {
             pendingDownloads++;
             mixesToDownload.push_back(mix);

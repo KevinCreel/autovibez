@@ -135,6 +135,7 @@ public:
     std::string getDataDirectory();
     std::string getConfigDirectory();
     std::string getCacheDirectory();
+    std::string getStateDirectory();
     std::string getAssetsDirectory();
     void initMixManager();
     void handleMixControls(SDL_Event* event);
