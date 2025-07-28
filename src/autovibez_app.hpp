@@ -125,6 +125,7 @@ public:
     projectm_handle projectM();
     void setFps(size_t fps);
     size_t fps() const;
+    float getBeatSensitivity() const;
 
     // Help and UI
     void toggleHelp();

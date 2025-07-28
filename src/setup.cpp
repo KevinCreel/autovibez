@@ -345,10 +345,10 @@ AutoVibezApp *setupSDLApp() {
         projectm_set_soft_cut_duration(projectMHandle, config.read<double>("Smooth Preset Duration", config.read<int>("Smooth Transition Duration", 3)));
         projectm_set_preset_duration(projectMHandle, config.read<double>("Preset Duration", 30));
         projectm_set_easter_egg(projectMHandle, config.read<float>("Easter Egg Parameter", 0.0));
-        projectm_set_hard_cut_enabled(projectMHandle,  config.read<bool>("Hard Cuts Enabled", false));
+        projectm_set_hard_cut_enabled(projectMHandle,  config.read<bool>("hard_cuts_enabled", false));
         projectm_set_hard_cut_duration(projectMHandle, config.read<double>("Hard Cut Duration", 60));
-        projectm_set_hard_cut_sensitivity(projectMHandle, config.read<float>("Hard Cut Sensitivity", 1.0));
-        projectm_set_beat_sensitivity(projectMHandle, config.read<float>("Beat Sensitivity", 1.0));
+        projectm_set_hard_cut_sensitivity(projectMHandle, config.read<float>("hard_cut_sensitivity", 1.0));
+        projectm_set_beat_sensitivity(projectMHandle, config.read<float>("beat_sensitivity", 1.0));
         projectm_set_aspect_correction(projectMHandle, config.read<bool>("Aspect Correction", true));
         projectm_set_fps(projectMHandle, config.read<int32_t>("FPS", 60));
 

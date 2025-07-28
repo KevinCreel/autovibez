@@ -21,3 +21,8 @@ show_fps = false
 preset_path = assets/presets
 texture_path = assets/textures
 fullscreen = true
+
+# Beat Sensitivity Settings
+beat_sensitivity = 1.0
+hard_cut_sensitivity = 1.0
+hard_cuts_enabled = false

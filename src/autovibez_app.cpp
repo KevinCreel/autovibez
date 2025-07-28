@@ -273,25 +273,40 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             break;
 
         case SDLK_UP:
-            // Handle volume control for mixes, beat sensitivity for presets
+            // Handle volume control for mixes
             if (_mixManagerInitialized && _mixManager->isPlaying()) {
                 // Volume control handled in handleMixControls
-            } else {
-                float currentSensitivity = projectm_get_beat_sensitivity(_projectM);
-                float newSensitivity = currentSensitivity + 0.1f;
-                projectm_set_beat_sensitivity(_projectM, newSensitivity);
             }
             break;
 
         case SDLK_DOWN:
-            // Handle volume control for mixes, beat sensitivity for presets
+            // Handle volume control for mixes
             if (_mixManagerInitialized && _mixManager->isPlaying()) {
                 // Volume control handled in handleMixControls
-            } else {
+            }
+            break;
+
+        case SDLK_b:
+            // B: Increase beat sensitivity
+            {
+                float currentSensitivity = projectm_get_beat_sensitivity(_projectM);
+                float newSensitivity = currentSensitivity + 0.1f;
+                if (newSensitivity > 5.0f) newSensitivity = 5.0f; // Cap at 5.0
+                projectm_set_beat_sensitivity(_projectM, newSensitivity);
+                printf("🎵 Beat Sensitivity: %.1f\n", newSensitivity);
+                printf("\n");
+            }
+            break;
+
+        case SDLK_j:
+            // J: Decrease beat sensitivity
+            {
                 float currentSensitivity = projectm_get_beat_sensitivity(_projectM);
                 float newSensitivity = currentSensitivity - 0.1f;
                 if (newSensitivity < 0.0f) newSensitivity = 0.0f;
                 projectm_set_beat_sensitivity(_projectM, newSensitivity);
+                printf("🎵 Beat Sensitivity: %.1f\n", newSensitivity);
+                printf("\n");
             }
             break;
 
@@ -688,9 +703,12 @@ void AutoVibezApp::setFps(size_t fps)
     _fps = fps;
 }
 
-size_t AutoVibezApp::fps() const
-{
+size_t AutoVibezApp::fps() const {
     return _fps;
+}
+
+float AutoVibezApp::getBeatSensitivity() const {
+    return projectm_get_beat_sensitivity(_projectM);
 }
 
 void AutoVibezApp::UpdateWindowTitle()
@@ -763,8 +781,11 @@ void AutoVibezApp::renderHelpOverlay()
         printf("%sTab   - Cycle through audio devices%s\n", color_yellow, color_reset);
         printf("%sSPACE  - Load random preset%s\n", color_cyan, color_reset);
         printf("%s[ / ]  - Previous/Next preset%s\n", color_yellow, color_reset);
+        printf("%sB / J  - Increase/Decrease beat sensitivity%s\n", color_green, color_reset);
         printf("%sCtrl+Q - Quit application%s\n", color_red, color_reset);
         printf("%sMouse Wheel - Next/Prev preset%s\n", color_cyan, color_reset);
+        printf("\n");
+        printf("%s🎵 Current Beat Sensitivity: %.1f%s\n", color_yellow, getBeatSensitivity(), color_reset);
         printf("\n");
         helpShown = true;
     }
