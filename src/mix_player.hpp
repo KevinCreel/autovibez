@@ -37,7 +37,7 @@ public:
      * @param volume Volume (0-100)
      * @return True if successful, false otherwise
      */
-    bool setVolume(int volume);
+    bool setVolume(int new_volume);
     
     /**
      * @brief Set volume with optional output suppression
@@ -45,7 +45,7 @@ public:
      * @param suppress_output Whether to suppress volume output messages
      * @return True if successful, false otherwise
      */
-    bool setVolume(int volume, bool suppress_output);
+    bool setVolume(int new_volume, bool suppress_output);
     
     /**
      * @brief Get current volume
@@ -81,7 +81,7 @@ public:
      * @brief Get the last error message
      * @return Error message string
      */
-    std::string getLastError() const { return last_error; }
+    std::string getLastError() const;
 
     /**
      * @brief Check if a file is a valid MP3
@@ -90,7 +90,7 @@ public:
      */
     bool isValidMP3File(const std::string& file_path);
 
-private:
+    void setVerbose(bool verbose) { _verbose = verbose; }
 
 private:
     std::string last_error;
@@ -99,4 +99,5 @@ private:
     int duration;
     int volume;
     Mix_Music* current_music; // Store current music object for seeking
+    bool _verbose = false;
 }; 

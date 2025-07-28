@@ -3,6 +3,7 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <cstdio>
 
 MixPlayer::MixPlayer()
     : playing(false), current_position(0), duration(0), volume(100), current_music(nullptr) {
@@ -52,8 +53,41 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
         return false;
     }
     
+    // Temporarily redirect stderr to suppress SDL_mixer warnings
+    std::streambuf* original_stderr = nullptr;
+    std::ofstream null_stream;
+    FILE* original_stderr_file = nullptr;
+    
+    if (!_verbose) {
+#ifndef _WIN32
+        // On Unix-like systems, redirect stderr to /dev/null
+        original_stderr_file = freopen("/dev/null", "w", stderr);
+        if (!original_stderr_file) {
+            // Fallback to stream redirection
+            null_stream.open("/dev/null");
+            if (null_stream.is_open()) {
+                original_stderr = std::cerr.rdbuf();
+                std::cerr.rdbuf(null_stream.rdbuf());
+            }
+        }
+#endif
+    }
+    
     // Load and play the music
     current_music = Mix_LoadMUS(local_path.c_str());
+    
+    // Restore stderr
+    if (!_verbose) {
+#ifndef _WIN32
+        if (original_stderr_file) {
+            freopen("/dev/stderr", "w", stderr);
+        } else if (original_stderr) {
+            std::cerr.rdbuf(original_stderr);
+            null_stream.close();
+        }
+#endif
+    }
+    
     if (!current_music) {
         last_error = "Failed to load music: " + std::string(Mix_GetError());
         return false;
@@ -134,19 +168,11 @@ bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
     return true;
 }
 
-int MixPlayer::getVolume() const {
-    return volume;
-}
-
 int MixPlayer::getCurrentPosition() const {
     if (!playing) return 0;
     
     // Get current position from SDL_mixer
     return Mix_GetMusicPosition(nullptr);
-}
-
-int MixPlayer::getDuration() const {
-    return duration;
 }
 
 bool MixPlayer::isPlaying() const {
@@ -155,6 +181,18 @@ bool MixPlayer::isPlaying() const {
 
 bool MixPlayer::isPaused() const {
     return playing && Mix_PausedMusic();
+}
+
+int MixPlayer::getVolume() const {
+    return volume;
+}
+
+int MixPlayer::getDuration() const {
+    return duration;
+}
+
+std::string MixPlayer::getLastError() const {
+    return last_error;
 }
 
 bool MixPlayer::isValidMP3File(const std::string& file_path) {

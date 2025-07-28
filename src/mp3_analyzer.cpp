@@ -2,6 +2,8 @@
 #include <SDL2/SDL_mixer.h>
 #include <filesystem>
 #include <iostream>
+#include <fstream>
+#include <cstdio>
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -16,6 +18,9 @@
 
 MP3Analyzer::MP3Analyzer() {
     last_error.clear();
+    
+    // TagLib will handle MP3 files with stream size issues gracefully
+    // The "Xing stream size off" warning is common and doesn't affect functionality
 }
 
 MP3Analyzer::~MP3Analyzer() {
@@ -65,6 +70,33 @@ std::string MP3Analyzer::getCurrentDateTime() {
 MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     MP3Metadata metadata;
     metadata.id = generateIdFromFilename(file_path);
+    
+    // Suppress TagLib warnings for this analysis
+    // The "Xing stream size off" warning is common and doesn't affect functionality
+    std::string original_error = last_error;
+    last_error.clear();
+    
+    // Temporarily redirect stderr to suppress TagLib warnings
+    std::streambuf* original_stderr = nullptr;
+    std::ofstream null_stream;
+    FILE* original_stderr_file = nullptr;
+    
+    if (!_verbose) {
+#ifdef _WIN32
+        // On Windows, we can't easily redirect stderr, so we'll just proceed
+#else
+        // On Unix-like systems, redirect stderr to /dev/null using freopen
+        original_stderr_file = freopen("/dev/null", "w", stderr);
+        if (!original_stderr_file) {
+            // Fallback to stream redirection
+            null_stream.open("/dev/null");
+            if (null_stream.is_open()) {
+                original_stderr = std::cerr.rdbuf();
+                std::cerr.rdbuf(null_stream.rdbuf());
+            }
+        }
+#endif
+    }
     
     // Use TagLib to extract metadata
     TagLib::MPEG::File f(file_path.c_str());
@@ -159,6 +191,21 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     
     metadata.format = "MP3";
     metadata.date_added = getCurrentDateTime();
+    
+    // Restore original error state if no new errors occurred
+    if (last_error.empty()) {
+        last_error = original_error;
+    }
+    
+    // Restore stderr
+    if (!_verbose) {
+        if (original_stderr_file) {
+            freopen("/dev/stderr", "w", stderr);
+        } else if (original_stderr) {
+            std::cerr.rdbuf(original_stderr);
+            null_stream.close();
+        }
+    }
     
     return metadata;
 } 

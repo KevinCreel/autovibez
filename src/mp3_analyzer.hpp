@@ -36,9 +36,11 @@ public:
     std::string generateIdFromFilename(const std::string& file_path);
     std::string getCurrentDateTime();
     std::string getLastError() const { return last_error; }
-
+    void setVerbose(bool verbose) { _verbose = verbose; }
+    
 private:
     std::string last_error;
+    bool _verbose = false;
 };
 
 #endif // MP3_ANALYZER_HPP 
