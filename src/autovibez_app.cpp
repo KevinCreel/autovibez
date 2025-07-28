@@ -316,15 +316,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             }
             break;
             
-        case SDLK_x:
-            // X: Toggle crossfade
-            if (_mixManagerInitialized) {
-                bool current_state = _mixManager->isCrossfadeEnabled();
-                _mixManager->setCrossfadeEnabled(!current_state);
-                printf("🎵 Crossfade %s\n", current_state ? "disabled" : "enabled");
-                printf("\n");
-            }
-            break;
+
             
         case SDLK_LEFTBRACKET:
             // [: Previous preset
@@ -740,7 +732,6 @@ void AutoVibezApp::renderHelpOverlay()
         printf("%sG     - Play random mix in current genre%s\n", color_yellow, color_reset);
         printf("%sShift+G - Switch to random genre%s\n", color_green, color_reset);
         printf("%sCtrl+G  - Show available genres%s\n", color_magenta, color_reset);
-        printf("%sX     - Toggle crossfade mode%s\n", color_cyan, color_reset);
         printf("%s↑/↓   - Volume up/down%s\n", color_green, color_reset);
         printf("\n");
         printf("%s🎨 Visualizer Controls:%s\n", color_magenta, color_reset);
@@ -792,12 +783,10 @@ void AutoVibezApp::initMixManager()
         return;
     }
     
-    // Load configuration for crossfade settings
+    // Load configuration
     std::string configFilePath = findConfigFile();
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
-        _mixManager->setCrossfadeEnabled(config.getCrossfadeEnabled());
-        _mixManager->setCrossfadeDuration(config.getCrossfadeDuration());
         
         // Set initial genre from config
         std::string preferred_genre = config.getPreferredGenre();
