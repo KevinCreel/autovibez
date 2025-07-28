@@ -781,8 +781,8 @@ void AutoVibezApp::renderFpsCounter()
     
     Uint32 currentTime = SDL_GetTicks();
     if (currentTime - lastTime >= 1000) { // Update every second
-        float fps = (float)frameCount * 1000.0f / (currentTime - lastTime);
-        printf("FPS: %.1f\n", fps);
+        float current_fps = (float)frameCount * 1000.0f / (currentTime - lastTime);
+        printf("FPS: %.1f\n", current_fps);
         frameCount = 0;
         lastTime = currentTime;
     }

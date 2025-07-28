@@ -11,7 +11,7 @@
  */
 class MixDatabase {
 public:
-    MixDatabase(const std::string& db_path);
+    explicit MixDatabase(const std::string& db_path);
     ~MixDatabase();
     
     /**

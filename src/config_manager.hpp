@@ -63,7 +63,7 @@ protected:
 
 // Methods
 public:
-	ConfigFile( string filename,
+	explicit ConfigFile( string filename,
 	            string delimiter = "=",
 	            string comment = "#",
 				string sentry = "EndConfigFile" );
@@ -150,11 +150,11 @@ protected:
 public:
 	struct file_not_found {
 		string filename;
-		file_not_found( const string& filename_ = string() )
+		explicit file_not_found( const string& filename_ = string() )
 			: filename(filename_) {} };
 	struct key_not_found {  // thrown only by T read(key) variant of read()
 		string key;
-		key_not_found( const string& key_ = string() )
+		explicit key_not_found( const string& key_ = string() )
 			: key(key_) {} };
 };
 

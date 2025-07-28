@@ -60,7 +60,7 @@ std::ostream& operator<<( std::ostream& os, const ConfigFile& cf )
 		 ++p )
 	{
 		os << p->first << " " << cf.myDelimiter << " ";
-		os << p->second << std::endl;
+		os << p->second << '\n';
 	}
 	return os;
 }

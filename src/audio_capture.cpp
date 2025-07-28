@@ -36,11 +36,12 @@ int AutoVibezApp::initAudioInput() {
 }
 
 void AutoVibezApp::audioInputCallbackF32(void *userdata, unsigned char *stream, int len) {
-    AutoVibezApp *app = (AutoVibezApp *) userdata;
+    AutoVibezApp *app = static_cast<AutoVibezApp*>(userdata);
 //    printf("\nLEN: %i\n", len);
 //    for (int i = 0; i < 64; i++)
 //        printf("%X ", stream[i]);
     // stream is (i think) samples*channels floats (native byte order) of len BYTES
+    // Note: reinterpret_cast is necessary here for audio callback interfacing
     if (app->_audioChannelsCount == 1)
         projectm_pcm_add_float(app->_projectM, reinterpret_cast<float*>(stream), len/sizeof(float)/2, PROJECTM_MONO);
     else if (app->_audioChannelsCount == 2)

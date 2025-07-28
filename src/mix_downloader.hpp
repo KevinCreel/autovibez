@@ -8,7 +8,7 @@
  */
 class MixDownloader {
 public:
-    MixDownloader(const std::string& cache_dir);
+    explicit MixDownloader(const std::string& cache_dir);
     ~MixDownloader();
     
     /**
