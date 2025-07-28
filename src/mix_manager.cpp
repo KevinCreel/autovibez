@@ -504,6 +504,10 @@ Mix MixManager::getSmartRandomMix(const std::string& exclude_mix_id) {
     return database ? database->getSmartRandomMix(exclude_mix_id) : Mix();
 }
 
+Mix MixManager::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
+    return database ? database->getSmartRandomMix(exclude_mix_id, preferred_genre) : Mix();
+}
+
 Mix MixManager::getNextMix(const std::string& current_mix_id) {
     return database ? database->getNextMix(current_mix_id) : Mix();
 }

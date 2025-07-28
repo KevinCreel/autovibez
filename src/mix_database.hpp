@@ -74,6 +74,7 @@ public:
      */
     Mix getSmartRandomMix();
     Mix getSmartRandomMix(const std::string& exclude_mix_id);
+    Mix getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre);
     
     /**
      * @brief Get the next mix in database order

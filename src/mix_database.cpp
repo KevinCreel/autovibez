@@ -244,11 +244,20 @@ Mix MixDatabase::getSmartRandomMix() {
 }
 
 Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id) {
+    return getSmartRandomMix(exclude_mix_id, "");
+}
+
+Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
     // Get total counts for weighted selection (excluding current mix)
     int total_mixes = 0;
     int favorite_mixes = 0;
+    int preferred_genre_mixes = 0;
     
-    std::string count_sql = "SELECT COUNT(*) as total, SUM(CASE WHEN is_favorite = 1 THEN 1 ELSE 0 END) as favorites FROM mixes";
+    std::string count_sql = "SELECT COUNT(*) as total, SUM(CASE WHEN is_favorite = 1 THEN 1 ELSE 0 END) as favorites";
+    if (!preferred_genre.empty()) {
+        count_sql += ", SUM(CASE WHEN genre COLLATE NOCASE = ? COLLATE NOCASE THEN 1 ELSE 0 END) as preferred";
+    }
+    count_sql += " FROM mixes";
     if (!exclude_mix_id.empty()) {
         count_sql += " WHERE id != ?";
     }
@@ -256,20 +265,65 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id) {
     sqlite3_stmt* count_stmt;
     int rc = sqlite3_prepare_v2(db, count_sql.c_str(), -1, &count_stmt, nullptr);
     if (rc == SQLITE_OK) {
+        int param_index = 1;
+        if (!preferred_genre.empty()) {
+            sqlite3_bind_text(count_stmt, param_index++, preferred_genre.c_str(), -1, SQLITE_STATIC);
+        }
         if (!exclude_mix_id.empty()) {
-            sqlite3_bind_text(count_stmt, 1, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(count_stmt, param_index, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
         }
         if (sqlite3_step(count_stmt) == SQLITE_ROW) {
             total_mixes = sqlite3_column_int(count_stmt, 0);
             favorite_mixes = sqlite3_column_int(count_stmt, 1);
+            if (!preferred_genre.empty()) {
+                preferred_genre_mixes = sqlite3_column_int(count_stmt, 2);
+            }
         }
     }
     sqlite3_finalize(count_stmt);
     
     if (total_mixes == 0) return Mix();
     
-    // Calculate probability: 70% chance to pick from favorites (if any exist), 30% from all
-    bool prefer_favorites = (favorite_mixes > 0) && (rand() % 100 < 70);
+    // Calculate probability: prioritize preferred genre, then favorites, then random
+    bool prefer_genre = !preferred_genre.empty() && (preferred_genre_mixes > 0) && (rand() % 100 < 60);
+    bool prefer_favorites = !prefer_genre && (favorite_mixes > 0) && (rand() % 100 < 70);
+    
+    if (prefer_genre) {
+        // Get a mix from preferred genre with smart prioritization (excluding current)
+        std::string sql = R"(
+            SELECT * FROM mixes 
+            WHERE genre COLLATE NOCASE = ? COLLATE NOCASE
+        )";
+        if (!exclude_mix_id.empty()) {
+            sql += " AND id != ?";
+        }
+        sql += R"(
+            ORDER BY 
+                CASE WHEN last_played IS NULL THEN 0 ELSE 1 END,  -- NULL last_played first
+                last_played ASC,  -- Oldest first
+                play_count ASC,   -- Fewest plays first
+                RANDOM()          -- Random tiebreaker
+            LIMIT 1
+        )";
+        
+        sqlite3_stmt* stmt;
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+        if (rc == SQLITE_OK) {
+            int param_index = 1;
+            sqlite3_bind_text(stmt, param_index++, preferred_genre.c_str(), -1, SQLITE_STATIC);
+            if (!exclude_mix_id.empty()) {
+                sqlite3_bind_text(stmt, param_index, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+            }
+            Mix mix;
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                mix = rowToMix(stmt);
+            }
+            sqlite3_finalize(stmt);
+            if (!mix.id.empty()) {
+                return mix;
+            }
+        }
+    }
     
     if (prefer_favorites) {
         // Get a favorite mix with smart prioritization (excluding current)
@@ -306,7 +360,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id) {
         }
     }
     
-    // Get any mix with smart prioritization (fallback or 30% chance, excluding current)
+    // Get any mix with smart prioritization (fallback, excluding current)
     std::string sql = "SELECT * FROM mixes";
     if (!exclude_mix_id.empty()) {
         sql += " WHERE id != ?";

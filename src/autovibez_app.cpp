@@ -328,7 +328,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
         case SDLK_SPACE:
             // SPACE: Random mix
             {
-                Mix randomMix = _mixManager->getSmartRandomMix(_currentMix.id);
+                Mix randomMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
                 if (!randomMix.id.empty()) {
                     _mixManager->downloadAndPlayMix(randomMix);
                     _currentMix = randomMix;
@@ -1240,17 +1240,17 @@ void AutoVibezApp::autoPlayOrDownload()
         return;
     }
     
-    // Step 1: Check for existing downloaded mixes and play one, prioritizing favorites
+    // Step 1: Check for existing downloaded mixes and play one, prioritizing preferred genre
     auto downloadedMixes = _mixManager->getDownloadedMixes();
     if (!downloadedMixes.empty()) {
-        // First try to play a favorite mix
-        Mix randomMix = _mixManager->getRandomFavoriteMix();
+        // First try to play a mix from preferred genre
+        Mix randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
         if (randomMix.id.empty()) {
-            // If no favorites, try a mix from preferred genre
-            randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+            // If no mixes in preferred genre, try a favorite mix
+            randomMix = _mixManager->getRandomFavoriteMix();
         }
         if (randomMix.id.empty()) {
-            // If no mixes in preferred genre, fall back to any random mix
+            // If no favorites, fall back to any random mix
             randomMix = _mixManager->getRandomMix();
         }
         if (!randomMix.id.empty()) {
@@ -1440,7 +1440,7 @@ void AutoVibezApp::checkAndAutoPlayNext() {
     // Check if music has stopped playing (not just paused)
     if (!_mixManager->isPlaying() && !_mixManager->isPaused()) {
         // Music has ended, play next random mix
-        Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id);
+        Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
         if (!nextMix.id.empty()) {
             printf("🎵 Auto-playing next mix: %s by %s\n", nextMix.title.c_str(), nextMix.artist.c_str());
             if (_mixManager->downloadAndPlayMix(nextMix)) {
