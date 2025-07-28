@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <filesystem>
+#include <cstdlib>
 
 #include <SDL2/SDL_hints.h>
 
@@ -11,6 +12,20 @@
 #include <cmath>
 #include <vector>
 #include <cstdlib>
+
+// Helper function to expand tilde in paths
+std::string expandTilde(const std::string& path) {
+    if (path.empty() || path[0] != '~') {
+        return path;
+    }
+    
+    const char* home = std::getenv("HOME");
+    if (!home) {
+        return path; // Can't expand, return as-is
+    }
+    
+    return std::string(home) + path.substr(1);
+}
 
 #if OGL_DEBUG
 void debugGL(GLenum source,
@@ -46,6 +61,50 @@ std::string getConfigFilePath(std::string datadir_path) {
     return "";
 }
 
+// Get XDG config directory for autovibez (cross-platform)
+std::string getConfigDirectory() {
+    std::string config_dir;
+    
+#ifdef _WIN32
+    // Windows: Use %APPDATA%/autovibez/config
+    const char* appdata = std::getenv("APPDATA");
+    if (appdata) {
+        config_dir = std::string(appdata) + "/autovibez/config";
+    } else {
+        config_dir = "config"; // Fallback
+    }
+#elif defined(__APPLE__)
+    // macOS: Use ~/Library/Application Support/autovibez/config
+    const char* home = std::getenv("HOME");
+    if (home) {
+        config_dir = std::string(home) + "/Library/Application Support/autovibez/config";
+    } else {
+        config_dir = "config"; // Fallback
+    }
+#else
+    // Linux/Unix: Use XDG Base Directory Specification
+    const char* xdg_config_home = std::getenv("XDG_CONFIG_HOME");
+    if (xdg_config_home && strlen(xdg_config_home) > 0) {
+        config_dir = std::string(xdg_config_home) + "/autovibez";
+    } else {
+        // Fallback to default XDG location
+        const char* home = std::getenv("HOME");
+        if (home) {
+            config_dir = std::string(home) + "/.config/autovibez";
+        } else {
+            config_dir = "config"; // Last resort fallback
+        }
+    }
+#endif
+    
+    // Create directory if it doesn't exist
+    if (!std::filesystem::exists(config_dir)) {
+        std::filesystem::create_directories(config_dir);
+    }
+    
+    return config_dir;
+}
+
 // Find config file
 std::string findConfigFile() {
     // Check for environment variable first
@@ -54,7 +113,13 @@ std::string findConfigFile() {
         return config_env;
     }
     
-    // Look for config in standard location
+    // Look for config in XDG config directory
+    std::string xdg_config_path = getConfigDirectory() + "/config.inp";
+    if (std::filesystem::exists(xdg_config_path)) {
+        return xdg_config_path;
+    }
+    
+    // Fallback to local config directory
     if (std::filesystem::exists("config/config.inp")) {
         return "config/config.inp";
     }
@@ -62,6 +127,49 @@ std::string findConfigFile() {
     return "";
 }
 
+// Get XDG assets directory for autovibez (cross-platform)
+std::string getAssetsDirectory() {
+    std::string assets_dir;
+    
+#ifdef _WIN32
+    // Windows: Use %APPDATA%/autovibez/assets
+    const char* appdata = std::getenv("APPDATA");
+    if (appdata) {
+        assets_dir = std::string(appdata) + "/autovibez/assets";
+    } else {
+        assets_dir = "assets"; // Fallback
+    }
+#elif defined(__APPLE__)
+    // macOS: Use ~/Library/Application Support/autovibez/assets
+    const char* home = std::getenv("HOME");
+    if (home) {
+        assets_dir = std::string(home) + "/Library/Application Support/autovibez/assets";
+    } else {
+        assets_dir = "assets"; // Fallback
+    }
+#else
+    // Linux/Unix: Use XDG Base Directory Specification
+    const char* xdg_data_home = std::getenv("XDG_DATA_HOME");
+    if (xdg_data_home && strlen(xdg_data_home) > 0) {
+        assets_dir = std::string(xdg_data_home) + "/autovibez/assets";
+    } else {
+        // Fallback to default XDG location
+        const char* home = std::getenv("HOME");
+        if (home) {
+            assets_dir = std::string(home) + "/.local/share/autovibez/assets";
+        } else {
+            assets_dir = "assets"; // Last resort fallback
+        }
+    }
+#endif
+    
+    // Create directory if it doesn't exist
+    if (!std::filesystem::exists(assets_dir)) {
+        std::filesystem::create_directories(assets_dir);
+    }
+    
+    return assets_dir;
+}
 
 void seedRand() {
 #ifndef _WIN32
@@ -171,29 +279,36 @@ AutoVibezApp *setupSDLApp() {
 
     std::string base_path = "/usr/local/share/autovibez";
 
-    // load configuration file - ONLY use local config
+    // load configuration file - use XDG config directory
     std::string configFilePath = findConfigFile();
     if (configFilePath.empty()) {
-        printf("⚠️  Local config.inp not found, using defaults\n");
+        printf("⚠️  Config file not found, using defaults\n");
     }
     
-    // Use local assets directory if it exists, otherwise fall back to system paths
+    // Use XDG assets directory if it exists, otherwise fall back to system paths
     std::string presetURL = base_path + "/presets";
     std::string textureURL = base_path + "/textures";
     
-    // Check if local assets directory exists
-    std::string local_assets = "assets";
-    if (std::filesystem::exists(local_assets + "/presets")) {
-        presetURL = local_assets + "/presets";
-        textureURL = local_assets + "/textures";
+    // Check if XDG assets directory exists
+    std::string xdg_assets = getAssetsDirectory();
+    if (std::filesystem::exists(xdg_assets + "/presets")) {
+        presetURL = xdg_assets + "/presets";
+        textureURL = xdg_assets + "/textures";
+    } else {
+        // Fallback to local assets directory if it exists
+        std::string local_assets = "assets";
+        if (std::filesystem::exists(local_assets + "/presets")) {
+            presetURL = local_assets + "/presets";
+            textureURL = local_assets + "/textures";
+        }
     }
 
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
         std::string configPreset = config.getPresetPath();
         std::string configTexture = config.getTexturePath();
-        if (!configPreset.empty()) presetURL = configPreset;
-        if (!configTexture.empty()) textureURL = configTexture;
+        if (!configPreset.empty()) presetURL = expandTilde(configPreset);
+        if (!configTexture.empty()) textureURL = expandTilde(configTexture);
     }
 
     // Default values for new config settings

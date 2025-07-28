@@ -15,6 +15,7 @@ void debugGL(GLenum source,
                const GLchar* message,
              const void* userParam);
 
+std::string getConfigDirectory();
 std::string getConfigFilePath(std::string datadir_path);
 std::string findConfigFile();
 void seedRand();

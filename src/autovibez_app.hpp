@@ -132,6 +132,10 @@ public:
     void renderFpsCounter();
     
     // Mix management
+    std::string getDataDirectory();
+    std::string getConfigDirectory();
+    std::string getCacheDirectory();
+    std::string getAssetsDirectory();
     void initMixManager();
     void handleMixControls(SDL_Event* event);
     void displayMixStatus();
