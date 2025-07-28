@@ -1,0 +1,23 @@
+# AutoVibez Configuration
+# 
+# Mix Management Settings
+yaml_url = mixes.yaml
+mixes_url = https://pub-af2c65ff0bca4aeaac767cae359e589b.r2.dev/mixes.yaml
+auto_download = true
+cache_size_gb = 5
+
+# Genre Settings
+preferred_genre = trip-hop
+
+# Crossfade Settings
+crossfade_enabled = true
+crossfade_duration_ms = 3000
+
+# Audio Settings
+audio_device = 0
+show_fps = false
+
+# Visualizer Settings
+preset_path = assets/presets
+texture_path = assets/textures
+fullscreen = false

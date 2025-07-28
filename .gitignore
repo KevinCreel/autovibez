@@ -1,0 +1,132 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+bin/
+lib/
+test_build/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+autovibez
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Core dumps
+core
+core.*
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Package files
+*.tar.gz
+*.zip
+*.rar
+
+# Documentation build
+docs/_build/
+docs/build/
+
+# Test coverage
+*.gcov
+*.gcda
+*.gcno
+coverage/
+
+# Valgrind output
+valgrind-out.txt
+
+# Dependencies (if using vcpkg or similar)
+vcpkg_installed/
+
+# Mix cache (downloaded audio files)
+data/
+data/*
+cache/
+cache/*
+
+# Database files (local user data)
+*.db
+*.sqlite
+*.sqlite3
+autovibez_mixes.db
+autovibez_mixes.sqlite
+autovibez_mixes.sqlite3
+
+# Local configuration files that shouldn't be committed
+config/local_config.inp
+*.local
+
+# Audio/video files (in case you add test files)
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.avi
+*.mp4
+*.mkv
+
+# User-specific config files
+~/.projectM/ 
