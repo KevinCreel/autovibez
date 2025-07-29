@@ -1,0 +1,670 @@
+#include "mix_database.hpp"
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <random>
+#include <chrono>
+
+MixDatabase::MixDatabase(const std::string& db_path) 
+    : db(nullptr), db_path(db_path), success(true) {
+}
+
+MixDatabase::~MixDatabase() {
+    if (db) {
+        sqlite3_close(db);
+    }
+}
+
+bool MixDatabase::initialize() {
+    success = true;
+    last_error.clear();
+    
+    int rc = sqlite3_open(db_path.c_str(), &db);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to open database: " + std::string(sqlite3_errmsg(db));
+        success = false;
+        return false;
+    }
+    
+    if (!createTables()) {
+        return false;
+    }
+    
+    return true;
+}
+
+bool MixDatabase::createTables() {
+    const char* sql = R"(
+        CREATE TABLE IF NOT EXISTS mixes (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            artist TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            url TEXT NOT NULL,
+            local_path TEXT,
+            duration_seconds INTEGER NOT NULL,
+        
+            tags TEXT,
+            description TEXT,
+            date_added DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_played DATETIME,
+            play_count INTEGER DEFAULT 0,
+            is_favorite BOOLEAN DEFAULT 0
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_mixes_genre ON mixes(genre);
+        CREATE INDEX IF NOT EXISTS idx_mixes_artist ON mixes(artist);
+        CREATE INDEX IF NOT EXISTS idx_mixes_favorite ON mixes(is_favorite);
+        CREATE INDEX IF NOT EXISTS idx_mixes_last_played ON mixes(last_played);
+    )";
+    
+    return executeQuery(sql);
+}
+
+bool MixDatabase::addMix(const Mix& mix) {
+    success = true;
+    last_error.clear();
+    
+    const char* sql = R"(
+        INSERT OR REPLACE INTO mixes 
+        (id, title, artist, genre, url, local_path, duration_seconds, tags, description, date_added, last_played, play_count, is_favorite)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    )";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        success = false;
+        return false;
+    }
+    
+    // Convert tags vector to JSON string
+    std::string tags_json = "[";
+    for (size_t i = 0; i < mix.tags.size(); ++i) {
+        if (i > 0) tags_json += ",";
+        tags_json += "\"" + mix.tags[i] + "\"";
+    }
+    tags_json += "]";
+    
+    sqlite3_bind_text(stmt, 1, mix.id.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, mix.title.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, mix.artist.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, mix.genre.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, mix.url.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, mix.local_path.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 7, mix.duration_seconds);
+
+    sqlite3_bind_text(stmt, 8, tags_json.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 9, mix.description.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 10, mix.date_added.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 11, mix.last_played.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 12, mix.play_count);
+    sqlite3_bind_int(stmt, 13, mix.is_favorite ? 1 : 0);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    if (rc != SQLITE_DONE) {
+        last_error = "Failed to insert mix: " + std::string(sqlite3_errmsg(db));
+        success = false;
+        return false;
+    }
+    
+    return true;
+}
+
+bool MixDatabase::updateMix(const Mix& mix) {
+    const char* sql = "UPDATE mixes SET title = ?, artist = ?, genre = ?, url = ?, local_path = ?, duration_seconds = ?, tags = ?, description = ?, date_added = ?, last_played = ?, play_count = ?, is_favorite = ? WHERE id = ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare update statement: " + std::string(sqlite3_errmsg(db));
+        return false;
+    }
+    
+    // Convert tags to JSON
+    std::string tags_json = "[]";
+    if (!mix.tags.empty()) {
+        tags_json = "[";
+        for (size_t i = 0; i < mix.tags.size(); ++i) {
+            if (i > 0) tags_json += ",";
+            tags_json += "\"" + mix.tags[i] + "\"";
+        }
+        tags_json += "]";
+    }
+    
+    sqlite3_bind_text(stmt, 1, mix.title.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, mix.artist.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, mix.genre.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, mix.url.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, mix.local_path.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 6, mix.duration_seconds);
+
+    sqlite3_bind_text(stmt, 7, tags_json.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 8, mix.description.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 9, mix.date_added.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 10, mix.last_played.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 11, mix.play_count);
+    sqlite3_bind_int(stmt, 12, mix.is_favorite ? 1 : 0);
+    sqlite3_bind_text(stmt, 13, mix.id.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    if (rc != SQLITE_DONE) {
+        last_error = "Failed to update mix: " + std::string(sqlite3_errmsg(db));
+        return false;
+    }
+    
+    printf("✅ Updated mix in database: %s\n", mix.title.c_str());
+    return true;
+}
+
+Mix MixDatabase::getMixById(const std::string& id) {
+    const char* sql = "SELECT * FROM mixes WHERE id = ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return Mix();
+    }
+    
+    sqlite3_bind_text(stmt, 1, id.c_str(), -1, SQLITE_STATIC);
+    
+    Mix mix;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        mix = rowToMix(stmt);
+    }
+    
+    sqlite3_finalize(stmt);
+    return mix;
+}
+
+std::vector<Mix> MixDatabase::getAllMixes() {
+    const char* sql = "SELECT * FROM mixes ORDER BY title";
+    return executeQueryForMixes(sql);
+}
+
+std::vector<Mix> MixDatabase::getMixesByGenre(const std::string& genre) {
+    if (!db) {
+        last_error = "Database not initialized";
+        return std::vector<Mix>();
+    }
+    
+    const char* sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE ORDER BY title";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return std::vector<Mix>();
+    }
+    
+    sqlite3_bind_text(stmt, 1, genre.c_str(), -1, SQLITE_STATIC);
+    
+    std::vector<Mix> mixes;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        mixes.push_back(rowToMix(stmt));
+    }
+    
+    sqlite3_finalize(stmt);
+    return mixes;
+}
+
+std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
+    const char* sql = "SELECT * FROM mixes WHERE artist = ? ORDER BY title";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return std::vector<Mix>();
+    }
+    
+    sqlite3_bind_text(stmt, 1, artist.c_str(), -1, SQLITE_STATIC);
+    
+    std::vector<Mix> mixes;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        mixes.push_back(rowToMix(stmt));
+    }
+    
+    sqlite3_finalize(stmt);
+    return mixes;
+}
+
+Mix MixDatabase::getRandomMix() {
+    const char* sql = "SELECT * FROM mixes ORDER BY RANDOM() LIMIT 1";
+    return executeQueryForSingleMix(sql);
+}
+
+Mix MixDatabase::getSmartRandomMix() {
+    return getSmartRandomMix("");
+}
+
+Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id) {
+    return getSmartRandomMix(exclude_mix_id, "");
+}
+
+Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
+    // Get total counts for weighted selection (excluding current mix)
+    int total_mixes = 0;
+    int favorite_mixes = 0;
+    int preferred_genre_mixes = 0;
+    
+    std::string count_sql = "SELECT COUNT(*) as total, SUM(CASE WHEN is_favorite = 1 THEN 1 ELSE 0 END) as favorites";
+    if (!preferred_genre.empty()) {
+        count_sql += ", SUM(CASE WHEN genre COLLATE NOCASE = ? COLLATE NOCASE THEN 1 ELSE 0 END) as preferred";
+    }
+    count_sql += " FROM mixes";
+    if (!exclude_mix_id.empty()) {
+        count_sql += " WHERE id != ?";
+    }
+    
+    sqlite3_stmt* count_stmt;
+    int rc = sqlite3_prepare_v2(db, count_sql.c_str(), -1, &count_stmt, nullptr);
+    if (rc == SQLITE_OK) {
+        int param_index = 1;
+        if (!preferred_genre.empty()) {
+            sqlite3_bind_text(count_stmt, param_index++, preferred_genre.c_str(), -1, SQLITE_STATIC);
+        }
+        if (!exclude_mix_id.empty()) {
+            sqlite3_bind_text(count_stmt, param_index, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+        }
+        if (sqlite3_step(count_stmt) == SQLITE_ROW) {
+            total_mixes = sqlite3_column_int(count_stmt, 0);
+            favorite_mixes = sqlite3_column_int(count_stmt, 1);
+            if (!preferred_genre.empty()) {
+                preferred_genre_mixes = sqlite3_column_int(count_stmt, 2);
+            }
+        }
+    }
+    sqlite3_finalize(count_stmt);
+    
+    if (total_mixes == 0) return Mix();
+    
+    // Calculate probability: prioritize preferred genre, then favorites, then random
+    bool prefer_genre = !preferred_genre.empty() && (preferred_genre_mixes > 0) && (rand() % 100 < 60);
+    bool prefer_favorites = !prefer_genre && (favorite_mixes > 0) && (rand() % 100 < 70);
+    
+    if (prefer_genre) {
+        // Get a mix from preferred genre with smart prioritization (excluding current)
+        std::string sql = R"(
+            SELECT * FROM mixes 
+            WHERE genre COLLATE NOCASE = ? COLLATE NOCASE
+        )";
+        if (!exclude_mix_id.empty()) {
+            sql += " AND id != ?";
+        }
+        sql += R"(
+            ORDER BY 
+                CASE WHEN last_played IS NULL THEN 0 ELSE 1 END,  -- NULL last_played first
+                last_played ASC,  -- Oldest first
+                play_count ASC,   -- Fewest plays first
+                RANDOM()          -- Random tiebreaker
+            LIMIT 1
+        )";
+        
+        sqlite3_stmt* stmt;
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+        if (rc == SQLITE_OK) {
+            int param_index = 1;
+            sqlite3_bind_text(stmt, param_index++, preferred_genre.c_str(), -1, SQLITE_STATIC);
+            if (!exclude_mix_id.empty()) {
+                sqlite3_bind_text(stmt, param_index, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+            }
+            Mix mix;
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                mix = rowToMix(stmt);
+            }
+            sqlite3_finalize(stmt);
+            if (!mix.id.empty()) {
+                return mix;
+            }
+        }
+    }
+    
+    if (prefer_favorites) {
+        // Get a favorite mix with smart prioritization (excluding current)
+        std::string sql = R"(
+            SELECT * FROM mixes 
+            WHERE is_favorite = 1
+        )";
+        if (!exclude_mix_id.empty()) {
+            sql += " AND id != ?";
+        }
+        sql += R"(
+            ORDER BY 
+                CASE WHEN last_played IS NULL THEN 0 ELSE 1 END,  -- NULL last_played first
+                last_played ASC,  -- Oldest first
+                play_count ASC,   -- Fewest plays first
+                RANDOM()          -- Random tiebreaker
+            LIMIT 1
+        )";
+        
+        sqlite3_stmt* stmt;
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+        if (rc == SQLITE_OK) {
+            if (!exclude_mix_id.empty()) {
+                sqlite3_bind_text(stmt, 1, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+            }
+            Mix mix;
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                mix = rowToMix(stmt);
+            }
+            sqlite3_finalize(stmt);
+            if (!mix.id.empty()) {
+                return mix;
+            }
+        }
+    }
+    
+    // Get any mix with smart prioritization (fallback, excluding current)
+    std::string sql = "SELECT * FROM mixes";
+    if (!exclude_mix_id.empty()) {
+        sql += " WHERE id != ?";
+    }
+    sql += R"(
+        ORDER BY 
+            CASE WHEN last_played IS NULL THEN 0 ELSE 1 END,  -- NULL last_played first
+            last_played ASC,  -- Oldest first
+            play_count ASC,   -- Fewest plays first
+            RANDOM()          -- Random tiebreaker
+        LIMIT 1
+    )";
+    
+    sqlite3_stmt* stmt;
+    rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    if (rc == SQLITE_OK) {
+        if (!exclude_mix_id.empty()) {
+            sqlite3_bind_text(stmt, 1, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+        }
+        Mix mix;
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            mix = rowToMix(stmt);
+        }
+        sqlite3_finalize(stmt);
+        return mix;
+    }
+    
+    return Mix();
+}
+
+Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
+    if (!db) {
+        last_error = "Database not initialized";
+        return Mix();
+    }
+    
+    std::string sql;
+    if (current_mix_id.empty()) {
+        // Get first mix
+        sql = "SELECT * FROM mixes ORDER BY id LIMIT 1";
+    } else {
+        // Get next mix after current
+        sql = "SELECT * FROM mixes WHERE id > ? ORDER BY id LIMIT 1";
+    }
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return Mix();
+    }
+    
+    if (!current_mix_id.empty()) {
+        sqlite3_bind_text(stmt, 1, current_mix_id.c_str(), -1, SQLITE_STATIC);
+    }
+    
+    Mix result;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        result = rowToMix(stmt);
+    } else {
+        // If no next mix found, wrap around to first
+        sqlite3_finalize(stmt);
+        sql = "SELECT * FROM mixes ORDER BY id LIMIT 1";
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                result = rowToMix(stmt);
+            }
+        }
+    }
+    
+    sqlite3_finalize(stmt);
+    return result;
+}
+
+Mix MixDatabase::getRandomMixByGenre(const std::string& genre) {
+    if (!db) {
+        last_error = "Database not initialized";
+        return Mix();
+    }
+    
+    const char* sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE ORDER BY RANDOM() LIMIT 1";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return Mix();
+    }
+    
+    sqlite3_bind_text(stmt, 1, genre.c_str(), -1, SQLITE_STATIC);
+    
+    Mix result;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        result = rowToMix(stmt);
+    }
+    
+    sqlite3_finalize(stmt);
+    return result;
+}
+
+Mix MixDatabase::getRandomMixByArtist(const std::string& artist) {
+    const char* sql = "SELECT * FROM mixes WHERE artist = ? ORDER BY RANDOM() LIMIT 1";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return Mix();
+    }
+    
+    sqlite3_bind_text(stmt, 1, artist.c_str(), -1, SQLITE_STATIC);
+    
+    Mix mix;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        mix = rowToMix(stmt);
+    }
+    
+    sqlite3_finalize(stmt);
+    return mix;
+}
+
+
+
+bool MixDatabase::toggleFavorite(const std::string& mix_id) {
+    const char* sql = "UPDATE mixes SET is_favorite = NOT is_favorite WHERE id = ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return false;
+    }
+    
+    sqlite3_bind_text(stmt, 1, mix_id.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    return rc == SQLITE_DONE;
+}
+
+bool MixDatabase::updatePlayStats(const std::string& mix_id) {
+    const char* sql = "UPDATE mixes SET play_count = play_count + 1, last_played = CURRENT_TIMESTAMP WHERE id = ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return false;
+    }
+    
+    sqlite3_bind_text(stmt, 1, mix_id.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    return rc == SQLITE_DONE;
+}
+
+bool MixDatabase::setLocalPath(const std::string& mix_id, const std::string& local_path) {
+    const char* sql = "UPDATE mixes SET local_path = ? WHERE id = ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return false;
+    }
+    
+    sqlite3_bind_text(stmt, 1, local_path.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, mix_id.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    return rc == SQLITE_DONE;
+}
+
+std::vector<Mix> MixDatabase::getDownloadedMixes() {
+    const char* sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' ORDER BY title";
+    return executeQueryForMixes(sql);
+}
+
+std::vector<Mix> MixDatabase::getFavoriteMixes() {
+    const char* sql = "SELECT * FROM mixes WHERE is_favorite = 1 ORDER BY title";
+    return executeQueryForMixes(sql);
+}
+
+std::vector<Mix> MixDatabase::getRecentlyPlayed(int limit) {
+    const char* sql = "SELECT * FROM mixes WHERE last_played IS NOT NULL ORDER BY last_played DESC LIMIT ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return std::vector<Mix>();
+    }
+    
+    sqlite3_bind_int(stmt, 1, limit);
+    
+    std::vector<Mix> mixes;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        mixes.push_back(rowToMix(stmt));
+    }
+    
+    sqlite3_finalize(stmt);
+    return mixes;
+}
+
+Mix MixDatabase::rowToMix(sqlite3_stmt* stmt) {
+    Mix mix;
+    
+    // Check for null pointers before accessing
+    if (sqlite3_column_text(stmt, 0)) {
+        mix.id = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+    }
+    if (sqlite3_column_text(stmt, 1)) {
+        mix.title = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+    }
+    if (sqlite3_column_text(stmt, 2)) {
+        mix.artist = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+    }
+    if (sqlite3_column_text(stmt, 3)) {
+        mix.genre = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+    }
+    if (sqlite3_column_text(stmt, 4)) {
+        mix.url = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+    }
+    
+    if (sqlite3_column_text(stmt, 5)) {
+        mix.local_path = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+    }
+    
+    mix.duration_seconds = sqlite3_column_int(stmt, 6);
+    
+    if (sqlite3_column_text(stmt, 7)) {
+        // Parse tags JSON - simplified for now
+        // TODO: Parse JSON tags from sqlite3_column_text(stmt, 7)
+    }
+    
+    if (sqlite3_column_text(stmt, 8)) {
+        mix.description = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 8));
+    }
+    
+    if (sqlite3_column_text(stmt, 9)) {
+        mix.date_added = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 9));
+    }
+    
+    if (sqlite3_column_text(stmt, 10)) {
+        mix.last_played = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 10));
+    }
+    
+    mix.play_count = sqlite3_column_int(stmt, 11);
+    mix.is_favorite = sqlite3_column_int(stmt, 12) != 0;
+    
+    return mix;
+}
+
+std::vector<Mix> MixDatabase::executeQueryForMixes(const char* sql) {
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return std::vector<Mix>();
+    }
+    
+    std::vector<Mix> mixes;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        try {
+            Mix mix = rowToMix(stmt);
+            mixes.push_back(mix);
+        } catch (const std::exception& e) {
+        }
+    }
+    
+    sqlite3_finalize(stmt);
+    return mixes;
+}
+
+Mix MixDatabase::executeQueryForSingleMix(const char* sql) {
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return Mix();
+    }
+    
+    Mix mix;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        mix = rowToMix(stmt);
+    }
+    
+    sqlite3_finalize(stmt);
+    return mix;
+}
+
+bool MixDatabase::executeQuery(const std::string& sql) {
+    char* err_msg = nullptr;
+    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg);
+    
+    if (rc != SQLITE_OK) {
+        last_error = "SQL error: " + std::string(err_msg);
+        sqlite3_free(err_msg);
+        success = false;
+        return false;
+    }
+    
+    return true;
+} 

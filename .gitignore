@@ -58,8 +58,8 @@ Thumbs.db
 *.pdb
 
 # Core dumps
-core
-core.*
+/core
+/core.*
 
 # Temporary files
 *.tmp
@@ -102,10 +102,10 @@ valgrind-out.txt
 vcpkg_installed/
 
 # Mix cache (downloaded audio files)
-data/
-data/*
-cache/
-cache/*
+/data/
+/data/*
+/cache/
+/cache/*
 
 # Database files (local user data)
 *.db
