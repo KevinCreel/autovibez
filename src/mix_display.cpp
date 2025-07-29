@@ -20,7 +20,7 @@ void MixDisplay::displayMixInfo(const Mix& mix) {
     
     printf("%s🎵 %sNow playing:%s %s%s%s\n", color_purple, color_green, color_reset, color_yellow, mix.title.c_str(), color_reset);
     
-    printf("%s%s🎤 Artist:%s %s%s%s\n", color_reset, color_cyan, color_reset, color_yellow, mix.artist.c_str(), color_reset);
+    printf("%s%s🎧 Artist:%s %s%s%s\n", color_reset, color_cyan, color_reset, color_yellow, mix.artist.c_str(), color_reset);
     printf("%s%s🎼 Genre:%s %s%s%s\n", color_reset, color_cyan, color_reset, color_yellow, mix.genre.c_str(), color_reset);
     printf("%s%s⏱️  Duration:%s %s%s%s\n", color_reset, color_cyan, color_reset, color_yellow, formatTime(mix.duration_seconds).c_str(), color_reset);
     printf("%s%s📅 Added:%s %s%s%s\n", color_reset, color_cyan, color_reset, color_yellow, mix.date_added.c_str(), color_reset);

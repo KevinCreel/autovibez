@@ -482,7 +482,7 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
     
             printf("✅ Successfully downloaded and analyzed: %s\n", updated_mix.title.c_str());
         printf("\n");
-    printf("   🎤 Artist: %s\n", updated_mix.artist.c_str());
+            printf("   🎧 Artist: %s\n", updated_mix.artist.c_str());
     printf("   🎼 Genre: %s\n", updated_mix.genre.c_str());
     printf("   ⏱️  Duration: %s\n", formatDuration(updated_mix.duration_seconds).c_str());
     printf("   📁 Format: %s\n", mp3_metadata.format.c_str());

@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <iostream>
 
 // Simple UI System using SDL2_ttf for proper text rendering
 class UISystem {
@@ -50,4 +51,5 @@ private:
     
     void renderText(const std::string& text, float x, float y, SDL_Color color);
     void renderRect(float x, float y, float width, float height, SDL_Color color);
+    std::string getFontPathFromConfig();
 }; 

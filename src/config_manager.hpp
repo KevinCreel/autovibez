@@ -103,7 +103,7 @@ public:
         return read<std::string>("texture_path", "");
     }
     int getAudioDeviceIndex() const {
-        return read<int>("audio_device_index", 0);
+        return read<int>("audio_device", 0);
     }
     bool getShowFps() const {
         return read<bool>("show_fps", false);
@@ -138,8 +138,11 @@ public:
     
     // Genre settings
     std::string getPreferredGenre() const;
-
-
+    
+    std::string getFontPath() const {
+        return read<std::string>("font_path", "");
+    }
+    
 protected:
 	template<class T> static string T_as_string( const T& t );
 	template<class T> static T string_as_T( const string& s );

@@ -336,9 +336,6 @@ AutoVibezApp *setupSDLApp() {
         }
     }
 
-    printf("🎨 Final preset path: %s\n", presetURL.c_str());
-    printf("🎨 Final texture path: %s\n", textureURL.c_str());
-
     // Default values for new config settings
     int audioDeviceIndex = 0;
     bool showFps = false;

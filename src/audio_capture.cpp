@@ -24,7 +24,11 @@ int AutoVibezApp::initAudioInput() {
     desired.userdata = this;
 
     // Open audio device
-    _audioDeviceId = SDL_OpenAudioDevice(nullptr, SDL_TRUE, &desired, &obtained, 0);
+    const char* deviceName = nullptr;
+    if (_selectedAudioDeviceIndex < _numAudioDevices) {
+        deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
+    }
+    _audioDeviceId = SDL_OpenAudioDevice(deviceName, SDL_TRUE, &desired, &obtained, 0);
     if (_audioDeviceId == 0) {
         SDL_Log("Failed to open audio device: %s", SDL_GetError());
         return 0;

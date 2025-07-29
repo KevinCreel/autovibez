@@ -768,12 +768,22 @@ void AutoVibezApp::cycleAudioDevice()
     if (_numAudioDevices > 0) {
         _selectedAudioDeviceIndex = (_selectedAudioDeviceIndex + 1) % _numAudioDevices;
         
+        // Get the device name for feedback
+        const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
+        if (deviceName) {
+            printf("🎚️  Switched to audio device: %s\n", deviceName);
+        } else {
+            printf("🎚️  Switched to audio device: %d\n", _selectedAudioDeviceIndex);
+        }
+        
         // Reopen audio with new device
         endAudioCapture();
         _curAudioDevice = _selectedAudioDeviceIndex;
         _selectedAudioDevice = _selectedAudioDeviceIndex;  // Set both variables
         initAudioInput();  // Use initAudioInput directly instead of openAudioInput
         beginAudioCapture();
+    } else {
+        printf("🎚️  No audio devices available\n");
     }
 }
 
@@ -788,34 +798,43 @@ void AutoVibezApp::renderHelpOverlay()
         const char* color_blue = "\033[34m";
         const char* color_magenta = "\033[35m";
         const char* color_red = "\033[31m";
+        const char* color_bright_green = "\033[92m";
+        const char* color_bright_yellow = "\033[93m";
+        const char* color_bright_blue = "\033[94m";
+        const char* color_bright_magenta = "\033[95m";
+        const char* color_bright_cyan = "\033[96m";
+        const char* color_bright_red = "\033[91m";
+        const char* color_white = "\033[97m";
         const char* color_reset = "\033[0m";
         
         printf("\n");
-        printf("%s🎵 AutoVibez Controls 🎵%s\n", color_green, color_reset);
+        printf("%s✨🎵 AutoVibez Controls 🎵✨%s\n", color_bright_cyan, color_reset);
         printf("\n");
-        printf("%s🎵 Mix Management:%s\n", color_magenta, color_reset);
-        printf("%sR     - Play a random mix%s\n", color_cyan, color_reset);
-        printf("%sN     - Play next mix%s\n", color_yellow, color_reset);
-        printf("%sP     - Pause/Resume playback%s\n", color_green, color_reset);
-        printf("%sF     - Toggle favorite%s\n", color_magenta, color_reset);
-        printf("%sV     - List favorite mixes%s\n", color_red, color_reset);
-        printf("%sL     - List available mixes%s\n", color_cyan, color_reset);
-        printf("%sG     - Play random mix in current genre%s\n", color_yellow, color_reset);
-        printf("%sShift+G - Switch to random genre%s\n", color_green, color_reset);
-        printf("%sCtrl+G  - Show available genres%s\n", color_magenta, color_reset);
-        printf("%s↑/↓   - Volume up/down%s\n", color_green, color_reset);
+        printf("%s🎧 Mix Management:%s\n", color_bright_magenta, color_reset);
+        printf("%sN%s     - Play next mix\n", color_bright_yellow, color_reset);
+        printf("%sF%s     - Toggle favorite\n", color_bright_yellow, color_reset);
+        printf("%sV%s     - List favorite mixes\n", color_bright_yellow, color_reset);
+        printf("%sL%s     - List available mixes\n", color_bright_yellow, color_reset);
+        printf("%sG%s     - Play random mix in current genre\n", color_bright_yellow, color_reset);
+        printf("%sShift+G%s - Switch to random genre\n", color_bright_yellow, color_reset);
+        printf("%sCtrl+G%s  - Show available genres\n", color_bright_yellow, color_reset);
+        printf("%sSPACE%s  - Load random mix\n", color_bright_yellow, color_reset);
         printf("\n");
-        printf("%s🎨 Visualizer Controls:%s\n", color_magenta, color_reset);
-        printf("%sH     - Toggle this help overlay%s\n", color_cyan, color_reset);
-        printf("%sF11   - Toggle fullscreen mode%s\n", color_blue, color_reset);
-        printf("%sTab   - Cycle through audio devices%s\n", color_yellow, color_reset);
-        printf("%sSPACE  - Load random preset%s\n", color_cyan, color_reset);
-        printf("%s[ / ]  - Previous/Next preset%s\n", color_yellow, color_reset);
-        printf("%sB / J  - Increase/Decrease beat sensitivity%s\n", color_green, color_reset);
-        printf("%sCtrl+Q - Quit application%s\n", color_red, color_reset);
-        printf("%sMouse Wheel - Next/Prev preset%s\n", color_cyan, color_reset);
+        printf("%s🎚️  Audio Controls:%s\n", color_bright_blue, color_reset);
+        printf("%sP%s     - Pause/Resume playback\n", color_bright_green, color_reset);
+        printf("%s↑/↓%s   - Volume up/down\n", color_bright_green, color_reset);
+        printf("%sTab%s   - Cycle through audio devices\n", color_bright_green, color_reset);
         printf("\n");
-        printf("%s🎵 Current Beat Sensitivity: %.1f%s\n", color_yellow, getBeatSensitivity(), color_reset);
+        printf("%s🌈 Visualizer Controls:%s\n", color_bright_magenta, color_reset);
+        printf("%sH%s     - Toggle this help overlay\n", color_bright_cyan, color_reset);
+        printf("%sF11%s   - Toggle fullscreen mode\n", color_bright_cyan, color_reset);
+        printf("%sR%s     - Load random preset\n", color_bright_cyan, color_reset);
+        printf("%s[ / ]%s  - Previous/Next preset\n", color_bright_cyan, color_reset);
+        printf("%sB / J%s  - Increase/Decrease beat sensitivity\n", color_bright_cyan, color_reset);
+        printf("%sMouse Wheel%s - Next/Prev preset\n", color_bright_cyan, color_reset);
+        printf("\n");
+        printf("%s⚙️  Application:%s\n", color_bright_red, color_reset);
+        printf("%sCtrl+Q%s - Quit application\n", color_bright_red, color_reset);
         printf("\n");
         helpShown = true;
     }
@@ -1085,11 +1104,20 @@ void AutoVibezApp::initMixManager()
         // Set initial genre from config
         std::string preferred_genre = config.getPreferredGenre();
         if (!preferred_genre.empty()) {
-            printf("🎼 Setting preferred genre from config: '%s'\n", preferred_genre.c_str());
+            printf("⚙️  Setting preferred genre from config: '%s'\n\n", preferred_genre.c_str());
         } else {
-            printf("🎼 No preferred genre set in config - will use random genres\n");
+            printf("⚙️  No preferred genre set in config - will use random genres\n\n");
         }
         _mixManager->setCurrentGenre(preferred_genre);
+        
+        // Show current audio device
+        int audioDeviceIndex = config.getAudioDeviceIndex();
+        const char* deviceName = SDL_GetAudioDeviceName(audioDeviceIndex, SDL_TRUE);
+        if (deviceName) {
+            printf("🎚️  Using audio device: %s\n\n", deviceName);
+        } else {
+            printf("🎚️  Using audio device: %d\n\n", audioDeviceIndex);
+        }
     }
     
     // Load mix metadata from YAML

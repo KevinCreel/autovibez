@@ -1,5 +1,8 @@
 #include "ui_system.hpp"
+#include "config_manager.hpp"
+#include "setup.hpp"
 #include <iostream>
+#include <filesystem>
 
 // UISystem implementation
 UISystem::UISystem() {
@@ -30,21 +33,58 @@ void UISystem::init(SDL_Window* window) {
         return;
     }
     
-    // Load font
-    font = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16);
+    // Load font using configuration file approach
+    std::string fontPath = getFontPathFromConfig();
+    font = TTF_OpenFont(fontPath.c_str(), 16);
     if (!font) {
-        // Try alternative font paths
-        font = TTF_OpenFont("/usr/share/fonts/TTF/DejaVuSans.ttf", 16);
+        std::cerr << "Failed to load font from config: " << TTF_GetError() << std::endl;
+        std::cerr << "Trying fallback fonts..." << std::endl;
+        
+        // Fallback to system fonts
+        std::vector<std::string> fallbackFonts = {
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/Library/Fonts/Arial.ttf",
+            "C:/Windows/Fonts/arial.ttf"
+        };
+        
+        for (const auto& fallbackPath : fallbackFonts) {
+            font = TTF_OpenFont(fallbackPath.c_str(), 16);
+            if (font) {
+                std::cout << "✅ Loaded fallback font: " << fallbackPath << std::endl;
+                break;
+            }
+        }
+    } else {
+        std::cout << "✅ Loaded font from config: " << fontPath << std::endl;
     }
+    
     if (!font) {
-        font = TTF_OpenFont("/System/Library/Fonts/Helvetica.ttc", 16);
-    }
-    if (!font) {
-        std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+        std::cerr << "Failed to load any font: " << TTF_GetError() << std::endl;
         return;
     }
     
     std::cout << "✅ UI System initialized successfully" << std::endl;
+}
+
+std::string UISystem::getFontPathFromConfig() {
+    // Try to get font path from config file
+    std::string configPath = findConfigFile();
+    if (!configPath.empty()) {
+        try {
+            ConfigFile config(configPath);
+            std::string fontPath = config.getFontPath();
+            if (!fontPath.empty()) {
+                return fontPath;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Warning: Could not read font_path from config: " << e.what() << std::endl;
+        }
+    }
+    
+    // Return default font path if config doesn't specify one
+    return "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
 }
 
 void UISystem::render() {
