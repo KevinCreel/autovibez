@@ -699,7 +699,6 @@ std::string AutoVibezApp::getActivePresetName()
 
 void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void* context)
 {
-    (void)isHardCut; // Parameter not used in current implementation
     auto app = reinterpret_cast<AutoVibezApp*>(context);
     auto presetName = projectm_playlist_item(app->_playlist, index);
     
@@ -1115,13 +1114,15 @@ void AutoVibezApp::initMixManager()
     }
     
     // Load mix metadata from YAML
-    std::string yaml_url = "mixes.yaml";
+    std::string yaml_url;
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
-        std::string mixes_url = config.getMixesUrl();
-        if (!mixes_url.empty()) {
-            yaml_url = mixes_url;
-        }
+        yaml_url = config.getMixesUrl();
+    }
+    
+    if (yaml_url.empty()) {
+        printf("⚠️  No mixes_url configured, skipping mix metadata loading\n");
+        return;
     }
     
     if (!_mixManager->loadMixMetadata(yaml_url)) {

@@ -1,7 +1,6 @@
 # AutoVibez Configuration
 # 
 # Mix Management Settings
-yaml_url = mixes.yaml
 mixes_url = https://pub-af2c65ff0bca4aeaac767cae359e589b.r2.dev/mixes.yaml
 auto_download = true
 cache_size_gb = 5
