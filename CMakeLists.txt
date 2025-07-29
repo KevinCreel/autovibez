@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Set data directory path
 set(DATADIR_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/autovibez")
 
+# Enable testing
+enable_testing()
+
 # Find required packages
 find_package(PkgConfig REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -156,3 +159,127 @@ if(APPLE)
         __APPLE__
     )
 endif() 
+
+# Fetch Google Test
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG release-1.12.1
+)
+FetchContent_MakeAvailable(googletest)
+
+# Create test sources list (exclude main.cpp and ui_system files)
+set(AUTOVIBEZ_TEST_SOURCES
+    src/config_manager.cpp
+    src/config_manager.hpp
+    src/audio_capture.cpp
+    src/audio_capture.hpp
+    src/autovibez_app.cpp
+    src/autovibez_app.hpp
+    src/setup.cpp
+    src/setup.hpp
+    src/loopback.cpp
+    src/loopback.hpp
+    src/opengl.h
+    src/mix_manager.cpp
+    src/mix_manager.hpp
+    src/mix_database.cpp
+    src/mix_database.hpp
+    src/mix_downloader.cpp
+    src/mix_downloader.hpp
+    src/mix_player.cpp
+    src/mix_player.hpp
+    src/mix_metadata.cpp
+    src/mix_metadata.hpp
+    src/mix_display.cpp
+    src/mix_display.hpp
+    src/mp3_analyzer.cpp
+    src/mp3_analyzer.hpp
+    src/simple_ui.cpp
+    src/simple_ui.hpp
+    tests/fixtures/test_fixtures.cpp
+    tests/fixtures/test_fixtures.hpp
+    tests/unit/config_manager_test.cpp
+    tests/unit/mix_metadata_test.cpp
+    tests/unit/mix_database_test.cpp
+    tests/unit/mp3_analyzer_test.cpp
+    tests/integration/mix_manager_test.cpp
+    tests/integration/audio_capture_test.cpp
+    tests/feature/help_system_test.cpp
+    tests/feature/audio_device_test.cpp
+)
+
+# Add test executable
+add_executable(autovibez_tests ${AUTOVIBEZ_TEST_SOURCES})
+
+# Include directories for tests
+target_include_directories(autovibez_tests PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${PROJECTM_INCLUDE_DIRS} 
+    ${GLM_INCLUDE_DIRS} 
+    ${TAGLIB_INCLUDE_DIRS}
+    ${IMGUI_INCLUDE_DIRS}
+)
+
+# Link libraries for tests
+target_link_libraries(autovibez_tests
+    PRIVATE
+    gtest
+    gtest_main
+    gmock
+    gmock_main
+    ${PROJECTM_LIBRARIES}
+    ${GLM_LIBRARIES}
+    SDL2::SDL2
+    SDL2::SDL2main
+    SDL2_mixer::SDL2_mixer
+    OpenGL::GL
+    projectM-4-playlist
+    SQLite::SQLite3
+    yaml-cpp
+    CURL::libcurl
+    ${TAGLIB_LIBRARIES}
+    ${IMGUI_LIBRARIES}
+)
+
+# Set compile definitions for tests
+target_compile_definitions(autovibez_tests PRIVATE DATADIR_PATH="${DATADIR_PATH}")
+
+# Set properties for Windows tests
+if(MSVC)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.16")
+        set_target_properties(autovibez_tests
+            PROPERTIES
+            VS_DPI_AWARE "PerMonitor"
+        )
+    endif()
+    
+    target_compile_definitions(autovibez_tests PRIVATE 
+        _CRT_SECURE_NO_WARNINGS
+        WIN32_LEAN_AND_MEAN
+    )
+    
+    target_link_libraries(autovibez_tests PRIVATE
+        ws2_32
+        winmm
+        ole32
+        oleaut32
+    )
+endif()
+
+# Set properties for macOS tests
+if(APPLE)
+    target_compile_definitions(autovibez_tests PRIVATE
+        __APPLE__
+    )
+endif()
+
+# Register the test with CTest
+add_test(NAME autovibez_tests COMMAND autovibez_tests)
+
+# Set test properties
+set_tests_properties(autovibez_tests PROPERTIES
+    ENVIRONMENT "GTEST_COLOR=1"
+)
