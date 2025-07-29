@@ -41,13 +41,11 @@ int AutoVibezApp::initAudioInput() {
 
 void AutoVibezApp::audioInputCallbackF32(void *userdata, unsigned char *stream, int len) {
     AutoVibezApp *app = static_cast<AutoVibezApp*>(userdata);
-//    printf("\nLEN: %i\n", len);
-//    for (int i = 0; i < 64; i++)
-//        printf("%X ", stream[i]);
+    
     // stream contains float data in native byte order, len is in bytes
     // Convert to float pointer safely
     const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));
-    int numSamples = len / sizeof(float) / 2;  // Divide by 2 to get correct sample count
+    int numSamples = len / sizeof(float) / app->_audioChannelsCount;  // Correct sample count calculation
     
     if (app->_audioChannelsCount == 1)
         projectm_pcm_add_float(app->_projectM, const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
@@ -93,5 +91,6 @@ void AutoVibezApp::beginAudioCapture() {
 void AutoVibezApp::endAudioCapture() {
     SDL_PauseAudioDevice(_audioDeviceId, true);
     SDL_CloseAudioDevice(_audioDeviceId);
+    _audioDeviceId = 0;  // Reset device ID after closing
 }
 

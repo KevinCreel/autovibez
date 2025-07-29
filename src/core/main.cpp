@@ -38,8 +38,8 @@
 #include <filesystem>
 
 static int mainLoop(void *userData) {
-    AutoVibezApp **appRef = static_cast<AutoVibezApp **>(userData);
-    auto app = *appRef;
+    std::unique_ptr<AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibezApp> *>(userData);
+    auto& app = *appRef;
     
 #if UNLOCK_FPS
     auto start = startUnlockedFPSCounter();
@@ -64,7 +64,7 @@ static int mainLoop(void *userData) {
         
         if (app->fakeAudio)
             app->addFakePCM();
-        processLoopbackFrame(app);
+        processLoopbackFrame(app.get());
         
         // Check for auto-play when music ends
         if (app->isMixManagerInitialized()) {
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     
-    AutoVibezApp *app = setupSDLApp();
+    std::unique_ptr<AutoVibezApp> app(setupSDLApp());
     
     int status = mainLoop(&app);
 
@@ -180,8 +180,6 @@ int main(int argc, char *argv[]) {
     if (window) {
         SDL_DestroyWindow(window);
     }
-    
-    delete app;
     
     return status;
 }

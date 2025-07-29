@@ -787,6 +787,11 @@ void AutoVibezApp::cycleAudioDevice()
             ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "🎚️  Switched to audio device: %d", _selectedAudioDeviceIndex);
         }
         
+        // Reopen audio with new device
+        endAudioCapture();
+        _curAudioDevice = _selectedAudioDeviceIndex;
+        _selectedAudioDevice = _selectedAudioDeviceIndex;  // Set both variables
+        initAudioInput();  // Use initAudioInput directly instead of openAudioInput
         beginAudioCapture();
     } else {
         ConsoleOutput::output(ConsoleOutput::Type::WARNING, "🎚️  No audio devices available");

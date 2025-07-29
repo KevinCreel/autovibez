@@ -338,6 +338,17 @@ AutoVibezApp *setupSDLApp() {
     int audioDeviceIndex = 0;
     bool showFps = false;
 
+    // Read config settings before creating the app
+    if (! configFilePath.empty())
+    {
+        // found config file, load it
+        ConfigFile config(configFilePath);
+        
+        // Read config settings (used in app initialization)
+        audioDeviceIndex = config.getAudioDeviceIndex();
+        showFps = config.getShowFps();
+    }
+
     app = new AutoVibezApp(glCtx, presetURL, textureURL, audioDeviceIndex, showFps);
 
     if (! configFilePath.empty())
@@ -363,10 +374,6 @@ AutoVibezApp *setupSDLApp() {
         projectm_set_fps(projectMHandle, config.read<int32_t>("FPS", 60));
 
         app->setFps(config.read<uint32_t>("FPS", 60));
-        
-        // Read new config settings (used in app initialization)
-        int audioDeviceIndex = config.getAudioDeviceIndex();
-        bool showFps = config.getShowFps();
         
         // Handle fullscreen setting
         bool fullscreen = config.read<bool>("fullscreen", false);

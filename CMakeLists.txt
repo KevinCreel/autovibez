@@ -388,6 +388,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/input_validator_test.cpp
     tests/unit/resource_guard_test.cpp
     tests/unit/console_output_test.cpp
+    tests/unit/audio_capture_test.cpp
     
     # Integration tests
     tests/integration/audio_capture_test.cpp
