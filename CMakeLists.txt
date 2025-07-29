@@ -101,52 +101,68 @@ pkg_check_modules(IMGUI REQUIRED imgui)
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/audio)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/data)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/ui)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/platform)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/utils)
 include_directories(${IMGUI_INCLUDE_DIRS})
 
 # Add executable
 add_executable(autovibez
-    src/config_manager.cpp
-    src/config_manager.hpp
-    src/audio_capture.cpp
-    src/audio_capture.hpp
-    src/autovibez_app.cpp
-    src/autovibez_app.hpp
-    src/main.cpp
-    src/setup.cpp
-    src/setup.hpp
-    src/loopback.cpp
-    src/loopback.hpp
-    src/opengl.h
-    src/mix_manager.cpp
-    src/mix_manager.hpp
-    src/mix_database.cpp
-    src/mix_database.hpp
-    src/mix_downloader.cpp
-    src/mix_downloader.hpp
-    src/mix_player.cpp
-    src/mix_player.hpp
-    src/mix_metadata.cpp
-    src/mix_metadata.hpp
-    src/mix_display.cpp
-    src/mix_display.hpp
-    src/mp3_analyzer.cpp
-    src/mp3_analyzer.hpp
-    src/simple_ui.cpp
-    src/simple_ui.hpp
-    # New modular components
-    src/constants.hpp
-    src/config_defaults.hpp
-    src/string_utils.hpp
-    src/path_manager.cpp
-    src/path_manager.hpp
-    src/app_state.cpp
-    src/app_state.hpp
-    src/preset_manager.cpp
-    src/preset_manager.hpp
-    src/audio_manager.cpp
-    src/audio_manager.hpp
-    src/input_handler.cpp
-    src/input_handler.hpp
+    # Core application files
+    src/core/autovibez_app.cpp
+    src/core/autovibez_app.hpp
+    src/core/main.cpp
+    src/core/setup.cpp
+    src/core/setup.hpp
+    
+    # Audio components
+    src/audio/audio_capture.cpp
+    src/audio/audio_capture.hpp
+    src/audio/audio_manager.cpp
+    src/audio/audio_manager.hpp
+    src/audio/loopback.cpp
+    src/audio/loopback.hpp
+    src/audio/mix_player.cpp
+    src/audio/mix_player.hpp
+    src/audio/mp3_analyzer.cpp
+    src/audio/mp3_analyzer.hpp
+    
+    # Data management
+    src/data/config_manager.cpp
+    src/data/config_manager.hpp
+    src/data/mix_database.cpp
+    src/data/mix_database.hpp
+    src/data/mix_display.cpp
+    src/data/mix_display.hpp
+    src/data/mix_downloader.cpp
+    src/data/mix_downloader.hpp
+    src/data/mix_manager.cpp
+    src/data/mix_manager.hpp
+    src/data/mix_metadata.cpp
+    src/data/mix_metadata.hpp
+    
+    # User interface
+    src/ui/app_state.cpp
+    src/ui/app_state.hpp
+    src/ui/input_handler.cpp
+    src/ui/input_handler.hpp
+    src/ui/preset_manager.cpp
+    src/ui/preset_manager.hpp
+    src/ui/simple_ui.cpp
+    src/ui/simple_ui.hpp
+    
+    # Platform-specific utilities
+    src/platform/opengl.h
+    src/platform/path_manager.cpp
+    src/platform/path_manager.hpp
+    
+    # General utilities
+    src/utils/config_defaults.hpp
+    src/utils/constants.hpp
+    src/utils/string_utils.hpp
 )
 
 # Link libraries
@@ -291,57 +307,75 @@ FetchContent_MakeAvailable(googletest)
 
 # Create test sources list (exclude main.cpp and ui_system files)
 set(AUTOVIBEZ_TEST_SOURCES
-    src/config_manager.cpp
-    src/config_manager.hpp
-    src/audio_capture.cpp
-    src/audio_capture.hpp
-    src/autovibez_app.cpp
-    src/autovibez_app.hpp
-    src/setup.cpp
-    src/setup.hpp
-    src/loopback.cpp
-    src/loopback.hpp
-    src/opengl.h
-    src/mix_manager.cpp
-    src/mix_manager.hpp
-    src/mix_database.cpp
-    src/mix_database.hpp
-    src/mix_downloader.cpp
-    src/mix_downloader.hpp
-    src/mix_player.cpp
-    src/mix_player.hpp
-    src/mix_metadata.cpp
-    src/mix_metadata.hpp
-    src/mix_display.cpp
-    src/mix_display.hpp
-    src/mp3_analyzer.cpp
-    src/mp3_analyzer.hpp
-    src/simple_ui.cpp
-    src/simple_ui.hpp
-    # New modular components
-    src/constants.hpp
-    src/config_defaults.hpp
-    src/string_utils.hpp
-    src/path_manager.cpp
-    src/path_manager.hpp
-    src/app_state.cpp
-    src/app_state.hpp
-    src/preset_manager.cpp
-    src/preset_manager.hpp
-    src/audio_manager.cpp
-    src/audio_manager.hpp
-    src/input_handler.cpp
-    src/input_handler.hpp
+    # Core application files
+    src/core/autovibez_app.cpp
+    src/core/autovibez_app.hpp
+    src/core/setup.cpp
+    src/core/setup.hpp
+    
+    # Audio components
+    src/audio/audio_capture.cpp
+    src/audio/audio_capture.hpp
+    src/audio/audio_manager.cpp
+    src/audio/audio_manager.hpp
+    src/audio/loopback.cpp
+    src/audio/loopback.hpp
+    src/audio/mix_player.cpp
+    src/audio/mix_player.hpp
+    src/audio/mp3_analyzer.cpp
+    src/audio/mp3_analyzer.hpp
+    
+    # Data management
+    src/data/config_manager.cpp
+    src/data/config_manager.hpp
+    src/data/mix_database.cpp
+    src/data/mix_database.hpp
+    src/data/mix_downloader.cpp
+    src/data/mix_downloader.hpp
+    src/data/mix_manager.cpp
+    src/data/mix_manager.hpp
+    src/data/mix_metadata.cpp
+    src/data/mix_metadata.hpp
+    src/data/mix_display.cpp
+    src/data/mix_display.hpp
+    
+    # User interface
+    src/ui/app_state.cpp
+    src/ui/app_state.hpp
+    src/ui/preset_manager.cpp
+    src/ui/preset_manager.hpp
+    src/ui/simple_ui.cpp
+    src/ui/simple_ui.hpp
+    src/ui/input_handler.cpp
+    src/ui/input_handler.hpp
+    
+    # Platform-specific utilities
+    src/platform/opengl.h
+    src/platform/path_manager.cpp
+    src/platform/path_manager.hpp
+    
+    # General utilities
+    src/utils/constants.hpp
+    src/utils/config_defaults.hpp
+    src/utils/string_utils.hpp
+    
+    # Test fixtures
     tests/fixtures/test_fixtures.cpp
     tests/fixtures/test_fixtures.hpp
+    
+    # Unit tests
     tests/unit/config_manager_test.cpp
     tests/unit/mix_metadata_test.cpp
     tests/unit/mix_database_test.cpp
     tests/unit/mp3_analyzer_test.cpp
     tests/unit/mix_player_test.cpp
     tests/unit/path_manager_test.cpp
+    
+    # Integration tests
     tests/integration/mix_manager_test.cpp
     tests/integration/audio_capture_test.cpp
+    
+    # Feature tests
     tests/feature/help_system_test.cpp
     tests/feature/audio_device_test.cpp
 )
