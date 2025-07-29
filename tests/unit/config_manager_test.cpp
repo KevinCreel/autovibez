@@ -24,8 +24,8 @@ TEST_F(ConfigManagerTest, ConstructorWithValidFile) {
     // Create a test config file
     std::string config_content = R"(
 audio_device = 2
-preset_path = /usr/share/autovibez/presets
-texture_path = /usr/share/autovibez/textures
+preset_path = assets/presets
+texture_path = assets/textures
 mixes_url = https://example.com/mixes.yaml
 cache_size_mb = 200
 auto_download = true
@@ -35,7 +35,7 @@ crossfade_enabled = true
 crossfade_duration = 5
 refresh_interval = 60
 preferred_genre = House
-font_path = /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+font_path = assets/fonts/DejaVuSans.ttf
 show_fps = true
 mesh_x = 64
 mesh_y = 48
@@ -51,8 +51,8 @@ fps = 30
         
         // Test reading values
         EXPECT_EQ(config.read<int>("audio_device"), 2);
-        EXPECT_EQ(config.read<std::string>("preset_path"), "/usr/share/autovibez/presets");
-        EXPECT_EQ(config.read<std::string>("texture_path"), "/usr/share/autovibez/textures");
+        EXPECT_EQ(config.read<std::string>("preset_path"), "assets/presets");
+        EXPECT_EQ(config.read<std::string>("texture_path"), "assets/textures");
         EXPECT_EQ(config.read<std::string>("mixes_url"), "https://example.com/mixes.yaml");
         EXPECT_EQ(config.read<int>("cache_size_mb"), 200);
         EXPECT_EQ(config.read<bool>("auto_download"), true);
@@ -62,7 +62,7 @@ fps = 30
         EXPECT_EQ(config.read<int>("crossfade_duration"), 5);
         EXPECT_EQ(config.read<int>("refresh_interval"), 60);
         EXPECT_EQ(config.read<std::string>("preferred_genre"), "House");
-        EXPECT_EQ(config.read<std::string>("font_path"), "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+        EXPECT_EQ(config.read<std::string>("font_path"), "assets/fonts/DejaVuSans.ttf");
         EXPECT_EQ(config.read<bool>("show_fps"), true);
         EXPECT_EQ(config.read<int>("mesh_x"), 64);
         EXPECT_EQ(config.read<int>("mesh_y"), 48);

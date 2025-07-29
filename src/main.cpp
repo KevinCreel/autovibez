@@ -34,6 +34,7 @@
 #include "autovibez_app.hpp"
 #include "mix_manager.hpp"
 #include "mix_display.hpp"
+#include "path_manager.hpp"
 #include <filesystem>
 
 static int mainLoop(void *userData) {
@@ -112,17 +113,21 @@ void testMixManager() {
     MixDownloader downloader("./test_cache");
     printf("✅ Downloader initialization: Working\n");
     
-    // Test cache management
-    std::filesystem::create_directories("./test_cache");
-    size_t cache_size = 0;
-    if (std::filesystem::exists("./test_cache")) {
-        for (const auto& entry : std::filesystem::recursive_directory_iterator("./test_cache")) {
+    // Create test cache directory
+    std::string test_cache_dir = PathManager::getCacheDirectory() + "/test_cache";
+    std::filesystem::create_directories(test_cache_dir);
+    
+    if (std::filesystem::exists(test_cache_dir)) {
+        size_t cache_size = 0;
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(test_cache_dir)) {
             if (entry.is_regular_file()) {
                 cache_size += entry.file_size();
             }
         }
+        printf("✅ Cache management: Working (%zu bytes)\n", cache_size);
+    } else {
+        printf("❌ Cache directory not found: %s\n", test_cache_dir.c_str());
     }
-    printf("✅ Cache management: Working (%zu bytes)\n", cache_size);
     
     // Test YAML parsing
     printf("\n📋 Testing YAML parsing:\n");

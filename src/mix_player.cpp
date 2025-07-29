@@ -62,16 +62,15 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
     
     if (!_verbose) {
 #ifndef _WIN32
-        // On Unix-like systems, redirect stderr to /dev/null
-        original_stderr_file = freopen("/dev/null", "w", stderr);
-        if (!original_stderr_file) {
-            // Fallback to stream redirection
-            null_stream.open("/dev/null");
-            if (null_stream.is_open()) {
-                original_stderr = std::cerr.rdbuf();
-                std::cerr.rdbuf(null_stream.rdbuf());
-            }
+    // On Unix-like systems, redirect stderr to /dev/null
+    original_stderr_file = freopen("/dev/null", "w", stderr);
+    if (!original_stderr_file) {
+        // If freopen fails, try using a null stream
+        null_stream.open("/dev/null");
+        if (!null_stream.is_open()) {
+            // Last resort: just proceed without redirecting
         }
+    }
 #endif
     }
     
@@ -81,13 +80,8 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
     // Restore stderr
     if (!_verbose) {
 #ifndef _WIN32
-        if (original_stderr_file) {
-            if (freopen("/dev/stderr", "w", stderr) == nullptr) {
-                // Handle freopen failure if needed
-            }
-        } else if (original_stderr) {
-            std::cerr.rdbuf(original_stderr);
-            null_stream.close();
+        if (freopen("/dev/stderr", "w", stderr) == nullptr) {
+            // If restoration fails, just continue
         }
 #endif
     }

@@ -83,26 +83,18 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     
     if (!_verbose) {
 #ifdef _WIN32
-        // On Windows, we can't easily redirect stderr, so we'll just proceed
+    // On Windows, we can't easily redirect stderr, so we'll just proceed
+    // without redirecting (the library will handle its own output)
 #else
-        // On Unix-like systems, redirect stderr to /dev/null using freopen
-        original_stderr_file = freopen("/dev/null", "w", stderr);
-        if (!original_stderr_file) {
-            // Fallback to stream redirection
-            null_stream.open("/dev/null");
-            if (null_stream.is_open()) {
-                original_stderr = std::cerr.rdbuf();
-                std::cerr.rdbuf(null_stream.rdbuf());
-            }
+    // On Unix-like systems, redirect stderr to /dev/null using freopen
+    original_stderr_file = freopen("/dev/null", "w", stderr);
+    if (!original_stderr_file) {
+        // If freopen fails, try using a null stream
+        null_stream.open("/dev/null");
+        if (!null_stream.is_open()) {
+            // Last resort: just proceed without redirecting
         }
-        if (!original_stderr_file) {
-            // Fallback to stream redirection
-            null_stream.open("/dev/null");
-            if (null_stream.is_open()) {
-                original_stderr = std::cerr.rdbuf();
-                std::cerr.rdbuf(null_stream.rdbuf());
-            }
-        }
+    }
 #endif
     }
     
@@ -206,14 +198,16 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     }
     
     // Restore stderr
-    if (!_verbose) {
-        if (original_stderr_file) {
-            freopen("/dev/stderr", "w", stderr);
-        } else if (original_stderr) {
-            std::cerr.rdbuf(original_stderr);
-            null_stream.close();
-        }
+#ifdef _WIN32
+    // On Windows, we don't need to restore stderr since we didn't redirect it
+#else
+    if (original_stderr_file) {
+        freopen("/dev/stderr", "w", stderr);
+    } else if (null_stream.is_open()) {
+        std::cerr.rdbuf(original_stderr);
+        null_stream.close();
     }
+#endif
     
     return metadata;
 } 

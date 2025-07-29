@@ -212,17 +212,27 @@ std::string PathManager::getTexturesDirectory() {
 std::vector<std::string> PathManager::getConfigFileSearchPaths() {
     std::vector<std::string> paths;
     
-    // 1. Environment variable
+    // 1. Environment variable override
     const char* config_env = std::getenv("AUTOVIBEZ_CONFIG");
     if (config_env) {
-        paths.push_back(std::string(config_env));
+        paths.push_back(config_env);
     }
     
     // 2. XDG config directory
     paths.push_back(getConfigDirectory() + "/config.inp");
     
-    // 3. System-wide default
-    paths.push_back("/usr/local/share/autovibez/config.inp");
+    // 3. Platform-specific system-wide fallback
+    if (isWindows()) {
+        // Windows: Use system-wide installation if available
+        paths.push_back("C:/ProgramData/autovibez/config.inp");
+    } else if (isMacOS()) {
+        // macOS: Use system-wide installation if available
+        paths.push_back("/Library/Application Support/autovibez/config.inp");
+    } else {
+        // Linux/Unix: Use system-wide installation if available
+        paths.push_back("/usr/local/share/autovibez/config.inp");
+        paths.push_back("/usr/share/autovibez/config.inp");
+    }
     
     // 4. Local config directory
     paths.push_back(Constants::DEFAULT_CONFIG_FILE);
@@ -236,8 +246,18 @@ std::vector<std::string> PathManager::getPresetSearchPaths() {
     // 1. XDG data directory
     paths.push_back(getPresetsDirectory());
     
-    // 2. System-wide presets
-    paths.push_back("/usr/local/share/autovibez/presets");
+    // 2. Platform-specific system-wide fallback
+    if (isWindows()) {
+        // Windows: Use system-wide installation if available
+        paths.push_back("C:/ProgramData/autovibez/presets");
+    } else if (isMacOS()) {
+        // macOS: Use system-wide installation if available
+        paths.push_back("/Library/Application Support/autovibez/presets");
+    } else {
+        // Linux/Unix: Use system-wide installation if available
+        paths.push_back("/usr/local/share/autovibez/presets");
+        paths.push_back("/usr/share/autovibez/presets");
+    }
     
     // 3. Local assets
     paths.push_back(Constants::DEFAULT_PRESET_PATH);
@@ -251,8 +271,18 @@ std::vector<std::string> PathManager::getTextureSearchPaths() {
     // 1. XDG data directory
     paths.push_back(getTexturesDirectory());
     
-    // 2. System-wide textures
-    paths.push_back("/usr/local/share/autovibez/textures");
+    // 2. Platform-specific system-wide fallback
+    if (isWindows()) {
+        // Windows: Use system-wide installation if available
+        paths.push_back("C:/ProgramData/autovibez/textures");
+    } else if (isMacOS()) {
+        // macOS: Use system-wide installation if available
+        paths.push_back("/Library/Application Support/autovibez/textures");
+    } else {
+        // Linux/Unix: Use system-wide installation if available
+        paths.push_back("/usr/local/share/autovibez/textures");
+        paths.push_back("/usr/share/autovibez/textures");
+    }
     
     // 3. Local assets
     paths.push_back(Constants::DEFAULT_TEXTURE_PATH);
@@ -345,9 +375,19 @@ std::vector<std::string> PathManager::getXDGDataDirectories() {
             directories.push_back(dirs_str);
         }
     } else {
-        // Default XDG data directories
-        directories.push_back("/usr/local/share");
-        directories.push_back("/usr/share");
+        // Platform-specific default data directories
+        if (isWindows()) {
+            // Windows: Use ProgramData and Program Files
+            directories.push_back("C:/ProgramData");
+            directories.push_back("C:/Program Files/autovibez");
+        } else if (isMacOS()) {
+            // macOS: Use system-wide Application Support
+            directories.push_back("/Library/Application Support");
+        } else {
+            // Linux/Unix: Use standard system directories
+            directories.push_back("/usr/local/share");
+            directories.push_back("/usr/share");
+        }
     }
     
     return directories;
