@@ -1,5 +1,6 @@
 #include "setup.hpp"
 #include "autovibez_app.hpp"
+using AutoVibez::Core::AutoVibezApp;
 #include "config_manager.hpp"
 #include "console_output.hpp"
 #include <SDL2/SDL.h>
@@ -390,7 +391,7 @@ AutoVibezApp *setupSDLApp() {
     // Get the final window size for the resize call
     int finalWidth, finalHeight;
     SDL_GetWindowSize(win, &finalWidth, &finalHeight);
-    app->resize(finalWidth, finalHeight);
+    app->resizeWindow(finalWidth, finalHeight);
 
     // Create a help menu specific to SDL
     // Note: modKey is currently unused but kept for future help menu implementation
@@ -400,7 +401,7 @@ AutoVibezApp *setupSDLApp() {
     modKey = "CMD";
 #endif
 
-    app->init(win);
+    app->initialize(win);
     
     // Synchronize fullscreen state after window initialization
     app->syncFullscreenState();
@@ -417,7 +418,7 @@ AutoVibezApp *setupSDLApp() {
 
 #if !FAKE_AUDIO && !WASAPI_LOOPBACK
     // get an audio input device
-    if (app->initAudioInput())
+    if (app->initializeAudioInput())
         app->beginAudioCapture();
 #endif
 

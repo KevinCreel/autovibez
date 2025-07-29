@@ -5,6 +5,8 @@
 #include "console_output.hpp"
 #include <iostream>
 
+using AutoVibez::Core::AutoVibezApp;
+
 InputHandler::InputHandler(AutoVibezApp* app)
     : _app(app) {
 }
@@ -134,19 +136,19 @@ void InputHandler::handleMouseClick(int x, int y, int button) {
         // Scale coordinates for ProjectM
         float mousexscale = x / (float)_app->getWidth();
         float mouseyscale = (_app->getHeight() - y) / (float)_app->getHeight();
-        _app->touch(mousexscale, mouseyscale, 0);
+        _app->handleTouch(mousexscale, mouseyscale, 0);
     } else if (button == SDL_BUTTON_RIGHT) {
         // Handle right click
         float mousexscale = x / (float)_app->getWidth();
         float mouseyscale = (_app->getHeight() - y) / (float)_app->getHeight();
-        _app->touchDestroy(mousexscale, mouseyscale);
+        _app->destroyTouch(mousexscale, mouseyscale);
     }
 }
 
 void InputHandler::handleMouseDrag(int x, int y) {
     float mousexscale = x / (float)_app->getWidth();
     float mouseyscale = (_app->getHeight() - y) / (float)_app->getHeight();
-    _app->touchDrag(mousexscale, mouseyscale, 0);
+    _app->handleTouchDrag(mousexscale, mouseyscale, 0);
 }
 
 void InputHandler::handleMouseWheel(int y) {
@@ -160,7 +162,7 @@ void InputHandler::handleMouseWheel(int y) {
 }
 
 void InputHandler::handleWindowResize(int width, int height) {
-    _app->resize(width, height);
+    _app->resizeWindow(width, height);
 }
 
 void InputHandler::handleQuit() {

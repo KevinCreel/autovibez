@@ -1,8 +1,9 @@
 #include "audio_capture.hpp"
 #include "autovibez_app.hpp"
+using AutoVibez::Core::AutoVibezApp;
 
 
-int AutoVibezApp::initAudioInput() {
+int AutoVibezApp::initializeAudioInput() {
     SDL_AudioSpec desired, obtained;
 
     // Initialize SDL audio
@@ -70,7 +71,7 @@ int AutoVibezApp::toggleAudioInput()
     {
         this->fakeAudio = true;
         this->endAudioCapture();
-        if (this->initAudioInput())
+        if (this->initializeAudioInput())
         {
             this->beginAudioCapture();
             return 1;

@@ -46,6 +46,9 @@
 #include <sys/stat.h>
 #endif
 
+namespace AutoVibez {
+namespace Core {
+
 AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath, int audioDeviceIndex, bool showFps)
     : _openGlContext(glCtx)
     , _projectM(projectm_create())
@@ -492,7 +495,7 @@ void AutoVibezApp::addFakePCM()
     projectm_pcm_add_int16(_projectM, pcm_data.data(), 512, PROJECTM_STEREO);
 }
 
-void AutoVibezApp::resize(unsigned int width_, unsigned int height_)
+void AutoVibezApp::resizeWindow(unsigned int width_, unsigned int height_)
 {
     _width = width_;
     _height = height_;
@@ -507,113 +510,113 @@ void AutoVibezApp::resize(unsigned int width_, unsigned int height_)
     projectm_set_window_size(_projectM, _width, _height);
 }
 
-void AutoVibezApp::pollEvent()
-{
+// --- Refactored pollEvents ---
+void AutoVibezApp::pollEvents() {
     SDL_Event evt;
-
-    int mousex = 0;
-    float mousexscale = 0;
-    int mousey = 0;
-    float mouseyscale = 0;
-    int mousepressure = 0;
-    while (SDL_PollEvent(&evt))
-    {
-        switch (evt.type)
-        {
+    while (SDL_PollEvent(&evt)) {
+        switch (evt.type) {
             case SDL_WINDOWEVENT:
-                int h, w;
-                SDL_GL_GetDrawableSize(_sdlWindow, &w, &h);
-                switch (evt.window.event)
-                {
-                    case SDL_WINDOWEVENT_RESIZED:
-                        resize(w, h);
-                        break;
-                    case SDL_WINDOWEVENT_SIZE_CHANGED:
-                        resize(w, h);
-                        break;
-                }
+                handleWindowEvent(evt);
                 break;
             case SDL_MOUSEWHEEL:
-                scrollHandler(&evt);
+                handleMouseWheelEvent(evt);
                 break;
-
             case SDL_KEYDOWN:
-                keyHandler(&evt);
+                handleKeyDownEvent(evt);
                 break;
-                
             case SDL_KEYUP:
-                // Handle volume key release
-                if (_volumeKeyPressed && (evt.key.keysym.sym == SDLK_UP || evt.key.keysym.sym == SDLK_DOWN)) {
-                                ConsoleOutput::output("🔊 Volume: %d%%", _mixManager->getVolume());
-                    _volumeKeyPressed = false;
-                }
+                handleKeyUpEvent(evt);
                 break;
-
             case SDL_MOUSEBUTTONDOWN:
-                if (evt.button.button == SDL_BUTTON_LEFT)
-                {
-                    // if it's the first mouse down event (since mouse up or since SDL was launched)
-                    if (!mouseDown)
-                    {
-                        // Get mouse coorindates when you click.
-                        SDL_GetMouseState(&mousex, &mousey);
-                        // Scale those coordinates. libProjectM supports a scale of 0.1 instead of absolute pixel coordinates.
-                        mousexscale = (mousex / (float) _width);
-                        mouseyscale = ((_height - mousey) / (float) _height);
-                        // Touch. By not supplying a touch type, we will default to random.
-                        touch(mousexscale, mouseyscale, mousepressure);
-                        mouseDown = true;
-                    }
-                }
-                else if (evt.button.button == SDL_BUTTON_RIGHT)
-                {
-                    mouseDown = false;
-
-                    // Keymod = Left or Right Gui or Left Ctrl. This is a shortcut to remove all waveforms.
-                    if (keymod)
-                    {
-                        touchDestroyAll();
-                        keymod = false;
-                        break;
-                    }
-
-                    // Right Click
-                    SDL_GetMouseState(&mousex, &mousey);
-
-                    // Scale those coordinates. libProjectM supports a scale of 0.1 instead of absolute pixel coordinates.
-                    mousexscale = (mousex / (float) _width);
-                    mouseyscale = ((_height - mousey) / (float) _height);
-
-                    // Destroy at the coordinates we clicked.
-                    touchDestroy(mousexscale, mouseyscale);
-                }
+                handleMouseButtonDownEvent(evt);
                 break;
-
             case SDL_MOUSEBUTTONUP:
-                mouseDown = false;
+                handleMouseButtonUpEvent(evt);
                 break;
-
             case SDL_QUIT:
-                done = true;
+                handleQuitEvent(evt);
+                break;
+            default:
                 break;
         }
     }
+    handleMouseDragEvent();
+}
 
-    // Handle dragging your waveform when mouse is down.
-    if (mouseDown)
-    {
-        // Get mouse coordinates when you click.
+// --- Private event handlers ---
+void AutoVibezApp::handleWindowEvent(const SDL_Event& evt) {
+    int w, h;
+    SDL_GL_GetDrawableSize(_sdlWindow, &w, &h);
+    switch (evt.window.event) {
+        case SDL_WINDOWEVENT_RESIZED:
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+            resizeWindow(w, h);
+            break;
+        default:
+            break;
+    }
+}
+
+void AutoVibezApp::handleMouseWheelEvent(const SDL_Event& evt) {
+    scrollHandler(&evt);
+}
+
+void AutoVibezApp::handleKeyDownEvent(const SDL_Event& evt) {
+    keyHandler(const_cast<SDL_Event*>(&evt));
+}
+
+void AutoVibezApp::handleKeyUpEvent(const SDL_Event& evt) {
+    if (_volumeKeyPressed && (evt.key.keysym.sym == SDLK_UP || evt.key.keysym.sym == SDLK_DOWN)) {
+        ConsoleOutput::output("🔊 Volume: %d%%", _mixManager->getVolume());
+        _volumeKeyPressed = false;
+    }
+}
+
+void AutoVibezApp::handleMouseButtonDownEvent(const SDL_Event& evt) {
+    if (evt.button.button == SDL_BUTTON_LEFT) {
+        if (!mouseDown) {
+            int mousex, mousey;
+            SDL_GetMouseState(&mousex, &mousey);
+            float mousexscale = (mousex / (float)_width);
+            float mouseyscale = ((_height - mousey) / (float)_height);
+            handleTouch(mousexscale, mouseyscale, 0);
+            mouseDown = true;
+        }
+    } else if (evt.button.button == SDL_BUTTON_RIGHT) {
+        mouseDown = false;
+        if (keymod) {
+            destroyAllTouches();
+            keymod = false;
+            return;
+        }
+        int mousex, mousey;
         SDL_GetMouseState(&mousex, &mousey);
-        // Scale those coordinates. libProjectM supports a scale of 0.1 instead of absolute pixel coordinates.
-        mousexscale = (mousex / (float) _width);
-        mouseyscale = ((_height - mousey) / (float) _height);
-        // Drag Touch.
-        touchDrag(mousexscale, mouseyscale, mousepressure);
+        float mousexscale = (mousex / (float)_width);
+        float mouseyscale = ((_height - mousey) / (float)_height);
+        destroyTouch(mousexscale, mouseyscale);
+    }
+}
+
+void AutoVibezApp::handleMouseButtonUpEvent(const SDL_Event& evt) {
+    mouseDown = false;
+}
+
+void AutoVibezApp::handleQuitEvent(const SDL_Event&) {
+    done = true;
+}
+
+void AutoVibezApp::handleMouseDragEvent() {
+    if (mouseDown) {
+        int mousex, mousey;
+        SDL_GetMouseState(&mousex, &mousey);
+        float mousexscale = (mousex / (float)_width);
+        float mouseyscale = ((_height - mousey) / (float)_height);
+        handleTouchDrag(mousexscale, mouseyscale, 0);
     }
 }
 
 // This touches the screen to generate a waveform at X / Y.
-void AutoVibezApp::touch(float x, float y, int pressure, int touchtype)
+void AutoVibezApp::handleTouch(float x, float y, int pressure, int touchtype)
 {
 #ifdef PROJECTM_TOUCH_ENABLED
     projectm_touch(_projectM, x, y, pressure, static_cast<projectm_touch_type>(touchtype));
@@ -623,19 +626,19 @@ void AutoVibezApp::touch(float x, float y, int pressure, int touchtype)
 }
 
 // This moves the X Y of your existing waveform that was generated by a touch (only if you held down your click and dragged your mouse around).
-void AutoVibezApp::touchDrag(float x, float y, int pressure)
+void AutoVibezApp::handleTouchDrag(float x, float y, int pressure)
 {
     projectm_touch_drag(_projectM, x, y, pressure);
 }
 
 // Remove waveform at X Y
-void AutoVibezApp::touchDestroy(float x, float y)
+void AutoVibezApp::destroyTouch(float x, float y)
 {
     projectm_touch_destroy(_projectM, x, y);
 }
 
 // Remove all waveforms
-void AutoVibezApp::touchDestroyAll()
+void AutoVibezApp::destroyAllTouches()
 {
     projectm_touch_destroy_all(_projectM);
 }
@@ -656,7 +659,7 @@ void AutoVibezApp::renderFrame()
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
-void AutoVibezApp::init(SDL_Window* window, const bool _renderToTexture)
+void AutoVibezApp::initialize(SDL_Window* window, const bool _renderToTexture)
 {
     (void)_renderToTexture; // Parameter not used in current implementation
     _sdlWindow = window;
@@ -791,7 +794,7 @@ void AutoVibezApp::cycleAudioDevice()
         endAudioCapture();
         _curAudioDevice = _selectedAudioDeviceIndex;
         _selectedAudioDevice = _selectedAudioDeviceIndex;  // Set both variables
-        initAudioInput();  // Use initAudioInput directly instead of openAudioInput
+        initializeAudioInput();  // Use initializeAudioInput directly instead of openAudioInput
         beginAudioCapture();
     } else {
         ConsoleOutput::output("🎚️  No audio devices available");
@@ -1365,5 +1368,5 @@ void AutoVibezApp::checkAndAutoPlayNext() {
     }
 }
 
-
-
+} // namespace Core
+} // namespace AutoVibez

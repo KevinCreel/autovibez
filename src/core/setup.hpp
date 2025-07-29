@@ -5,7 +5,7 @@
 
 #include <string>
 
-class AutoVibezApp;
+namespace AutoVibez { namespace Core { class AutoVibezApp; } }
 
 void debugGL(GLenum source,
                GLenum type,
@@ -23,8 +23,8 @@ void initGL();
 void dumpOpenGLInfo();
 void initStereoscopicView(SDL_Window *win);
 void enableGLDebugOutput();
-void testAllPresets(AutoVibezApp *app);
-AutoVibezApp *setupSDLApp();
+void testAllPresets(AutoVibez::Core::AutoVibezApp *app);
+AutoVibez::Core::AutoVibezApp *setupSDLApp();
 int64_t startUnlockedFPSCounter();
 void advanceUnlockedFPSCounterFrame(int64_t startFrame);
 

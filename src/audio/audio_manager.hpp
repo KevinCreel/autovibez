@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
-class AutoVibezApp; // Forward declaration
+namespace AutoVibez { namespace Core { class AutoVibezApp; } }
 
 class AudioManager {
 public:
-    explicit AudioManager(AutoVibezApp* app);
+    explicit AudioManager(AutoVibez::Core::AutoVibezApp* app);
     
     /**
      * Initialize audio system
@@ -76,7 +76,7 @@ public:
     unsigned short getChannelsCount() const;
     
 private:
-    AutoVibezApp* _app;
+    AutoVibez::Core::AutoVibezApp* _app;
     int _currentDevice{0};
     int _deviceCount{0};
     SDL_AudioDeviceID _deviceId{0};

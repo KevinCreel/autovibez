@@ -3,11 +3,11 @@
 #include <SDL2/SDL.h>
 #include <functional>
 
-class AutoVibezApp; // Forward declaration
+namespace AutoVibez { namespace Core { class AutoVibezApp; } }
 
 class InputHandler {
 public:
-    explicit InputHandler(AutoVibezApp* app);
+    explicit InputHandler(AutoVibez::Core::AutoVibezApp* app);
     
     /**
      * Handle key press events
@@ -30,7 +30,7 @@ public:
     void processEvents();
     
 private:
-    AutoVibezApp* _app;
+    AutoVibez::Core::AutoVibezApp* _app;
     
     /**
      * Handle keyboard input

@@ -1,5 +1,6 @@
 #include "audio_manager.hpp"
 #include "autovibez_app.hpp"
+using AutoVibez::Core::AutoVibezApp;
 #include "constants.hpp"
 #include <iostream>
 #include "console_output.hpp"

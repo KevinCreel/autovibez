@@ -109,6 +109,9 @@
 // built with autotools.
 
 
+namespace AutoVibez {
+namespace Core {
+
 class AutoVibezApp
 {
 
@@ -117,23 +120,23 @@ public:
 
     ~AutoVibezApp();
 
-    void init(SDL_Window* window, const bool renderToTexture = false);
+    void initialize(SDL_Window* window, const bool renderToTexture = false);
 
     int toggleAudioInput();
-    int initAudioInput();
+    int initializeAudioInput();
     void beginAudioCapture();
     void endAudioCapture();
     void stretchMonitors();
     void nextMonitor();
     void toggleFullScreen();
     void syncFullscreenState(); // Synchronize _isFullScreen with actual SDL state
-    void resize(unsigned int width, unsigned int height);
-    void touch(float x, float y, int pressure, int touchtype = 0);
-    void touchDrag(float x, float y, int pressure);
-    void touchDestroy(float x, float y);
-    void touchDestroyAll();
+    void resizeWindow(unsigned int width, unsigned int height);
+    void handleTouch(float x, float y, int pressure, int touchtype = 0);
+    void handleTouchDrag(float x, float y, int pressure);
+    void destroyTouch(float x, float y);
+    void destroyAllTouches();
     void renderFrame();
-    void pollEvent();
+    void pollEvents();
     bool keymod = false;
     std::string getActivePresetName();
     void addFakePCM();
@@ -247,4 +250,19 @@ private:
     std::future<void> _backgroundTask;
     std::mutex _mixManagerMutex;
     std::atomic<bool> _backgroundTaskRunning{false};
+
+    void handleWindowEvent(const SDL_Event& evt);
+    void handleMouseWheelEvent(const SDL_Event& evt);
+    void handleKeyDownEvent(const SDL_Event& evt);
+    void handleKeyUpEvent(const SDL_Event& evt);
+    void handleMouseButtonDownEvent(const SDL_Event& evt);
+    void handleMouseButtonUpEvent(const SDL_Event& evt);
+    void handleQuitEvent(const SDL_Event& evt);
+    void handleMouseDragEvent();
+    void handleVolumeKey(SDL_Keycode key);
+    void handleMixKey(SDL_Keycode key, SDL_Event* evt);
+    void handleHelpKey();
 };
+
+} // namespace Core
+} // namespace AutoVibez

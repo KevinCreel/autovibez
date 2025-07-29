@@ -32,15 +32,16 @@
  */
 
 #include "autovibez_app.hpp"
+using AutoVibez::Core::AutoVibezApp;
 #include "mix_manager.hpp"
 #include "mix_display.hpp"
 #include "path_manager.hpp"
 #include "console_output.hpp"
 #include <filesystem>
 
-static int mainLoop(void *userData) {
-    std::unique_ptr<AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibezApp> *>(userData);
-    auto& app = *appRef;
+static int mainLoop(void* userData) {
+    std::unique_ptr<AutoVibez::Core::AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp> *>(userData);
+    AutoVibez::Core::AutoVibezApp *app = appRef->get();
     
 #if UNLOCK_FPS
     auto start = startUnlockedFPSCounter();
@@ -65,7 +66,7 @@ static int mainLoop(void *userData) {
         
         if (app->fakeAudio)
             app->addFakePCM();
-        processLoopbackFrame(app.get());
+        processLoopbackFrame(app);
         
         // Check for auto-play when music ends
         if (app->isMixManagerInitialized()) {
@@ -84,7 +85,7 @@ static int mainLoop(void *userData) {
 #if UNLOCK_FPS
         advanceUnlockedFPSCounterFrame(start);
 #else
-        app->pollEvent();
+        app->pollEvents();
         Uint32 elapsed = SDL_GetTicks() - last_time;
         if (elapsed < frame_delay)
             SDL_Delay(frame_delay - elapsed);
@@ -162,14 +163,14 @@ void testMixManager() {
     ConsoleOutput::output("🚀 Ready for Phase 3: Keyboard Controls Integration!");
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     // Check for test mode
     if (argc > 1 && std::string(argv[1]) == "--test-mix") {
         testMixManager();
         return 0;
     }
     
-    std::unique_ptr<AutoVibezApp> app(setupSDLApp());
+    std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
     
     int status = mainLoop(&app);
 

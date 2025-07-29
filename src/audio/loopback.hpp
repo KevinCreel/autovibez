@@ -5,11 +5,11 @@
 
 #include "autovibez_app.hpp"
 
-class AutoVibezApp;
+namespace AutoVibez { namespace Core { class AutoVibezApp; } }
 
 bool initLoopback();
-void configureLoopback(AutoVibezApp *app);
-bool processLoopbackFrame(AutoVibezApp *app);
+void configureLoopback(AutoVibez::Core::AutoVibezApp *app);
+bool processLoopbackFrame(AutoVibez::Core::AutoVibezApp *app);
 bool cleanupLoopback();
 
 #endif /* loopback_hpp */
