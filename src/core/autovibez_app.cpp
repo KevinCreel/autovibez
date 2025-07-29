@@ -70,6 +70,13 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     projectm_playlist_set_preset_switched_event_callback(_playlist, &AutoVibezApp::presetSwitchedEvent, static_cast<void*>(this));
     projectm_playlist_add_path(_playlist, presetPath.c_str(), true, false);
     
+    // Initialize PresetManager
+    _presetManager = std::make_unique<PresetManager>(_playlist);
+    
+    // Load a random preset on startup
+    if (_presetManager) {
+        _presetManager->randomPreset();
+    }
 }
 
 AutoVibezApp::~AutoVibezApp()
