@@ -23,9 +23,14 @@ pkg_check_modules(TAGLIB REQUIRED taglib)
 pkg_check_modules(PROJECTM REQUIRED libprojectM-4)
 pkg_check_modules(GLM REQUIRED glm)
 
+# Find ImGui
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(IMGUI REQUIRED imgui)
+
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${IMGUI_INCLUDE_DIRS})
 
 # Add executable
 add_executable(autovibez
@@ -55,6 +60,8 @@ add_executable(autovibez
     src/mix_display.hpp
     src/mp3_analyzer.cpp
     src/mp3_analyzer.hpp
+    src/simple_ui.cpp
+    src/simple_ui.hpp
 )
 
 # Link libraries
@@ -69,8 +76,9 @@ target_link_libraries(autovibez
     projectM-4-playlist
     SQLite::SQLite3
     yaml-cpp
+    CURL::libcurl
     ${TAGLIB_LIBRARIES}
-    ${CURL_LIBRARIES}
+    ${IMGUI_LIBRARIES}
 )
 
 # Install executable

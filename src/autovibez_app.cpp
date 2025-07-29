@@ -318,6 +318,10 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
         case SDLK_h:
             // H: toggle help overlay
             toggleHelp();
+            // Also toggle simple UI
+            if (_simpleUI) {
+                _simpleUI->toggle();
+            }
             break;
 
         case SDLK_TAB:
@@ -638,6 +642,7 @@ void AutoVibezApp::renderFrame()
     renderHelpOverlay();
     renderFpsCounter();
     displayMixStatus();
+    renderSimpleUI();
 
     SDL_GL_SwapWindow(_sdlWindow);
 }
@@ -651,7 +656,32 @@ void AutoVibezApp::init(SDL_Window* window, const bool _renderToTexture)
 #ifdef WASAPI_LOOPBACK
     wasapi = true;
 #endif
+
+    // Initialize simple UI
+    _simpleUI = std::make_unique<SimpleUI>();
+    if (_simpleUI) {
+        _simpleUI->init(window, _openGlContext);
+    }
 }
+
+void AutoVibezApp::initSimpleUI() {
+    if (!_simpleUI) {
+        _simpleUI = std::make_unique<SimpleUI>();
+        if (_simpleUI) {
+            _simpleUI->init(_sdlWindow, _openGlContext);
+        }
+    }
+}
+
+void AutoVibezApp::renderSimpleUI() {
+    if (_simpleUI) {
+        _simpleUI->render();
+    }
+}
+
+
+
+
 
 std::string AutoVibezApp::getActivePresetName()
 {

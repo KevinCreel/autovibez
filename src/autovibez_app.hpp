@@ -52,6 +52,7 @@
 #include "mix_manager.hpp"
 #include "mix_display.hpp"
 #include "config_manager.hpp"
+#include "simple_ui.hpp"
 
 #if defined _MSC_VER
 #include <direct.h>
@@ -151,6 +152,10 @@ public:
     
     // Window management
     SDL_Window* getWindow() const { return _sdlWindow; }
+    
+    // Simple UI
+    void initSimpleUI();
+    void renderSimpleUI();
 
     bool done{false};
     bool mouseDown{false};
@@ -191,7 +196,7 @@ private:
     bool _showHelp{false};           //!< Show help overlay
     bool _showFps{false};            //!< Show FPS counter
     int _selectedAudioDeviceIndex{0}; //!< Selected audio device index
-    
+
     // Mix management
     std::unique_ptr<MixManager> _mixManager;
     std::unique_ptr<MixDisplay> _mixUI;
@@ -202,4 +207,7 @@ private:
     bool _mixInfoDisplayed{false};
     bool _volumeKeyPressed{false}; // Track if volume key is being held
     bool _manualPresetChange{false}; // Track if preset change was manual
+    
+    // Simple UI
+    std::unique_ptr<SimpleUI> _simpleUI;
 };
