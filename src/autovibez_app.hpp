@@ -54,6 +54,16 @@
 #include "config_manager.hpp"
 #include "simple_ui.hpp"
 
+// New modular components
+#include "constants.hpp"
+#include "config_defaults.hpp"
+#include "string_utils.hpp"
+#include "path_manager.hpp"
+#include "app_state.hpp"
+#include "preset_manager.hpp"
+#include "audio_manager.hpp"
+#include "input_handler.hpp"
+
 #if defined _MSC_VER
 #include <direct.h>
 #else
@@ -152,10 +162,21 @@ public:
     
     // Window management
     SDL_Window* getWindow() const { return _sdlWindow; }
+    int getWidth() const { return _width; }
+    int getHeight() const { return _height; }
     
     // Simple UI
     void initSimpleUI();
     void renderSimpleUI();
+    
+    // New modular component accessors
+    PresetManager* getPresetManager() { return _presetManager.get(); }
+    AudioManager* getAudioManager() { return _audioManager.get(); }
+    InputHandler* getInputHandler() { return _inputHandler.get(); }
+    AppState* getAppState() { return &_appState; }
+    
+    // Beat sensitivity
+    void setBeatSensitivity(float sensitivity);
 
     bool done{false};
     bool mouseDown{false};
@@ -166,10 +187,11 @@ public:
     SDL_GLContext _openGlContext{nullptr};
     SDL_Window* _sdlWindow{nullptr};
 
-private:
+public:
     static void presetSwitchedEvent(bool isHardCut, uint32_t index, void* context);
-
     static void audioInputCallbackF32(void* userdata, unsigned char* stream, int len);
+
+private:
 
     void UpdateWindowTitle();
 
@@ -210,4 +232,10 @@ private:
     
     // Simple UI
     std::unique_ptr<SimpleUI> _simpleUI;
+    
+    // New modular components
+    std::unique_ptr<PresetManager> _presetManager;
+    std::unique_ptr<AudioManager> _audioManager;
+    std::unique_ptr<InputHandler> _inputHandler;
+    AppState _appState;
 };

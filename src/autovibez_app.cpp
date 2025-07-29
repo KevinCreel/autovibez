@@ -741,6 +741,10 @@ float AutoVibezApp::getBeatSensitivity() const {
     return projectm_get_beat_sensitivity(_projectM);
 }
 
+void AutoVibezApp::setBeatSensitivity(float sensitivity) {
+    projectm_set_beat_sensitivity(_projectM, sensitivity);
+}
+
 void AutoVibezApp::UpdateWindowTitle()
 {
     std::string title = "AutoVibez";

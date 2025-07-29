@@ -65,6 +65,20 @@ add_executable(autovibez
     src/mp3_analyzer.hpp
     src/simple_ui.cpp
     src/simple_ui.hpp
+    # New modular components
+    src/constants.hpp
+    src/config_defaults.hpp
+    src/string_utils.hpp
+    src/path_manager.cpp
+    src/path_manager.hpp
+    src/app_state.cpp
+    src/app_state.hpp
+    src/preset_manager.cpp
+    src/preset_manager.hpp
+    src/audio_manager.cpp
+    src/audio_manager.hpp
+    src/input_handler.cpp
+    src/input_handler.hpp
 )
 
 # Link libraries
