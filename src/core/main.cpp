@@ -35,6 +35,7 @@
 #include "mix_manager.hpp"
 #include "mix_display.hpp"
 #include "path_manager.hpp"
+#include "console_output.hpp"
 #include <filesystem>
 
 static int mainLoop(void *userData) {
@@ -95,23 +96,24 @@ static int mainLoop(void *userData) {
 }
 
 void testMixManager() {
-    printf("🎵 Testing AutoVibez Audio Integration...\n\n");
+    ConsoleOutput::output("🎵 Testing AutoVibez Audio Integration...");
+    ConsoleOutput::output("");
     
     // Test audio components directly
-    printf("🎵 Testing Audio Components:\n");
+    ConsoleOutput::output("🎵 Testing Audio Components:");
     
     // Test MixPlayer initialization
     MixPlayer player;
-    printf("✅ Audio player initialization: Working\n");
+    ConsoleOutput::output("✅ Audio player initialization: Working");
     
     // Test volume control
     if (player.setVolume(80)) {
-        printf("✅ Volume control: Working (80%%)\n");
+        ConsoleOutput::output("✅ Volume control: Working (80%%)");
     }
     
     // Test MixDownloader initialization
     MixDownloader downloader("./test_cache");
-    printf("✅ Downloader initialization: Working\n");
+    ConsoleOutput::output("✅ Downloader initialization: Working");
     
     // Create test cache directory
     std::string test_cache_dir = PathManager::getCacheDirectory() + "/test_cache";
@@ -124,36 +126,40 @@ void testMixManager() {
                 cache_size += entry.file_size();
             }
         }
-        printf("✅ Cache management: Working (%zu bytes)\n", cache_size);
+        ConsoleOutput::output("✅ Cache management: Working (%zu bytes)", cache_size);
     } else {
-        printf("❌ Cache directory not found: %s\n", test_cache_dir.c_str());
+        ConsoleOutput::output("❌ Cache directory not found: %s", test_cache_dir.c_str());
     }
     
     // Test YAML parsing
-    printf("\n📋 Testing YAML parsing:\n");
+    ConsoleOutput::output("");
+    ConsoleOutput::output("📋 Testing YAML parsing:");
     MixMetadata metadata;
     auto mixes = metadata.loadFromYaml("./example_mixes.yaml");
     
     if (metadata.isSuccess()) {
-        printf("✅ YAML parsing: Working perfectly (%zu mixes loaded)\n", mixes.size());
+        ConsoleOutput::output("✅ YAML parsing: Working perfectly (%zu mixes loaded)", mixes.size());
         
         // Test UI display
-        printf("\n🎵 Sample Mix Information:\n");
+        ConsoleOutput::output("");
+        ConsoleOutput::output("🎵 Sample Mix Information:");
         MixDisplay ui;
         if (!mixes.empty()) {
             ui.displayMixInfo(mixes[0]);
         }
     } else {
-        printf("❌ YAML parsing failed: %s\n", metadata.getLastError().c_str());
+        ConsoleOutput::output("❌ YAML parsing failed: %s", metadata.getLastError().c_str());
     }
     
-    printf("\n🎉 Phase 2 Audio Integration Test Results:\n");
-    printf("📋 YAML parsing: ✅ Working\n");
-    printf("🌐 HTTP downloader: ✅ Ready\n");
-    printf("🎵 Audio player: ✅ Ready\n");
-    printf("🎨 UI display: ✅ Working\n");
-    printf("🗄️  Cache management: ✅ Working\n");
-    printf("\n🚀 Ready for Phase 3: Keyboard Controls Integration!\n");
+    ConsoleOutput::output("");
+    ConsoleOutput::output("🎉 Phase 2 Audio Integration Test Results:");
+    ConsoleOutput::output("📋 YAML parsing: ✅ Working");
+    ConsoleOutput::output("🌐 HTTP downloader: ✅ Ready");
+    ConsoleOutput::output("🎵 Audio player: ✅ Ready");
+    ConsoleOutput::output("🎨 UI display: ✅ Working");
+    ConsoleOutput::output("🗄️  Cache management: ✅ Working");
+    ConsoleOutput::output("");
+    ConsoleOutput::output("🚀 Ready for Phase 3: Keyboard Controls Integration!");
 }
 
 int main(int argc, char *argv[]) {

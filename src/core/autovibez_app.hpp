@@ -145,7 +145,7 @@ public:
     // Help and UI
     void toggleHelp();
     void cycleAudioDevice();
-    void renderHelpOverlay();
+    void printHelpMenu();
     void renderFpsCounter();
     
     // Mix management

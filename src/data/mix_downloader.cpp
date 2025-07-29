@@ -1,4 +1,5 @@
 #include "mix_downloader.hpp"
+#include "console_output.hpp"
 #include <curl/curl.h>
 #include <fstream>
 #include <iostream>
@@ -17,7 +18,7 @@ static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
     (void)clientp; (void)ultotal; (void)ulnow; // Parameters not used in current implementation
     if (dltotal > 0) {
         int progress = static_cast<int>((dlnow * 100) / dltotal);
-        printf("\r📥 Downloading: %d%% (%ld/%ld bytes)", progress, dlnow, dltotal);
+        ConsoleOutput::output("\r📥 Downloading: %d%% (%ld/%ld bytes)", progress, dlnow, dltotal);
         fflush(stdout);
     }
     return 0;
@@ -53,11 +54,11 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     // Handle local file URLs
     if (mix.url.substr(0, 7) == "file://") {
         std::string source_path = mix.url.substr(7);
-        printf("📁 Copying local file: %s\n", source_path.c_str());
+        ConsoleOutput::output("📁 Copying local file: %s", source_path.c_str());
         
         try {
             std::filesystem::copy_file(source_path, local_path, std::filesystem::copy_options::overwrite_existing);
-            printf("✅ Local file copied: %s\n", local_path.c_str());
+            ConsoleOutput::output("✅ Local file copied: %s", local_path.c_str());
             return true;
         } catch (const std::exception& e) {
             last_error = "Failed to copy local file: " + std::string(e.what());

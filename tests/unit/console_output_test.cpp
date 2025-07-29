@@ -13,7 +13,7 @@ protected:
         std::cout.rdbuf(test_output->rdbuf());
         
         // Reset console output to default state
-        ConsoleOutput::setColoredOutput(true);
+
     }
     
     void TearDown() override {
@@ -33,7 +33,7 @@ protected:
 };
 
 TEST_F(ConsoleOutputTest, BasicOutput) {
-    ConsoleOutput::output(ConsoleOutput::Type::INFO, "Test message");
+    ConsoleOutput::output("Test message");
     
     std::string output = getOutput();
     
@@ -44,7 +44,7 @@ TEST_F(ConsoleOutputTest, BasicOutput) {
 }
 
 TEST_F(ConsoleOutputTest, FormatStringOutput) {
-    ConsoleOutput::output(ConsoleOutput::Type::SUCCESS, "Formatted: %d + %d = %d", 1, 2, 3);
+    ConsoleOutput::output("Formatted: %d + %d = %d", 1, 2, 3);
     
     std::string output = getOutput();
     EXPECT_NE(output.find("Formatted: 1 + 2 = 3"), std::string::npos);
@@ -52,9 +52,9 @@ TEST_F(ConsoleOutputTest, FormatStringOutput) {
 }
 
 TEST_F(ConsoleOutputTest, DifferentTypes) {
-    ConsoleOutput::output(ConsoleOutput::Type::WARNING, "Warning message");
-    ConsoleOutput::output(ConsoleOutput::Type::ERROR, "Error message");
-    ConsoleOutput::output(ConsoleOutput::Type::PLAYBACK, "Playback message");
+    ConsoleOutput::output("Warning message");
+    ConsoleOutput::output("Error message");
+    ConsoleOutput::output("Playback message");
     
     std::string output = getOutput();
     
@@ -70,25 +70,23 @@ TEST_F(ConsoleOutputTest, DifferentTypes) {
 
 
 TEST_F(ConsoleOutputTest, ColoredOutput) {
-    ConsoleOutput::setColoredOutput(true);
-    ConsoleOutput::output(ConsoleOutput::Type::INFO, "Colored message");
+    ConsoleOutput::output("Colored message");
     
     std::string output = getOutput();
-    EXPECT_NE(output.find("\033["), std::string::npos);
+    EXPECT_NE(output.find("Colored message"), std::string::npos);
 }
 
 TEST_F(ConsoleOutputTest, NonColoredOutput) {
-    ConsoleOutput::setColoredOutput(false);
-    ConsoleOutput::output(ConsoleOutput::Type::INFO, "Non-colored message");
+    ConsoleOutput::output("Non-colored message");
     
     std::string output = getOutput();
-    EXPECT_EQ(output.find("\033["), std::string::npos);
+    EXPECT_NE(output.find("Non-colored message"), std::string::npos);
 }
 
 TEST_F(ConsoleOutputTest, PresetConvenienceMethods) {
-    ConsoleOutput::printNextPreset("Test Preset");
-    ConsoleOutput::printPreviousPreset("Previous Preset");
-    ConsoleOutput::printRandomPreset("Random Preset");
+    ConsoleOutput::output("⏭️  Next preset: %s", "Test Preset");
+    ConsoleOutput::output("⏮️  Previous preset: %s", "Previous Preset");
+    ConsoleOutput::output("🎨 Loaded random preset: %s", "Random Preset");
     
     std::string output = getOutput();
     
@@ -98,8 +96,8 @@ TEST_F(ConsoleOutputTest, PresetConvenienceMethods) {
 }
 
 TEST_F(ConsoleOutputTest, PauseResumeMethods) {
-    ConsoleOutput::printPause();
-    ConsoleOutput::printResume();
+    ConsoleOutput::output("⏸️  Preset paused");
+    ConsoleOutput::output("▶️  Preset resumed");
     
     std::string output = getOutput();
     
@@ -112,7 +110,7 @@ TEST_F(ConsoleOutputTest, ThreadSafety) {
     
     for (int i = 0; i < 5; ++i) {
         threads.emplace_back([i]() {
-            ConsoleOutput::output(ConsoleOutput::Type::INFO, "Thread %d message", i);
+            ConsoleOutput::output("Thread %d message", i);
         });
     }
     
@@ -128,7 +126,7 @@ TEST_F(ConsoleOutputTest, ThreadSafety) {
 }
 
 TEST_F(ConsoleOutputTest, EmptyMessage) {
-    EXPECT_NO_THROW(ConsoleOutput::output(ConsoleOutput::Type::INFO, ""));
+    EXPECT_NO_THROW(ConsoleOutput::output(""));
     
     std::string output = getOutput();
     EXPECT_EQ(output.find("[INFO]"), std::string::npos);
@@ -137,6 +135,5 @@ TEST_F(ConsoleOutputTest, EmptyMessage) {
 
 TEST_F(ConsoleOutputTest, NullFormatString) {
     // Should not crash with null format string
-    EXPECT_NO_THROW(ConsoleOutput::output(ConsoleOutput::Type::INFO, nullptr));
-    EXPECT_NO_THROW(ConsoleOutput::print(nullptr));
+    EXPECT_NO_THROW(ConsoleOutput::output(nullptr));
 } 

@@ -2,6 +2,7 @@
 #include "autovibez_app.hpp"
 #include "constants.hpp"
 #include "string_utils.hpp"
+#include "console_output.hpp"
 #include <iostream>
 
 InputHandler::InputHandler(AutoVibezApp* app)
@@ -220,7 +221,7 @@ void InputHandler::handleBeatSensitivityControls(SDL_Keycode key) {
     }
     
     _app->setBeatSensitivity(newSensitivity);
-    printf("🎵 Beat Sensitivity: %.1f\n", newSensitivity);
+            ConsoleOutput::output("🎵 Beat Sensitivity: %.1f", newSensitivity);
 }
 
 void InputHandler::handlePresetNavigation(SDL_Keycode key) {
@@ -244,13 +245,13 @@ void InputHandler::handleGenreControls(SDL_Keymod mod) {
     if (mod & KMOD_LSHIFT || mod & KMOD_RSHIFT) {
         // Shift+G: Switch to random genre
         std::string newGenre = _app->getMixManager()->getRandomGenre();
-        printf("🎼 Switched to genre: %s\n", newGenre.c_str());
+        ConsoleOutput::output("🎼 Switched to genre: %s", newGenre.c_str());
     } else if (mod & KMOD_LCTRL || mod & KMOD_RCTRL) {
         // Ctrl+G: Show available genres
         auto genres = _app->getMixManager()->getAvailableGenres();
-        printf("🎼 Available genres (%zu):\n", genres.size());
+        ConsoleOutput::output("🎼 Available genres (%zu):", genres.size());
         for (const auto& genre : genres) {
-            printf("  • %s\n", StringUtils::toTitleCase(genre).c_str());
+            ConsoleOutput::output("  • %s", StringUtils::toTitleCase(genre).c_str());
         }
     } else {
         // G: Random mix in current genre

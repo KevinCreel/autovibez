@@ -11,13 +11,13 @@ PresetManager::PresetManager(projectm_playlist_handle playlist)
 void PresetManager::nextPreset() {
     projectm_playlist_play_next(_playlist, true);
     _currentPresetName = getCurrentPresetName();
-    ConsoleOutput::printNextPreset(_currentPresetName);
+    ConsoleOutput::output("⏭️  Next preset: %s", _currentPresetName.c_str());
 }
 
 void PresetManager::previousPreset() {
     projectm_playlist_play_previous(_playlist, true);
     _currentPresetName = getCurrentPresetName();
-    ConsoleOutput::printPreviousPreset(_currentPresetName);
+    ConsoleOutput::output("⏮️  Previous preset: %s", _currentPresetName.c_str());
 }
 
 void PresetManager::randomPreset() {
@@ -30,7 +30,7 @@ void PresetManager::randomPreset() {
         uint32_t random_index = dis(gen);
         projectm_playlist_set_position(_playlist, random_index, true);
         _currentPresetName = getCurrentPresetName();
-        ConsoleOutput::printRandomPreset(_currentPresetName);
+        ConsoleOutput::output("🎨 Loaded random preset: %s", _currentPresetName.c_str());
     }
 }
 
@@ -55,8 +55,8 @@ bool PresetManager::isPlaying() const {
 void PresetManager::togglePause() {
     _isPaused = !_isPaused;
     if (_isPaused) {
-        ConsoleOutput::printPause();
+        ConsoleOutput::output("⏸️  Preset paused");
     } else {
-        ConsoleOutput::printResume();
+        ConsoleOutput::output("▶️  Preset resumed");
     }
 } 

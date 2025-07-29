@@ -1,4 +1,5 @@
 #include "mix_player.hpp"
+#include "console_output.hpp"
 #include <SDL2/SDL_mixer.h>
 #include <iostream>
 #include <filesystem>
@@ -118,12 +119,12 @@ bool MixPlayer::togglePause() {
     
     if (Mix_PausedMusic()) {
         Mix_ResumeMusic();
-        printf("▶️  Resumed playback\n");
-        printf("\n");
+        ConsoleOutput::output("▶️  Resumed playback");
+        ConsoleOutput::output("");
     } else {
         Mix_PauseMusic();
-        printf("⏸️  Paused playback\n");
-        printf("\n");
+        ConsoleOutput::output("⏸️  Paused playback");
+        ConsoleOutput::output("");
     }
     
     return true;
@@ -141,8 +142,8 @@ bool MixPlayer::stop() {
     }
     playing = false;
     current_position = 0;
-    printf("⏹️  Stopped playback\n");
-    printf("\n");
+            ConsoleOutput::output("⏹️  Stopped playback");
+        ConsoleOutput::output("");
     
     return true;
 }
@@ -160,8 +161,8 @@ bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
     
     // Only show volume output if not suppressed
     if (!suppress_output) {
-        printf("🔊 Volume: %d%%\n", volume);
-        printf("\n");
+        ConsoleOutput::output("🔊 Volume: %d%%", volume);
+        ConsoleOutput::output("");
     }
     return true;
 }
@@ -186,8 +187,8 @@ bool MixPlayer::hasFinished() {
             Mix_FreeMusic(current_music);
             current_music = nullptr;
         }
-        printf("🎵 Mix finished\n");
-        printf("\n");
+        ConsoleOutput::output("🎵 Mix finished");
+        ConsoleOutput::output("");
         return true;
     }
     return false;

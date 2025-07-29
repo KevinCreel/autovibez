@@ -1,4 +1,5 @@
 #include "mix_database.hpp"
+#include "console_output.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -158,7 +159,7 @@ bool MixDatabase::updateMix(const Mix& mix) {
         return false;
     }
     
-    printf("✅ Updated mix in database: %s\n", mix.title.c_str());
+            ConsoleOutput::output("✅ Updated mix in database: %s", mix.title.c_str());
     return true;
 }
 

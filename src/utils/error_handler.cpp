@@ -41,16 +41,16 @@ void ErrorHandler::handleError(const Error& error, bool canRecover) {
     Severity severity = getSeverity(error);
     switch (severity) {
         case Severity::INFO:
-            ConsoleOutput::output(ConsoleOutput::Type::INFO, "ℹ️  %s", error.what());
+            ConsoleOutput::output("ℹ️  %s", error.what());
             break;
         case Severity::WARNING:
-            ConsoleOutput::output(ConsoleOutput::Type::WARNING, "⚠️  %s", error.what());
+            ConsoleOutput::output("⚠️  %s", error.what());
             break;
         case Severity::ERROR:
-            ConsoleOutput::output(ConsoleOutput::Type::ERROR, "❌ %s", error.what());
+            ConsoleOutput::output("❌ %s", error.what());
             break;
         case Severity::CRITICAL:
-            ConsoleOutput::output(ConsoleOutput::Type::ERROR, "💥 %s", error.what());
+            ConsoleOutput::output("💥 %s", error.what());
             if (!canRecover) {
                 throw error; // Re-throw critical errors
             }
@@ -62,13 +62,13 @@ void ErrorHandler::handleSystemError(const std::system_error& error) {
     Logger::getInstance().error("System error: %s (code: %d)", 
                                error.what(), error.code().value());
     
-    ConsoleOutput::output(ConsoleOutput::Type::ERROR, "🔧 System error: %s", error.what());
+            ConsoleOutput::output("🔧 System error: %s", error.what());
 }
 
 void ErrorHandler::handleUnknownException(const std::exception& error) {
     Logger::getInstance().error("Unknown exception: %s", error.what());
     
-    ConsoleOutput::output(ConsoleOutput::Type::ERROR, "❓ Unknown error: %s", error.what());
+            ConsoleOutput::output("❓ Unknown error: %s", error.what());
 }
 
 bool ErrorHandler::isRecoverable(const Error& error) {

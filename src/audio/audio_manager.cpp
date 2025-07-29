@@ -29,7 +29,7 @@ void AudioManager::cycleDevice() {
     
     const char* deviceName = SDL_GetAudioDeviceName(_currentDevice, SDL_TRUE);
     if (openDevice(deviceName)) {
-        ConsoleOutput::print("🎤 Switched to audio device: %s\n", getCurrentDeviceName().c_str());
+        ConsoleOutput::output("🎤 Switched to audio device: %s", getCurrentDeviceName().c_str());
     }
 }
 
@@ -88,10 +88,10 @@ bool AudioManager::isCapturing() const {
 void AudioManager::toggleInput() {
     if (_isCapturing) {
         stopCapture();
-        ConsoleOutput::print("🔇 Audio input stopped\n");
+        ConsoleOutput::output("🔇 Audio input stopped");
     } else {
         startCapture();
-        ConsoleOutput::print("🔊 Audio input started\n");
+        ConsoleOutput::output("🔊 Audio input started");
     }
 }
 
