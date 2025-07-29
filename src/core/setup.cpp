@@ -37,7 +37,7 @@ std::string expandTilde(const std::string& path) {
     }
 #endif
     
-    return path; // Can't expand, return as-is
+    return path;
 }
 
 #if OGL_DEBUG
@@ -69,7 +69,6 @@ std::string getConfigFilePath(const std::string& datadir_path) {
         return config_path;
     }
     
-    // If not found, return empty string to indicate no config
     SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Config file not found: %s\n", config_path.c_str());
     return "";
 }
@@ -230,7 +229,6 @@ void enableGLDebugOutput() {
 #endif
 }
 
-// initialize SDL, openGL, config
 AutoVibezApp *setupSDLApp() {
     AutoVibezApp *app;
     seedRand();

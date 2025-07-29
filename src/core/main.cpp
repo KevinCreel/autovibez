@@ -168,6 +168,7 @@ int main(int argc, char *argv[]) {
     int status = mainLoop(&app);
 
     // cleanup
+    cleanupLoopback();  // Add this line to clean up WASAPI resources
     SDL_GL_DeleteContext(app->_openGlContext);
 #if !FAKE_AUDIO
     if (!app->wasapi) // not currently using WASAPI, so we need to endAudioCapture.

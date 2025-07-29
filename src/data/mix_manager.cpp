@@ -61,7 +61,6 @@ bool MixManager::initialize() {
     // Clean up any corrupted files
     cleanupCorruptedFiles();
     
-    // Initialize database
     database = std::make_unique<MixDatabase>(db_path);
     if (!database->initialize()) {
         last_error = "Failed to initialize database: " + database->getLastError();
@@ -69,16 +68,12 @@ bool MixManager::initialize() {
         return false;
     }
     
-    // Initialize metadata parser
     metadata = std::make_unique<MixMetadata>();
     
-    // Initialize downloader
     downloader = std::make_unique<MixDownloader>(cache_dir);
     
-    // Initialize MP3 analyzer
     mp3_analyzer = std::make_unique<MP3Analyzer>();
     
-    // Initialize player
     player = std::make_unique<MixPlayer>();
     
     return true;
@@ -194,7 +189,7 @@ bool MixManager::startCrossfade(const Mix& new_mix, int crossfade_duration_ms) {
     }
     
     // Set new mix volume to 0 initially
-    player->setVolume(0, true); // Suppress output during crossfade
+    player->setVolume(0, true);
     
     return true;
 }
@@ -213,7 +208,7 @@ void MixManager::updateCrossfade() {
         _crossfade_progress = 100;
         
         // Ensure final volumes are correct
-        player->setVolume(_new_volume, true); // Suppress output during crossfade
+        player->setVolume(_new_volume, true);
         
         return;
     }
@@ -685,7 +680,6 @@ void MixManager::setCurrentGenre(const std::string& genre) {
     if (!actual_genre.empty()) {
         _current_genre = actual_genre;
     } else {
-        // If not found, use the original genre as fallback
         _current_genre = genre;
     }
 }

@@ -45,7 +45,6 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    // Test mix manager initialization
     EXPECT_NO_THROW({
         MixManager manager(db_path, cache_dir);
         EXPECT_TRUE(manager.isSuccess());
@@ -70,7 +69,7 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
     // Test loading mixes from YAML
     EXPECT_TRUE(manager.loadMixMetadata(yaml_path));
@@ -96,7 +95,7 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
     // Test syncing mixes to database
     manager.syncMixesWithDatabase(test_mixes);
@@ -122,17 +121,14 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test getting random mix from empty database (valid state)
     Mix random_mix = manager.getRandomMix();
     
-    // Should return empty mix when database is empty (correct behavior)
     EXPECT_TRUE(random_mix.id.empty());
     EXPECT_TRUE(random_mix.title.empty());
     EXPECT_TRUE(random_mix.artist.empty());
     
-    // Test multiple random selections from empty database
     std::set<std::string> selected_ids;
     for (int i = 0; i < 10; ++i) {
         Mix mix = manager.getRandomMix();
@@ -141,7 +137,6 @@ preferred_genre = Electronic
         }
     }
     
-    // Should have no selections from empty database
     EXPECT_EQ(selected_ids.size(), 0);
 }
 
@@ -171,12 +166,10 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test getting smart random mix from empty database (valid state)
     Mix smart_mix = manager.getSmartRandomMix();
     
-    // Should return empty mix when database is empty (correct behavior)
     EXPECT_TRUE(smart_mix.id.empty());
     EXPECT_TRUE(smart_mix.title.empty());
     EXPECT_TRUE(smart_mix.artist.empty());
@@ -199,12 +192,10 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test smart random mix with exclusion from empty database
     Mix smart_mix = manager.getSmartRandomMix("test_mix_0");
     
-    // Should return empty mix when database is empty (correct behavior)
     EXPECT_TRUE(smart_mix.id.empty());
 }
 
@@ -229,12 +220,10 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test smart random mix with preferred genre from empty database
     Mix smart_mix = manager.getSmartRandomMix("", "Electronic");
     
-    // Should return empty mix when database is empty (correct behavior)
     EXPECT_TRUE(smart_mix.id.empty());
 }
 
@@ -255,11 +244,10 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test getting next mix from empty database (valid state)
     Mix next_mix = manager.getNextMix("test_mix_0");
-    EXPECT_TRUE(next_mix.id.empty());  // Should return empty mix when database is empty
+    EXPECT_TRUE(next_mix.id.empty());
     
     next_mix = manager.getNextMix("test_mix_1");
     EXPECT_TRUE(next_mix.id.empty());
@@ -378,7 +366,7 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
     // Test toggling favorite on non-existent mix
     // Note: The current implementation returns true even for non-existent mixes
@@ -408,7 +396,7 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
     // Test updating play stats on non-existent mix
     // Note: The current implementation returns true even for non-existent mixes
@@ -438,12 +426,10 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test getting downloaded mixes from empty database
     std::vector<Mix> downloaded_mixes = manager.getDownloadedMixes();
     
-    // Should return empty vector when database is empty (correct behavior)
     EXPECT_EQ(downloaded_mixes.size(), 0);
 }
 
@@ -464,12 +450,10 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, cache_dir);
-    ASSERT_TRUE(manager.initialize());  // Initialize the manager
+    ASSERT_TRUE(manager.initialize());
     
-    // Test getting favorite mixes from empty database
     std::vector<Mix> favorite_mixes = manager.getFavoriteMixes();
     
-    // Should return empty vector when database is empty (correct behavior)
     EXPECT_EQ(favorite_mixes.size(), 0);
 }
 
@@ -545,21 +529,17 @@ preferred_genre = Electronic
     // Test hasFinished functionality (should be false initially)
     EXPECT_FALSE(manager.hasFinished());
     
-    // Test that we can get mixes from the available mixes
     EXPECT_GT(available_mixes.size(), 0);
     
-    // Test that all available mixes have valid IDs
     for (const auto& mix : available_mixes) {
         EXPECT_FALSE(mix.id.empty());
         EXPECT_FALSE(mix.title.empty());
         EXPECT_FALSE(mix.artist.empty());
     }
     
-    // Test that we can get smart random mixes with exclusions
     if (available_mixes.size() > 1) {
         Mix excluded_mix = available_mixes[0];
         Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
-        // Note: getSmartRandomMix might return empty if database is empty
         // This is expected behavior for testing
     }
 }
@@ -593,21 +573,17 @@ preferred_genre = Electronic
     EXPECT_FALSE(manager.isPaused());
     EXPECT_FALSE(manager.hasFinished());
     
-    // Test that we can get multiple mixes for different scenarios
     EXPECT_GT(available_mixes.size(), 0);
     
-    // Test that all mixes have valid IDs
     for (const auto& mix : available_mixes) {
         EXPECT_FALSE(mix.id.empty());
         EXPECT_FALSE(mix.title.empty());
         EXPECT_FALSE(mix.artist.empty());
     }
     
-    // Test that we can get smart random mixes with exclusions
     if (available_mixes.size() > 1) {
         Mix excluded_mix = available_mixes[0];
         Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
-        // Note: getSmartRandomMix might return empty if database is empty
         // This is expected behavior for testing
     }
 }
@@ -639,21 +615,17 @@ preferred_genre = Electronic
     // Test hasFinished when nothing is playing
     EXPECT_FALSE(manager.hasFinished());
     
-    // Test that we can get mixes for edge cases
     EXPECT_GT(available_mixes.size(), 0);
     
-    // Test that all available mixes have valid data
     for (const auto& mix : available_mixes) {
         EXPECT_FALSE(mix.id.empty());
         EXPECT_FALSE(mix.title.empty());
         EXPECT_FALSE(mix.artist.empty());
     }
     
-    // Test that we can get smart random mixes with exclusions
     if (available_mixes.size() > 1) {
         Mix excluded_mix = available_mixes[0];
         Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
-        // Note: getSmartRandomMix might return empty if database is empty
         // This is expected behavior for testing
     }
 } 

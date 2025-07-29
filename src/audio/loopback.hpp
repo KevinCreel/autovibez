@@ -10,5 +10,6 @@ class AutoVibezApp;
 bool initLoopback();
 void configureLoopback(AutoVibezApp *app);
 bool processLoopbackFrame(AutoVibezApp *app);
+bool cleanupLoopback();
 
 #endif /* loopback_hpp */

@@ -30,6 +30,8 @@
 
 #include "autovibez_app.hpp"
 #include "setup.hpp"
+#include "logger.hpp"
+#include "console_output.hpp"
 
 #include <vector>
 #include <filesystem>
@@ -60,6 +62,14 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
 
 AutoVibezApp::~AutoVibezApp()
 {
+    // Wait for background task to complete if it's running
+    if (_backgroundTaskRunning.load()) {
+        if (_backgroundTask.valid()) {
+            _backgroundTask.wait();
+        }
+        _backgroundTaskRunning.store(false);
+    }
+    
     projectm_playlist_destroy(_playlist);
     _playlist = nullptr;
     projectm_destroy(_projectM);
@@ -173,7 +183,7 @@ void AutoVibezApp::scrollHandler(const SDL_Event* sdl_evt)
         if (last_slash != std::string::npos) {
             preset_name = preset_name.substr(last_slash + 1);
         }
-        printf("⏮️  Previous preset: %s\n", preset_name.c_str());
+        ConsoleOutput::printPreviousPreset(preset_name);
     }
     // handle mouse scroll wheel - down--
     if (sdl_evt->wheel.y < 0)
@@ -185,13 +195,12 @@ void AutoVibezApp::scrollHandler(const SDL_Event* sdl_evt)
         if (last_slash != std::string::npos) {
             preset_name = preset_name.substr(last_slash + 1);
         }
-        printf("⏭️  Next preset: %s\n", preset_name.c_str());
+        ConsoleOutput::printNextPreset(preset_name);
     }
 }
 
 void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 {
-    // Initialize mix manager if not already done
     if (!_mixManagerInitialized) {
         initMixManager();
     }
@@ -294,8 +303,8 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 float newSensitivity = currentSensitivity + 0.1f;
                 if (newSensitivity > 5.0f) newSensitivity = 5.0f; // Cap at 5.0
                 projectm_set_beat_sensitivity(_projectM, newSensitivity);
-                printf("🎵 Beat Sensitivity: %.1f\n", newSensitivity);
-                printf("\n");
+                Logger::getInstance().info("🎵 Beat Sensitivity: %.1f", newSensitivity);
+                Logger::getInstance().info("\n");
             }
             break;
 
@@ -306,8 +315,8 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 float newSensitivity = currentSensitivity - 0.1f;
                 if (newSensitivity < 0.0f) newSensitivity = 0.0f;
                 projectm_set_beat_sensitivity(_projectM, newSensitivity);
-                printf("🎵 Beat Sensitivity: %.1f\n", newSensitivity);
-                printf("\n");
+                Logger::getInstance().info("🎵 Beat Sensitivity: %.1f", newSensitivity);
+                Logger::getInstance().info("\n");
             }
             break;
 
@@ -339,7 +348,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     _currentMix = randomMix;
                     _showMixStatus = true;
                     _mixStatusDisplayTime = 300; // Show for 5 seconds
-                    _mixInfoDisplayed = false; // Reset flag for new mix
+                    _mixInfoDisplayed = false;
                 }
             }
             break;
@@ -356,7 +365,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 if (last_slash != std::string::npos) {
                     preset_name = preset_name.substr(last_slash + 1);
                 }
-                printf("⏮️  Previous preset: %s\n", preset_name.c_str());
+                ConsoleOutput::printPreviousPreset(preset_name);
             }
             break;
             
@@ -370,7 +379,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 if (last_slash != std::string::npos) {
                     preset_name = preset_name.substr(last_slash + 1);
                 }
-                printf("⏭️  Next preset: %s\n", preset_name.c_str());
+                ConsoleOutput::printNextPreset(preset_name);
             }
             break;
             
@@ -381,8 +390,8 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 if (sdl_mod & KMOD_LSHIFT || sdl_mod & KMOD_RSHIFT) {
                     // Shift+G: Switch to random genre
                     std::string newGenre = _mixManager->getRandomGenre();
-                    printf("🎼 Switched to genre: %s\n", newGenre.c_str());
-                    printf("\n");
+                    Logger::getInstance().info("🎼 Switched to genre: %s", newGenre.c_str());
+                    Logger::getInstance().info("\n");
                     
                     // Play a random mix in the new genre
                     Mix genreMix = _mixManager->getRandomMixByGenre(newGenre);
@@ -396,7 +405,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 } else if (sdl_mod & KMOD_LCTRL || sdl_mod & KMOD_RCTRL) {
                     // Ctrl+G: Show available genres
                     auto genres = _mixManager->getAvailableGenres();
-                    printf("🎼 Available genres (%zu):\n", genres.size());
+                    Logger::getInstance().info("🎼 Available genres (%zu):", genres.size());
                     for (const auto& genre : genres) {
                         // Create a local copy for Title Case display only
                         std::string display_genre = genre;
@@ -411,7 +420,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                                 c = std::tolower(c);
                             }
                         }
-                        printf("  • %s\n", display_genre.c_str());
+                        Logger::getInstance().info("  • %s", display_genre.c_str());
                     }
                     // Create a local copy for current genre Title Case display only
                     std::string display_current_genre = _currentMix.genre;
@@ -426,8 +435,8 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                             c = std::tolower(c);
                         }
                     }
-                    printf("🎼 Current genre: %s\n", display_current_genre.c_str());
-                    printf("\n");
+                    Logger::getInstance().info("🎼 Current genre: %s", display_current_genre.c_str());
+                    Logger::getInstance().info("\n");
                 } else {
                     // G: Random mix in current mix's genre
                     if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
@@ -439,12 +448,12 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                             _mixStatusDisplayTime = 300;
                             _mixInfoDisplayed = false;
                         } else {
-                            printf("❌ No other mixes found in genre: %s\n", _currentMix.genre.c_str());
-                            printf("\n");
+                            Logger::getInstance().info("❌ No other mixes found in genre: %s", _currentMix.genre.c_str());
+                            Logger::getInstance().info("\n");
                         }
                     } else {
-                        printf("❌ No mix currently playing or no genre available\n");
-                        printf("\n");
+                        Logger::getInstance().info("❌ No mix currently playing or no genre available");
+                        Logger::getInstance().info("\n");
                     }
                 }
             }
@@ -535,8 +544,7 @@ void AutoVibezApp::pollEvent()
             case SDL_KEYUP:
                 // Handle volume key release
                 if (_volumeKeyPressed && (evt.key.keysym.sym == SDLK_UP || evt.key.keysym.sym == SDLK_DOWN)) {
-                    printf("🔊 Volume: %d%%\n", _mixManager->getVolume());
-                    printf("\n");
+                                ConsoleOutput::output(ConsoleOutput::Type::PLAYBACK, "🔊 Volume: %d%%", _mixManager->getVolume());
                     _volumeKeyPressed = false;
                 }
                 break;
@@ -713,10 +721,9 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
             preset_name = preset_name.substr(last_slash + 1);
         }
         
-        printf("🎨 Preset: %s\n", preset_name.c_str());
+                            ConsoleOutput::output(ConsoleOutput::Type::UI, "🎨 Preset: %s", preset_name.c_str());
     }
     
-    // Reset the flag
     app->_manualPresetChange = false;
     
     projectm_playlist_free_string(presetName);
@@ -775,19 +782,14 @@ void AutoVibezApp::cycleAudioDevice()
         // Get the device name for feedback
         const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
         if (deviceName) {
-            printf("🎚️  Switched to audio device: %s\n", deviceName);
+            ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "🎚️  Switched to audio device: %s", deviceName);
         } else {
-            printf("🎚️  Switched to audio device: %d\n", _selectedAudioDeviceIndex);
+            ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "🎚️  Switched to audio device: %d", _selectedAudioDeviceIndex);
         }
         
-        // Reopen audio with new device
-        endAudioCapture();
-        _curAudioDevice = _selectedAudioDeviceIndex;
-        _selectedAudioDevice = _selectedAudioDeviceIndex;  // Set both variables
-        initAudioInput();  // Use initAudioInput directly instead of openAudioInput
         beginAudioCapture();
     } else {
-        printf("🎚️  No audio devices available\n");
+        ConsoleOutput::output(ConsoleOutput::Type::WARNING, "🎚️  No audio devices available");
     }
 }
 
@@ -796,43 +798,35 @@ void AutoVibezApp::renderHelpOverlay()
     if (!_showHelp) return;
     static bool helpShown = false;
     if (!helpShown) {
-        const char* color_bright_green = "\033[92m";
-        const char* color_bright_yellow = "\033[93m";
-        const char* color_bright_blue = "\033[94m";
-        const char* color_bright_magenta = "\033[95m";
-        const char* color_bright_cyan = "\033[96m";
-        const char* color_bright_red = "\033[91m";
-        const char* color_reset = "\033[0m";
-        
-        printf("\n");
-        printf("%s✨🎵 AutoVibez Controls 🎵✨%s\n", color_bright_cyan, color_reset);
-        printf("\n");
-        printf("%s🎧 Mix Management:%s\n", color_bright_magenta, color_reset);
-        printf("%sN%s     - Play next mix\n", color_bright_yellow, color_reset);
-        printf("%sF%s     - Toggle favorite\n", color_bright_yellow, color_reset);
-        printf("%sV%s     - List favorite mixes\n", color_bright_yellow, color_reset);
-        printf("%sL%s     - List available mixes\n", color_bright_yellow, color_reset);
-        printf("%sG%s     - Play random mix in current genre\n", color_bright_yellow, color_reset);
-        printf("%sShift+G%s - Switch to random genre\n", color_bright_yellow, color_reset);
-        printf("%sCtrl+G%s  - Show available genres\n", color_bright_yellow, color_reset);
-        printf("%sSPACE%s  - Load random mix\n", color_bright_yellow, color_reset);
-        printf("\n");
-        printf("%s🎚️  Audio Controls:%s\n", color_bright_blue, color_reset);
-        printf("%sP%s     - Pause/Resume playback\n", color_bright_green, color_reset);
-        printf("%s↑/↓%s   - Volume up/down\n", color_bright_green, color_reset);
-        printf("%sTab%s   - Cycle through audio devices\n", color_bright_green, color_reset);
-        printf("\n");
-        printf("%s🌈 Visualizer Controls:%s\n", color_bright_magenta, color_reset);
-        printf("%sH%s     - Toggle this help overlay\n", color_bright_cyan, color_reset);
-        printf("%sF11%s   - Toggle fullscreen mode\n", color_bright_cyan, color_reset);
-        printf("%sR%s     - Load random preset\n", color_bright_cyan, color_reset);
-        printf("%s[ / ]%s  - Previous/Next preset\n", color_bright_cyan, color_reset);
-        printf("%sB / J%s  - Increase/Decrease beat sensitivity\n", color_bright_cyan, color_reset);
-        printf("%sMouse Wheel%s - Next/Prev preset\n", color_bright_cyan, color_reset);
-        printf("\n");
-        printf("%s⚙️  Application:%s\n", color_bright_red, color_reset);
-        printf("%sCtrl+Q%s - Quit application\n", color_bright_red, color_reset);
-        printf("\n");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "\n");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "✨🎵 AutoVibez Controls 🎵✨");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "\n");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "🎧 Mix Management:");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "N     - Play next mix");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "F     - Toggle favorite");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "V     - List favorite mixes");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "L     - List available mixes");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "G     - Play random mix in current genre");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "Shift+G - Switch to random genre");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "Ctrl+G  - Show available genres");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "SPACE  - Load random mix");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "\n");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "🎚️  Audio Controls:");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "P     - Pause/Resume playback");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "↑/↓   - Volume up/down");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "Tab   - Cycle through audio devices");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "\n");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "🌈 Visualizer Controls:");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "H     - Toggle this help overlay");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "F11   - Toggle fullscreen mode");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "R     - Load random preset");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "[ / ]  - Previous/Next preset");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "B / J  - Increase/Decrease beat sensitivity");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "Mouse Wheel - Next/Prev preset");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "\n");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "⚙️  Application:");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "Ctrl+Q - Quit application");
+        ConsoleOutput::output(ConsoleOutput::Type::UI, "\n");
         helpShown = true;
     }
 }
@@ -849,7 +843,7 @@ void AutoVibezApp::renderFpsCounter()
     Uint32 currentTime = SDL_GetTicks();
     if (currentTime - lastTime >= 1000) { // Update every second
         float current_fps = (float)frameCount * 1000.0f / (currentTime - lastTime);
-        printf("FPS: %.1f\n", current_fps);
+        Logger::getInstance().info("FPS: %.1f", current_fps);
         frameCount = 0;
         lastTime = currentTime;
     }
@@ -924,7 +918,6 @@ void AutoVibezApp::initMixManager()
 {
     if (_mixManagerInitialized) return;
     
-    // Initialize mix manager with XDG data directory
     std::string data_dir = getDataDirectory();
     std::string db_path = getStateDirectory() + "/autovibez_mixes.db";
     std::string cache_dir = getCacheDirectory() + "/mix_cache";
@@ -933,7 +926,7 @@ void AutoVibezApp::initMixManager()
     _mixUI = std::make_unique<MixDisplay>();
     
     if (!_mixManager->initialize()) {
-        printf("❌ Failed to initialize mix manager: %s\n", _mixManager->getLastError().c_str());
+        Logger::getInstance().info("❌ Failed to initialize mix manager: %s", _mixManager->getLastError().c_str());
         return;
     }
     
@@ -945,9 +938,9 @@ void AutoVibezApp::initMixManager()
         // Set initial genre from config
         std::string preferred_genre = config.getPreferredGenre();
         if (!preferred_genre.empty()) {
-            printf("⚙️  Setting preferred genre from config: '%s'\n\n", preferred_genre.c_str());
+            ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "⚙️  Setting preferred genre from config: '%s'", preferred_genre.c_str());
         } else {
-            printf("⚙️  No preferred genre set in config - will use random genres\n\n");
+            ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "⚙️  No preferred genre set in config - will use random genres");
         }
         _mixManager->setCurrentGenre(preferred_genre);
         
@@ -955,9 +948,9 @@ void AutoVibezApp::initMixManager()
         int audioDeviceIndex = config.getAudioDeviceIndex();
         const char* deviceName = SDL_GetAudioDeviceName(audioDeviceIndex, SDL_TRUE);
         if (deviceName) {
-            printf("🎚️  Using audio device: %s\n\n", deviceName);
+            ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "🎚️  Using audio device: %s", deviceName);
         } else {
-            printf("🎚️  Using audio device: %d\n\n", audioDeviceIndex);
+            ConsoleOutput::output(ConsoleOutput::Type::SYSTEM, "🎚️  Using audio device: %d", audioDeviceIndex);
         }
     }
     
@@ -969,20 +962,27 @@ void AutoVibezApp::initMixManager()
     }
     
     if (yaml_url.empty()) {
-        printf("⚠️  No mixes_url configured, skipping mix metadata loading\n");
+        Logger::getInstance().info("⚠️  No mixes_url configured, skipping mix metadata loading");
         return;
     }
     
     if (!_mixManager->loadMixMetadata(yaml_url)) {
-        printf("❌ Failed to load mix metadata: %s\n", _mixManager->getLastError().c_str());
+        Logger::getInstance().info("❌ Failed to load mix metadata: %s", _mixManager->getLastError().c_str());
         return;
     }
     
     // Check for new mixes from remote YAML in background (non-blocking)
     // This will download new mixes but not block startup
-    std::thread([this, yaml_url]() {
-        _mixManager->checkForNewMixes(yaml_url);
-    }).detach();
+    if (!_backgroundTaskRunning.load()) {
+        _backgroundTaskRunning.store(true);
+        _backgroundTask = std::async(std::launch::async, [this, yaml_url]() {
+            std::lock_guard<std::mutex> lock(_mixManagerMutex);
+            if (_mixManager) {
+                _mixManager->checkForNewMixes(yaml_url);
+            }
+            _backgroundTaskRunning.store(false);
+        });
+    }
     
     _mixManagerInitialized = true;
     
@@ -1018,10 +1018,11 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                     if (last_slash != std::string::npos) {
                         preset_name = preset_name.substr(last_slash + 1);
                     }
-                    printf("🎨 Loaded random preset: %s\n", preset_name.c_str());
+                    ConsoleOutput::output(ConsoleOutput::Type::UI, "🎨 Loaded random preset: %s", preset_name.c_str());
+                    ConsoleOutput::printRandomPreset(preset_name);
                 }
             }
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_n:
             // N: Next mix
@@ -1032,33 +1033,33 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                     _currentMix = nextMix;
                     _showMixStatus = true;
                     _mixStatusDisplayTime = 300;
-                    _mixInfoDisplayed = false; // Reset flag for new mix
+                    _mixInfoDisplayed = false;
                 }
             }
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_p:
             // P: Pause/Resume
             _mixManager->togglePause();
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_UP:
             // ↑: Volume up
             {
                 int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume + 10, true); // Always suppress output
+                _mixManager->setVolume(currentVolume + 10, true);
                 _volumeKeyPressed = true;
             }
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_DOWN:
             // ↓: Volume down
             {
                 int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume - 10, true); // Always suppress output
+                _mixManager->setVolume(currentVolume - 10, true);
                 _volumeKeyPressed = true;
             }
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_1:
         case SDLK_2:
@@ -1071,10 +1072,9 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             // F: Toggle favorite
             if (!_currentMix.id.empty()) {
                 _mixManager->toggleFavorite(_currentMix.id);
-                printf("❤️  Toggled favorite for %s\n", _currentMix.title.c_str());
-                printf("\n");
+                            ConsoleOutput::output(ConsoleOutput::Type::UI, "❤️  Toggled favorite for %s", _currentMix.title.c_str());
             }
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_l:
             // L: List downloaded mixes
@@ -1086,14 +1086,12 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 const char* color_magenta = "\033[35m";
                 const char* color_reset = "\033[0m";
                 
-                printf("%s📋 %sDownloaded mixes (%zu):%s\n", color_cyan, color_green, downloadedMixes.size(), color_reset);
+                ConsoleOutput::output(ConsoleOutput::Type::UI, "📋 Downloaded mixes (%zu):", downloadedMixes.size());
                 for (const auto& mix : downloadedMixes) {
-                    printf("  %s- %s%s%s: %s%s%s\n", 
-                           color_yellow, color_magenta, mix.artist.c_str(), color_reset,
-                           color_cyan, mix.title.c_str(), color_reset);
+                    ConsoleOutput::output(ConsoleOutput::Type::UI, "  - %s: %s", mix.artist.c_str(), mix.title.c_str());
                 }
             }
-            return; // Return to prevent double handling
+            return;
             
         case SDLK_v:
             // V: List favorite mixes
@@ -1106,14 +1104,12 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 const char* color_red = "\033[31m";
                 const char* color_reset = "\033[0m";
                 
-                printf("%s❤️  %sFavorite mixes (%zu):%s\n", color_red, color_green, favoriteMixes.size(), color_reset);
+                ConsoleOutput::output(ConsoleOutput::Type::UI, "❤️  Favorite mixes (%zu):", favoriteMixes.size());
                 for (const auto& mix : favoriteMixes) {
-                    printf("  %s- %s%s%s: %s%s%s\n", 
-                           color_yellow, color_magenta, mix.artist.c_str(), color_reset,
-                           color_cyan, mix.title.c_str(), color_reset);
+                    ConsoleOutput::output(ConsoleOutput::Type::UI, "  - %s: %s", mix.artist.c_str(), mix.title.c_str());
                 }
             }
-            return; // Return to prevent double handling
+            return;
     }
 }
 
@@ -1136,8 +1132,8 @@ void AutoVibezApp::displayMixStatus() {
 void AutoVibezApp::autoPlayOrDownload()
 {
     if (!_mixManagerInitialized) {
-        printf("❌ Mix manager not initialized for auto-play\n");
-        printf("\n");
+        Logger::getInstance().info("❌ Mix manager not initialized for auto-play");
+        Logger::getInstance().info("\n");
         return;
     }
     
@@ -1161,8 +1157,8 @@ void AutoVibezApp::autoPlayOrDownload()
                 _mixStatusDisplayTime = 300;
                 _mixInfoDisplayed = false;
             } else {
-                printf("❌ Play failed\n");
-                printf("\n");
+                Logger::getInstance().info("❌ Play failed");
+                Logger::getInstance().info("\n");
             }
         }
         
@@ -1172,8 +1168,8 @@ void AutoVibezApp::autoPlayOrDownload()
     }
     
     // Step 2: No existing mixes, download and play one from preferred genre
-    printf("📥 Downloading first mix...\n");
-    printf("\n");
+    Logger::getInstance().info("📥 Downloading first mix...");
+    Logger::getInstance().info("\n");
     
     // Try to get a mix from the preferred genre first
     Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre());
@@ -1182,13 +1178,13 @@ void AutoVibezApp::autoPlayOrDownload()
         randomMix = _mixManager->getRandomAvailableMix();
     }
     if (randomMix.id.empty()) {
-        printf("❌ No mixes available\n");
-        printf("\n");
+        Logger::getInstance().info("❌ No mixes available");
+        Logger::getInstance().info("\n");
         return;
     }
     
-    printf("🎵 Downloading: %s\n", randomMix.title.c_str());
-    printf("\n");
+    Logger::getInstance().info("🎵 Downloading: %s", randomMix.title.c_str());
+    Logger::getInstance().info("\n");
     
     if (_mixManager->downloadAndAnalyzeMix(randomMix)) {
         // Get the updated mix with complete metadata from database
@@ -1201,21 +1197,21 @@ void AutoVibezApp::autoPlayOrDownload()
                 _mixStatusDisplayTime = 300;
                 _mixInfoDisplayed = false;
             } else {
-                printf("❌ Play failed\n");
+                Logger::getInstance().info("❌ Play failed");
             }
         }
         
         // Start background download of remaining mixes
         startBackgroundDownloads();
     } else {
-        printf("❌ Download failed\n");
+        Logger::getInstance().info("❌ Download failed");
     }
 }
 
 void AutoVibezApp::autoDownloadRandomMix()
 {
     if (!_mixManagerInitialized) {
-        printf("❌ Mix manager not initialized for auto-download\n");
+        Logger::getInstance().info("❌ Mix manager not initialized for auto-download");
         return;
     }
     
@@ -1238,16 +1234,16 @@ void AutoVibezApp::autoDownloadRandomMix()
         randomMix = _mixManager->getRandomMix();
     }
     if (randomMix.id.empty()) {
-        printf("❌ No mixes available for auto-download\n");
+        Logger::getInstance().info("❌ No mixes available for auto-download");
         return;
     }
     
-    printf("🎵 Auto-downloading and analyzing: %s by %s\n", 
+    Logger::getInstance().info("🎵 Auto-downloading and analyzing: %s by %s", 
            randomMix.title.c_str(), randomMix.artist.c_str());
     
     // Use the new download-first approach
     if (_mixManager->downloadAndAnalyzeMix(randomMix)) {
-        printf("✅ Auto-download and analysis successful\n");
+        Logger::getInstance().info("✅ Auto-download and analysis successful");
         
         // Get the updated mix with complete metadata from database
         Mix updatedMix = _mixManager->getMixById(randomMix.id);
@@ -1257,16 +1253,16 @@ void AutoVibezApp::autoDownloadRandomMix()
                 _currentMix = updatedMix; // Use the updated mix with metadata
                 _showMixStatus = true;
                 _mixStatusDisplayTime = 300;
-                _mixInfoDisplayed = false; // Reset flag for new mix
-                printf("✅ Auto-play successful\n");
+                _mixInfoDisplayed = false;
+                Logger::getInstance().info("✅ Auto-play successful");
             } else {
-                printf("❌ Auto-play failed: %s\n", _mixManager->getLastError().c_str());
+                Logger::getInstance().info("❌ Auto-play failed: %s", _mixManager->getLastError().c_str());
             }
         } else {
-            printf("❌ Failed to retrieve updated mix from database\n");
+            Logger::getInstance().info("❌ Failed to retrieve updated mix from database");
         }
     } else {
-        printf("❌ Auto-download and analysis failed: %s\n", _mixManager->getLastError().c_str());
+        Logger::getInstance().info("❌ Auto-download and analysis failed: %s", _mixManager->getLastError().c_str());
     }
 }
 
@@ -1302,7 +1298,7 @@ void AutoVibezApp::startBackgroundDownloads()
     }
     
     if (pendingDownloads > 0) {
-        printf("🔄 Downloading %d mixes in background...\n", pendingDownloads);
+        Logger::getInstance().info("🔄 Downloading %d mixes in background...", pendingDownloads);
         
         // Download mixes in background (synchronously for now)
         for (const auto& mix : mixesToDownload) {
@@ -1310,26 +1306,26 @@ void AutoVibezApp::startBackgroundDownloads()
             if (_mixManager->downloadMixBackground(mix)) {
                 // Silent success
             } else {
-                printf("❌ Failed: %s\n", mix.title.c_str());
+                Logger::getInstance().info("❌ Failed: %s", mix.title.c_str());
             }
         }
         
-        printf("✅ Background downloads completed\n");
+        Logger::getInstance().info("✅ Background downloads completed");
     }
     
     if (pendingAnalysis > 0) {
-        printf("🔍 Analyzing %d existing mixes...\n", pendingAnalysis);
+        Logger::getInstance().info("🔍 Analyzing %d existing mixes...", pendingAnalysis);
         
         // Analyze existing mixes and add to database
         for (const auto& mix : mixesToAnalyze) {
             if (_mixManager->downloadMixBackground(mix)) {
                 // Silent success
             } else {
-                printf("❌ Failed to analyze: %s\n", mix.title.c_str());
+                Logger::getInstance().info("❌ Failed to analyze: %s", mix.title.c_str());
             }
         }
         
-        printf("✅ Analysis completed\n");
+        Logger::getInstance().info("✅ Analysis completed");
     }
 }
 
@@ -1343,17 +1339,17 @@ void AutoVibezApp::checkAndAutoPlayNext() {
         // Music has ended, play next random mix
         Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
         if (!nextMix.id.empty()) {
-            printf("🎵 Auto-playing next mix: %s by %s\n", nextMix.title.c_str(), nextMix.artist.c_str());
+            Logger::getInstance().info("🎵 Auto-playing next mix: %s by %s", nextMix.title.c_str(), nextMix.artist.c_str());
             if (_mixManager->downloadAndPlayMix(nextMix)) {
                 _currentMix = nextMix;
                 _showMixStatus = true;
                 _mixStatusDisplayTime = 300;
-                _mixInfoDisplayed = false; // Reset flag for new mix
+                _mixInfoDisplayed = false;
             } else {
-                printf("❌ Auto-play failed: %s\n", _mixManager->getLastError().c_str());
+                Logger::getInstance().info("❌ Auto-play failed: %s", _mixManager->getLastError().c_str());
             }
         } else {
-            printf("❌ No more mixes available for auto-play\n");
+            Logger::getInstance().info("❌ No more mixes available for auto-play");
         }
     }
 }

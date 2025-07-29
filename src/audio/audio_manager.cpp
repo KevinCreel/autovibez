@@ -2,6 +2,7 @@
 #include "autovibez_app.hpp"
 #include "constants.hpp"
 #include <iostream>
+#include "console_output.hpp"
 
 AudioManager::AudioManager(AutoVibezApp* app)
     : _app(app) {
@@ -28,7 +29,7 @@ void AudioManager::cycleDevice() {
     
     const char* deviceName = SDL_GetAudioDeviceName(_currentDevice, SDL_TRUE);
     if (openDevice(deviceName)) {
-        printf("🎤 Switched to audio device: %s\n", getCurrentDeviceName().c_str());
+        ConsoleOutput::print("🎤 Switched to audio device: %s\n", getCurrentDeviceName().c_str());
     }
 }
 
@@ -87,10 +88,10 @@ bool AudioManager::isCapturing() const {
 void AudioManager::toggleInput() {
     if (_isCapturing) {
         stopCapture();
-        printf("🔇 Audio input stopped\n");
+        ConsoleOutput::print("🔇 Audio input stopped\n");
     } else {
         startCapture();
-        printf("🔊 Audio input started\n");
+        ConsoleOutput::print("🔊 Audio input started\n");
     }
 }
 

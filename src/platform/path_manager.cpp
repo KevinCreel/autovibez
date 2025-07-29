@@ -100,7 +100,7 @@ std::string PathManager::expandTilde(const std::string& path) {
     }
 #endif
     
-    return path; // Can't expand, return as-is
+    return path;
 }
 
 std::string PathManager::getCacheDirectory() {

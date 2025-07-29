@@ -163,6 +163,13 @@ add_executable(autovibez
     src/utils/config_defaults.hpp
     src/utils/constants.hpp
     src/utils/string_utils.hpp
+    src/utils/logger.cpp
+    src/utils/logger.hpp
+    src/utils/resource_guard.hpp
+    src/utils/input_validator.cpp
+    src/utils/input_validator.hpp
+    src/utils/console_output.cpp
+    src/utils/console_output.hpp
 )
 
 # Link libraries
@@ -358,6 +365,13 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/constants.hpp
     src/utils/config_defaults.hpp
     src/utils/string_utils.hpp
+    src/utils/logger.cpp
+    src/utils/logger.hpp
+    src/utils/resource_guard.hpp
+    src/utils/input_validator.cpp
+    src/utils/input_validator.hpp
+    src/utils/console_output.cpp
+    src/utils/console_output.hpp
     
     # Test fixtures
     tests/fixtures/test_fixtures.cpp
@@ -365,15 +379,21 @@ set(AUTOVIBEZ_TEST_SOURCES
     
     # Unit tests
     tests/unit/config_manager_test.cpp
-    tests/unit/mix_metadata_test.cpp
     tests/unit/mix_database_test.cpp
-    tests/unit/mp3_analyzer_test.cpp
+    tests/unit/mix_metadata_test.cpp
     tests/unit/mix_player_test.cpp
+    tests/unit/mp3_analyzer_test.cpp
     tests/unit/path_manager_test.cpp
+    tests/unit/logger_test.cpp
+    tests/unit/input_validator_test.cpp
+    tests/unit/resource_guard_test.cpp
+    tests/unit/console_output_test.cpp
     
     # Integration tests
-    tests/integration/mix_manager_test.cpp
     tests/integration/audio_capture_test.cpp
+    tests/integration/mix_manager_test.cpp
+    tests/integration/memory_cleanup_test.cpp
+    tests/integration/thread_safety_test.cpp
     
     # Feature tests
     tests/feature/help_system_test.cpp

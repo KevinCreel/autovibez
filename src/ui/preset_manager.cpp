@@ -1,6 +1,8 @@
 #include "preset_manager.hpp"
 #include "string_utils.hpp"
 #include <iostream>
+#include <random> // Added for random preset selection
+#include "console_output.hpp"
 
 PresetManager::PresetManager(projectm_playlist_handle playlist)
     : _playlist(playlist) {
@@ -9,19 +11,27 @@ PresetManager::PresetManager(projectm_playlist_handle playlist)
 void PresetManager::nextPreset() {
     projectm_playlist_play_next(_playlist, true);
     _currentPresetName = getCurrentPresetName();
-    printf("⏭️  Next preset: %s\n", StringUtils::formatPresetName(_currentPresetName).c_str());
+    ConsoleOutput::printNextPreset(_currentPresetName);
 }
 
 void PresetManager::previousPreset() {
     projectm_playlist_play_previous(_playlist, true);
     _currentPresetName = getCurrentPresetName();
-    printf("⏮️  Previous preset: %s\n", StringUtils::formatPresetName(_currentPresetName).c_str());
+    ConsoleOutput::printPreviousPreset(_currentPresetName);
 }
 
 void PresetManager::randomPreset() {
-    // For now, just go to next preset
-    // TODO: Implement true random selection
-    nextPreset();
+    // Implement true random selection
+    uint32_t preset_count = projectm_playlist_size(_playlist);
+    if (preset_count > 0) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<uint32_t> dis(0, preset_count - 1);
+        uint32_t random_index = dis(gen);
+        projectm_playlist_set_position(_playlist, random_index, true);
+        _currentPresetName = getCurrentPresetName();
+        ConsoleOutput::printRandomPreset(_currentPresetName);
+    }
 }
 
 std::string PresetManager::getCurrentPresetName() const {
@@ -45,8 +55,8 @@ bool PresetManager::isPlaying() const {
 void PresetManager::togglePause() {
     _isPaused = !_isPaused;
     if (_isPaused) {
-        printf("⏸️  Preset paused\n");
+        ConsoleOutput::printPause();
     } else {
-        printf("▶️  Preset resumed\n");
+        ConsoleOutput::printResume();
     }
 } 

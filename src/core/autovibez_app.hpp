@@ -75,6 +75,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
+#include <thread>
+#include <future>
+#include <mutex>
+#include <atomic>
 
 #ifdef WASAPI_LOOPBACK
 #include <windows.h>
@@ -238,4 +242,9 @@ private:
     std::unique_ptr<AudioManager> _audioManager;
     std::unique_ptr<InputHandler> _inputHandler;
     AppState _appState;
+    
+    // Thread safety members
+    std::future<void> _backgroundTask;
+    std::mutex _mixManagerMutex;
+    std::atomic<bool> _backgroundTaskRunning{false};
 };

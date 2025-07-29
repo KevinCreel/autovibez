@@ -6,7 +6,12 @@
 // ref https://blogs.msdn.microsoft.com/matthew_van_eerde/2008/12/16/sample-wasapi-loopback-capture-record-what-you-hear/
 #ifdef WASAPI_LOOPBACK
 
-IAudioCaptureClient *pAudioCaptureClient;
+// Global WASAPI resources that need cleanup
+IAudioCaptureClient *pAudioCaptureClient = nullptr;
+IAudioClient *pAudioClient = nullptr;
+IMMDevice *pMMDevice = nullptr;
+IMMDeviceEnumerator *pMMDeviceEnumerator = nullptr;
+WAVEFORMATEX *pwfx = nullptr;
 UINT32 foo = 0;
 PUINT32 pnFrames = &foo;
 UINT32 nBlockAlign = 0;
@@ -15,7 +20,6 @@ bool bFirstPacket = true;
 
 HRESULT get_default_device(IMMDevice **ppMMDevice) {
     HRESULT hr = S_OK;
-    IMMDeviceEnumerator *pMMDeviceEnumerator;
     
     // activate a device enumerator
     hr = CoCreateInstance(
@@ -49,8 +53,6 @@ bool initLoopback()
         ERR(L"CoInitialize failed: hr = 0x%08x", hr);
     }
     
-    
-    IMMDevice *pMMDevice(NULL);
     // open default device if not specified
     if (NULL == pMMDevice) {
         hr = get_default_device(&pMMDevice);
@@ -62,7 +64,6 @@ bool initLoopback()
     bool bInt16 = false;
     
     // activate an IAudioClient
-    IAudioClient *pAudioClient;
     hr = pMMDevice->Activate(
                              __uuidof(IAudioClient),
                              CLSCTX_ALL, NULL,
@@ -82,7 +83,6 @@ bool initLoopback()
     }
     
     // get the default device format
-    WAVEFORMATEX *pwfx;
     hr = pAudioClient->GetMixFormat(&pwfx);
     if (FAILED(hr)) {
         ERR(L"IAudioClient::GetMixFormat failed: hr = 0x%08x", hr);
@@ -163,6 +163,59 @@ bool initLoopback()
 #endif /** WASAPI_LOOPBACK */
 
     return true;
+}
+
+bool cleanupLoopback()
+{
+#ifdef WASAPI_LOOPBACK
+    // Stop audio capture if it's running
+    if (pAudioClient) {
+        pAudioClient->Stop();
+    }
+    
+    // Release IAudioCaptureClient
+    if (pAudioCaptureClient) {
+        pAudioCaptureClient->Release();
+        pAudioCaptureClient = nullptr;
+    }
+    
+    // Release IAudioClient
+    if (pAudioClient) {
+        pAudioClient->Release();
+        pAudioClient = nullptr;
+    }
+    
+    // Free WAVEFORMATEX structure
+    if (pwfx) {
+        CoTaskMemFree(pwfx);
+        pwfx = nullptr;
+    }
+    
+    // Release IMMDevice
+    if (pMMDevice) {
+        pMMDevice->Release();
+        pMMDevice = nullptr;
+    }
+    
+    // Release IMMDeviceEnumerator
+    if (pMMDeviceEnumerator) {
+        pMMDeviceEnumerator->Release();
+        pMMDeviceEnumerator = nullptr;
+    }
+    
+    // Uninitialize COM
+    CoUninitialize();
+    
+    // Reset global variables
+    nBlockAlign = 0;
+    nPasses = 0;
+    bFirstPacket = true;
+    *pnFrames = 0;
+    
+    return true;
+#else
+    return true;
+#endif
 }
 
 void configureLoopback(AutoVibezApp *app) {

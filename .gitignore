@@ -130,3 +130,7 @@ config/local_config.inp
 
 # User-specific config files
 ~/.projectM/ 
+
+# Cursor
+.cursorrules
+.cursor/

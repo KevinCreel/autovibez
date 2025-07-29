@@ -595,8 +595,34 @@ Mix MixDatabase::rowToMix(sqlite3_stmt* stmt) {
     mix.duration_seconds = sqlite3_column_int(stmt, 6);
     
     if (sqlite3_column_text(stmt, 7)) {
-        // Parse tags JSON - simplified for now
-        // TODO: Parse JSON tags from sqlite3_column_text(stmt, 7)
+        // Parse tags JSON
+        std::string tags_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
+        if (!tags_json.empty()) {
+            try {
+                // Simple JSON parsing for tags - extract comma-separated values
+                // This is a basic implementation; for full JSON parsing, consider using a library like nlohmann/json
+                std::string current_tag;
+                for (char c : tags_json) {
+                    if (c == '"' || c == '[' || c == ']' || c == '{' || c == '}') {
+                        continue; // Skip JSON syntax characters
+                    }
+                    if (c == ',' || c == ' ') {
+                        if (!current_tag.empty()) {
+                            mix.tags.push_back(current_tag);
+                            current_tag.clear();
+                        }
+                    } else {
+                        current_tag += c;
+                    }
+                }
+                if (!current_tag.empty()) {
+                    mix.tags.push_back(current_tag);
+                }
+            } catch (const std::exception& e) {
+                // If JSON parsing fails, store the raw string
+                mix.tags.push_back(tags_json);
+            }
+        }
     }
     
     if (sqlite3_column_text(stmt, 8)) {
