@@ -14,17 +14,16 @@ struct MP3Metadata {
     std::vector<std::string> tags;
     std::string url;
     std::string local_path;
-    int duration_seconds;
-    int bitrate;
-    int sample_rate;
-    int channels;
-    long file_size;
+    int duration_seconds = 0;
+    int bitrate = 0;
+    int sample_rate = 0;
+    int channels = 0;
+    long file_size = 0;
     std::string format;
     std::string date_added;
     std::string last_played;
-    int play_count;
-
-    bool is_favorite;
+    int play_count = 0;
+    bool is_favorite = false;
 };
 
 class MP3Analyzer {

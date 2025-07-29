@@ -21,7 +21,7 @@ HRESULT get_default_device(IMMDevice **ppMMDevice) {
     hr = CoCreateInstance(
                           __uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL,
                           __uuidof(IMMDeviceEnumerator),
-                          (void**)&pMMDeviceEnumerator
+                          static_cast<void**>(&pMMDeviceEnumerator)
                           );
     if (FAILED(hr)) {
         ERR(L"CoCreateInstance(IMMDeviceEnumerator) failed: hr = 0x%08x", hr);
@@ -66,7 +66,7 @@ bool initLoopback()
     hr = pMMDevice->Activate(
                              __uuidof(IAudioClient),
                              CLSCTX_ALL, NULL,
-                             (void**)&pAudioClient
+                             static_cast<void**>(&pAudioClient)
                              );
     if (FAILED(hr)) {
         ERR(L"IMMDevice::Activate(IAudioClient) failed: hr = 0x%08x", hr);
@@ -146,7 +146,7 @@ bool initLoopback()
     // activate an IAudioCaptureClient
     hr = pAudioClient->GetService(
                                   __uuidof(IAudioCaptureClient),
-                                  (void**)&pAudioCaptureClient
+                                  static_cast<void**>(&pAudioCaptureClient)
                                   );
     if (FAILED(hr)) {
         ERR(L"pAudioClient->GetService error");
@@ -160,7 +160,6 @@ bool initLoopback()
         return false;
     }
     
-    bool bDone = false;
 #endif /** WASAPI_LOOPBACK */
 
     return true;

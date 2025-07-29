@@ -93,7 +93,10 @@ std::istream& operator>>( std::istream& is, ConfigFile& cf )
 		}
 		
 		// Ignore comments
-		line = line.substr( 0, line.find(comm) );
+		pos commentPos = line.find(comm);
+		if (commentPos != string::npos) {
+			line.resize(commentPos);
+		}
 		
 		// Check for end of file sentry
 		if( sentry != "" && line.find(sentry) != string::npos ) return is;
@@ -119,7 +122,10 @@ std::istream& operator>>( std::istream& is, ConfigFile& cf )
 				ConfigFile::trim(nlcopy);
 				if( nlcopy == "" ) continue;
 				
-				nextline = nextline.substr( 0, nextline.find(comm) );
+				pos nextCommentPos = nextline.find(comm);
+				if (nextCommentPos != string::npos) {
+					nextline.resize(nextCommentPos);
+				}
 				if( nextline.find(delim) != string::npos )
 					continue;
 				if( sentry != "" && nextline.find(sentry) != string::npos )

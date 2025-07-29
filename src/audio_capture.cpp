@@ -44,12 +44,15 @@ void AutoVibezApp::audioInputCallbackF32(void *userdata, unsigned char *stream, 
 //    printf("\nLEN: %i\n", len);
 //    for (int i = 0; i < 64; i++)
 //        printf("%X ", stream[i]);
-    // stream is (i think) samples*channels floats (native byte order) of len BYTES
-    // Note: reinterpret_cast is necessary here for audio callback interfacing
+    // stream contains float data in native byte order, len is in bytes
+    // Convert to float pointer safely
+    const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));
+    int numSamples = len / sizeof(float);
+    
     if (app->_audioChannelsCount == 1)
-        projectm_pcm_add_float(app->_projectM, reinterpret_cast<float*>(stream), len/sizeof(float)/2, PROJECTM_MONO);
+        projectm_pcm_add_float(app->_projectM, const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
     else if (app->_audioChannelsCount == 2)
-        projectm_pcm_add_float(app->_projectM, reinterpret_cast<float*>(stream), len/sizeof(float)/2, PROJECTM_STEREO);
+        projectm_pcm_add_float(app->_projectM, const_cast<float*>(floatStream), numSamples, PROJECTM_STEREO);
     else {
         SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Multichannel audio not supported");
         SDL_Quit();

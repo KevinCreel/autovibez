@@ -49,7 +49,5 @@ private:
     TTF_Font* font = nullptr;
     std::vector<std::shared_ptr<Button>> buttons;
     
-    void renderText(const std::string& text, float x, float y, SDL_Color color);
-    void renderRect(float x, float y, float width, float height, SDL_Color color);
     std::string getFontPathFromConfig();
 }; 

@@ -173,7 +173,7 @@ private:
 
     void UpdateWindowTitle();
 
-    void scrollHandler(SDL_Event*);
+    void scrollHandler(const SDL_Event*);
     void keyHandler(SDL_Event*);
 
     projectm_handle _projectM{nullptr};

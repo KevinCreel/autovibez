@@ -60,7 +60,7 @@ void debugGL(GLenum source,
 #endif
 
 // return path to config file to use
-std::string getConfigFilePath(std::string datadir_path) {
+std::string getConfigFilePath(const std::string& datadir_path) {
     std::string config_path = datadir_path + "/config.inp";
     
     // Check if the specified config file exists
@@ -366,9 +366,9 @@ AutoVibezApp *setupSDLApp() {
 
         app->setFps(config.read<uint32_t>("FPS", 60));
         
-        // Read new config settings
-        audioDeviceIndex = config.getAudioDeviceIndex();
-        showFps = config.getShowFps();
+        // Read new config settings (used in app initialization)
+        int audioDeviceIndex = config.getAudioDeviceIndex();
+        bool showFps = config.getShowFps();
         
         // Handle fullscreen setting
         bool fullscreen = config.read<bool>("fullscreen", false);
@@ -387,6 +387,7 @@ AutoVibezApp *setupSDLApp() {
     app->resize(finalWidth, finalHeight);
 
     // Create a help menu specific to SDL
+    // Note: modKey is currently unused but kept for future help menu implementation
     std::string modKey = "CTRL";
 
 #if __APPLE__

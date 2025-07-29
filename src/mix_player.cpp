@@ -80,7 +80,9 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
     if (!_verbose) {
 #ifndef _WIN32
         if (original_stderr_file) {
-            freopen("/dev/stderr", "w", stderr);
+            if (freopen("/dev/stderr", "w", stderr) == nullptr) {
+                // Handle freopen failure if needed
+            }
         } else if (original_stderr) {
             std::cerr.rdbuf(original_stderr);
             null_stream.close();

@@ -95,6 +95,14 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
                 std::cerr.rdbuf(null_stream.rdbuf());
             }
         }
+        if (!original_stderr_file) {
+            // Fallback to stream redirection
+            null_stream.open("/dev/null");
+            if (null_stream.is_open()) {
+                original_stderr = std::cerr.rdbuf();
+                std::cerr.rdbuf(null_stream.rdbuf());
+            }
+        }
 #endif
     }
     

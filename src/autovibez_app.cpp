@@ -37,6 +37,7 @@
 #include <thread>
 #include <random>
 #include <cstdlib>
+#include <array>
 #if defined _MSC_VER
 #include <direct.h>
 #else
@@ -160,7 +161,7 @@ void AutoVibezApp::toggleFullScreen()
     }
 }
 
-void AutoVibezApp::scrollHandler(SDL_Event* sdl_evt)
+void AutoVibezApp::scrollHandler(const SDL_Event* sdl_evt)
 {
     // handle mouse scroll wheel - up++
     if (sdl_evt->wheel.y > 0)
@@ -214,7 +215,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
             {
                 // cmd/ctrl-q = quit
-                done = 1;
+                done = true;
                 return;
             }
             break;
@@ -457,7 +458,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 void AutoVibezApp::addFakePCM()
 {
     int i;
-    int16_t pcm_data[2 * 512];
+    std::array<int16_t, 2 * 512> pcm_data;
     /** Produce some fake PCM data to stuff into projectM */
     for (i = 0; i < 512; i++)
     {
@@ -479,7 +480,7 @@ void AutoVibezApp::addFakePCM()
     }
 
     /** Add the waveform data */
-    projectm_pcm_add_int16(_projectM, pcm_data, 512, PROJECTM_STEREO);
+    projectm_pcm_add_int16(_projectM, pcm_data.data(), 512, PROJECTM_STEREO);
 }
 
 void AutoVibezApp::resize(unsigned int width_, unsigned int height_)
@@ -792,19 +793,12 @@ void AutoVibezApp::renderHelpOverlay()
     if (!_showHelp) return;
     static bool helpShown = false;
     if (!helpShown) {
-        const char* color_cyan = "\033[36m";
-        const char* color_green = "\033[32m";
-        const char* color_yellow = "\033[33m";
-        const char* color_blue = "\033[34m";
-        const char* color_magenta = "\033[35m";
-        const char* color_red = "\033[31m";
         const char* color_bright_green = "\033[92m";
         const char* color_bright_yellow = "\033[93m";
         const char* color_bright_blue = "\033[94m";
         const char* color_bright_magenta = "\033[95m";
         const char* color_bright_cyan = "\033[96m";
         const char* color_bright_red = "\033[91m";
-        const char* color_white = "\033[97m";
         const char* color_reset = "\033[0m";
         
         printf("\n");

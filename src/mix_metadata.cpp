@@ -12,7 +12,7 @@
 
 // Callback function for CURL to write data to string
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
-    userp->append((char*)contents, size * nmemb);
+    userp->append(static_cast<const char*>(contents), size * nmemb);
     return size * nmemb;
 }
 

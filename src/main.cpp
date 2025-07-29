@@ -37,7 +37,7 @@
 #include <filesystem>
 
 static int mainLoop(void *userData) {
-    AutoVibezApp **appRef = (AutoVibezApp **)userData;
+    AutoVibezApp **appRef = static_cast<AutoVibezApp **>(userData);
     auto app = *appRef;
     
 #if UNLOCK_FPS

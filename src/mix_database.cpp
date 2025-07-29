@@ -596,8 +596,7 @@ Mix MixDatabase::rowToMix(sqlite3_stmt* stmt) {
     
     if (sqlite3_column_text(stmt, 7)) {
         // Parse tags JSON - simplified for now
-        std::string tags_str = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
-        // TODO: Parse JSON tags
+        // TODO: Parse JSON tags from sqlite3_column_text(stmt, 7)
     }
     
     if (sqlite3_column_text(stmt, 8)) {
