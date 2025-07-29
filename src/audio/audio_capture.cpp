@@ -1,7 +1,31 @@
 #include "audio_capture.hpp"
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
+using AutoVibez::Audio::AudioManager;
 
+namespace AutoVibez {
+namespace Audio {
+
+void audioInputCallbackF32(void* userData, const float* buffer, int len) {
+    AutoVibezApp *app = static_cast<AutoVibezApp*>(userData);
+    
+    // stream contains float data in native byte order, len is in bytes
+    // Convert to float pointer safely
+    const float* floatStream = static_cast<const float*>(static_cast<const void*>(buffer));
+    int numSamples = len / sizeof(float) / app->getAudioChannelsCount();  // Use getter method
+    
+    if (app->getAudioChannelsCount() == 1)
+        projectm_pcm_add_float(app->getProjectM(), const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
+    else if (app->getAudioChannelsCount() == 2)
+        projectm_pcm_add_float(app->getProjectM(), const_cast<float*>(floatStream), numSamples, PROJECTM_STEREO);
+    else {
+        SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Multichannel audio not supported");
+        SDL_Quit();
+    }
+}
+
+} // namespace Audio
+} // namespace AutoVibez
 
 int AutoVibezApp::initializeAudioInput() {
     SDL_AudioSpec desired, obtained;
@@ -21,7 +45,11 @@ int AutoVibezApp::initializeAudioInput() {
     desired.format = AUDIO_F32SYS;
     desired.channels = 2;
     desired.samples = 512;
-    desired.callback = audioInputCallbackF32;
+    desired.callback = [](void* userdata, unsigned char* stream, int len) {
+        // Convert to float and call our callback
+        const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));
+        AutoVibez::Audio::audioInputCallbackF32(userdata, floatStream, len);
+    };
     desired.userdata = this;
 
     // Open audio device
@@ -38,24 +66,6 @@ int AutoVibezApp::initializeAudioInput() {
     _audioChannelsCount = obtained.channels;
 
     return 1;
-}
-
-void AutoVibezApp::audioInputCallbackF32(void *userdata, unsigned char *stream, int len) {
-    AutoVibezApp *app = static_cast<AutoVibezApp*>(userdata);
-    
-    // stream contains float data in native byte order, len is in bytes
-    // Convert to float pointer safely
-    const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));
-    int numSamples = len / sizeof(float) / app->_audioChannelsCount;  // Correct sample count calculation
-    
-    if (app->_audioChannelsCount == 1)
-        projectm_pcm_add_float(app->_projectM, const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
-    else if (app->_audioChannelsCount == 2)
-        projectm_pcm_add_float(app->_projectM, const_cast<float*>(floatStream), numSamples, PROJECTM_STEREO);
-    else {
-        SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Multichannel audio not supported");
-        SDL_Quit();
-    }
 }
 
 int AutoVibezApp::toggleAudioInput()

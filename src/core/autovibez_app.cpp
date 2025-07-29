@@ -32,6 +32,9 @@
 #include "setup.hpp"
 #include "logger.hpp"
 #include "console_output.hpp"
+#include "mix_manager.hpp"
+#include "mix_display.hpp"
+#include "config_manager.hpp"
 
 #include <vector>
 #include <filesystem>
@@ -45,6 +48,12 @@
 #else
 #include <sys/stat.h>
 #endif
+
+using AutoVibez::Data::MixManager;
+using AutoVibez::Data::MixDisplay;
+using AutoVibez::Data::Mix;
+using AutoVibez::Audio::AudioManager;
+using AutoVibez::Data::ConfigFile;
 
 namespace AutoVibez {
 namespace Core {

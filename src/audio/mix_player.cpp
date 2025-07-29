@@ -5,6 +5,12 @@
 #include <filesystem>
 #include <fstream>
 #include <cstdio>
+#include "constants.hpp"
+
+using AutoVibez::Audio::MixPlayer;
+
+namespace AutoVibez {
+namespace Audio {
 
 MixPlayer::MixPlayer()
     : playing(false), current_position(0), duration(0), volume(100), current_music(nullptr) {
@@ -240,4 +246,7 @@ bool MixPlayer::isValidMP3File(const std::string& file_path) {
     // This is less reliable but can help identify some MP3s
     
     return false;
-} 
+}
+
+} // namespace Audio
+} // namespace AutoVibez 

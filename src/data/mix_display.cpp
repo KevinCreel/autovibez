@@ -3,6 +3,8 @@
 #include <sstream>
 #include <iomanip>
 
+using AutoVibez::Data::MixDisplay;
+
 MixDisplay::MixDisplay() {
 }
 

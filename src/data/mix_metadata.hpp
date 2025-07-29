@@ -5,6 +5,9 @@
 #include <yaml-cpp/yaml.h>
 // Mix struct is defined in this file
 
+namespace AutoVibez {
+namespace Data {
+
 /**
  * @brief Represents a DJ mix with all its metadata
  */
@@ -87,4 +90,7 @@ private:
     bool validateMix(const Mix& mix);
 
     std::string generateIdFromUrl(const std::string& url);
-}; 
+};
+
+} // namespace Data
+} // namespace AutoVibez 

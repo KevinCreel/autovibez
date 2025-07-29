@@ -1,11 +1,15 @@
 #include "audio_manager.hpp"
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
+using AutoVibez::Audio::AudioManager;
 #include "constants.hpp"
 #include <iostream>
 #include "console_output.hpp"
 
-AudioManager::AudioManager(AutoVibezApp* app)
+namespace AutoVibez {
+namespace Audio {
+
+AudioManager::AudioManager(Core::AutoVibezApp* app)
     : _app(app) {
 }
 
@@ -113,7 +117,11 @@ bool AudioManager::openDevice(const char* deviceName) {
     desired.format = AUDIO_F32SYS;
     desired.channels = Constants::DEFAULT_CHANNELS;
     desired.samples = Constants::DEFAULT_SAMPLES;
-    desired.callback = AutoVibezApp::audioInputCallbackF32;
+    desired.callback = [](void* userdata, unsigned char* stream, int len) {
+        // Convert to float and call our callback
+        const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));
+        audioInputCallbackF32(userdata, floatStream, len);
+    };
     desired.userdata = _app;
     
     // Open audio device
@@ -133,4 +141,7 @@ void AudioManager::closeDevice() {
         _deviceId = 0;
         _isCapturing = false;
     }
-} 
+}
+
+} // namespace Audio
+} // namespace AutoVibez 

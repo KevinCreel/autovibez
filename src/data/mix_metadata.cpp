@@ -9,6 +9,14 @@
 #include <functional>
 #include <random>
 #include <iomanip>
+#include "console_output.hpp"
+#include "string_utils.hpp"
+
+using AutoVibez::Data::Mix;
+using AutoVibez::Data::MixMetadata;
+
+namespace AutoVibez {
+namespace Data {
 
 // Callback function for CURL to write data to string
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
@@ -234,4 +242,7 @@ bool MixMetadata::validateMix(const Mix& mix) {
     
     // All other fields are optional and will be extracted from MP3 file
     return true;
-} 
+}
+
+} // namespace Data
+} // namespace AutoVibez 

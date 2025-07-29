@@ -3,6 +3,10 @@
 #include "mix_metadata.hpp"
 #include <SDL2/SDL_mixer.h>
 #include <string>
+#include <memory>
+
+namespace AutoVibez {
+namespace Audio {
 
 /**
  * @brief Handles audio playback of mix files
@@ -106,4 +110,7 @@ private:
     int volume;
     Mix_Music* current_music; // Store current music object for seeking
     bool _verbose = false;
-}; 
+};
+
+} // namespace Audio
+} // namespace AutoVibez 

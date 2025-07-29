@@ -2,6 +2,10 @@
 
 #include "mix_metadata.hpp"
 #include <string>
+#include <curl/curl.h>
+
+namespace AutoVibez {
+namespace Data {
 
 /**
  * @brief Handles downloading of mix files from URLs
@@ -41,4 +45,7 @@ public:
 private:
     std::string cache_dir;
     std::string last_error;
-}; 
+};
+
+} // namespace Data
+} // namespace AutoVibez 

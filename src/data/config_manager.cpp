@@ -4,6 +4,10 @@
 #include <algorithm>
 
 using std::string;
+using AutoVibez::Data::ConfigFile;
+
+namespace AutoVibez {
+namespace Data {
 
 ConfigFile::ConfigFile( string filename, string delimiter,
                         string comment, string sentry )
@@ -159,4 +163,8 @@ bool ConfigFile::getCrossfadeEnabled() const {
 std::string ConfigFile::getPreferredGenre() const {
     return read<std::string>("preferred_genre", "");
 }
+
+
+} // namespace Data
+} // namespace AutoVibez
 

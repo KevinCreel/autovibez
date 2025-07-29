@@ -165,7 +165,7 @@ public:
     void startBackgroundDownloads();
     void checkAndAutoPlayNext();
     bool isMixManagerInitialized() const { return _mixManagerInitialized; }
-    MixManager* getMixManager() { return _mixManager.get(); }
+    AutoVibez::Data::MixManager* getMixManager() { return _mixManager.get(); }
     
     // Window management
     SDL_Window* getWindow() const { return _sdlWindow; }
@@ -178,7 +178,7 @@ public:
     
     // New modular component accessors
     PresetManager* getPresetManager() { return _presetManager.get(); }
-    AudioManager* getAudioManager() { return _audioManager.get(); }
+    AutoVibez::Audio::AudioManager* getAudioManager() { return _audioManager.get(); }
     InputHandler* getInputHandler() { return _inputHandler.get(); }
     AppState* getAppState() { return &_appState; }
     
@@ -197,6 +197,13 @@ public:
 public:
     static void presetSwitchedEvent(bool isHardCut, uint32_t index, void* context);
     static void audioInputCallbackF32(void* userdata, unsigned char* stream, int len);
+    
+    // Audio-related getters
+    unsigned short getAudioChannelsCount() const { return _audioChannelsCount; }
+    projectm_handle getProjectM() const { return _projectM; }
+    
+    // Friend function for audio callback
+    friend void AutoVibez::Audio::audioInputCallbackF32(void* userData, const float* buffer, int len);
 
 private:
 
@@ -227,9 +234,9 @@ private:
     int _selectedAudioDeviceIndex{0}; //!< Selected audio device index
 
     // Mix management
-    std::unique_ptr<MixManager> _mixManager;
-    std::unique_ptr<MixDisplay> _mixUI;
-    Mix _currentMix;
+    std::unique_ptr<AutoVibez::Data::MixManager> _mixManager;
+    std::unique_ptr<AutoVibez::Data::MixDisplay> _mixUI;
+    AutoVibez::Data::Mix _currentMix;
     bool _mixManagerInitialized{false};
     bool _showMixStatus{false};
     int _mixStatusDisplayTime{0};
@@ -242,7 +249,7 @@ private:
     
     // New modular components
     std::unique_ptr<PresetManager> _presetManager;
-    std::unique_ptr<AudioManager> _audioManager;
+    std::unique_ptr<AutoVibez::Audio::AudioManager> _audioManager;
     std::unique_ptr<InputHandler> _inputHandler;
     AppState _appState;
     

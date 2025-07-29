@@ -3,6 +3,7 @@
 #include "mix_metadata.hpp"
 #include "mix_downloader.hpp"
 #include "mix_player.hpp"
+#include "mp3_analyzer.hpp"
 #include "console_output.hpp"
 #include <iostream>
 #include <filesystem>
@@ -12,6 +13,14 @@
 #include <sstream>
 #include <SDL2/SDL.h>
 #include <algorithm>
+#include "constants.hpp"
+
+using AutoVibez::Audio::MixPlayer;
+using AutoVibez::Audio::MP3Analyzer;
+using AutoVibez::Audio::MP3Metadata;
+
+namespace AutoVibez {
+namespace Data {
 
 // URL decode function
 std::string urlDecode(const std::string& encoded) {
@@ -760,3 +769,6 @@ std::string MixManager::findGenreCaseInsensitive(const std::string& target_genre
     
     return ""; // Not found
 } 
+
+} // namespace Data
+} // namespace AutoVibez 

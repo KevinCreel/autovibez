@@ -6,6 +6,9 @@
 
 namespace AutoVibez { namespace Core { class AutoVibezApp; } }
 
+namespace AutoVibez {
+namespace Audio {
+
 class AudioManager {
 public:
     explicit AudioManager(AutoVibez::Core::AutoVibezApp* app);
@@ -92,4 +95,7 @@ private:
      * Close current audio device
      */
     void closeDevice();
-}; 
+};
+
+} // namespace Audio
+} // namespace AutoVibez 

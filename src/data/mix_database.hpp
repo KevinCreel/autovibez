@@ -6,6 +6,9 @@
 #include <vector>
 #include <memory>
 
+namespace AutoVibez {
+namespace Data {
+
 /**
  * @brief Manages SQLite database operations for mix metadata and user data
  */
@@ -198,4 +201,7 @@ private:
      * @return Mix object
      */
     Mix executeQueryForSingleMix(const char* sql);
-}; 
+};
+
+} // namespace Data
+} // namespace AutoVibez 

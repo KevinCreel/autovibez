@@ -6,6 +6,9 @@
 #include "mix_metadata.hpp"
 #include "fixtures/test_fixtures.hpp"
 
+using AutoVibez::Data::MixDownloader;
+using AutoVibez::Data::Mix;
+
 class MixDownloaderTest : public ::testing::Test {
 protected:
     void SetUp() override {

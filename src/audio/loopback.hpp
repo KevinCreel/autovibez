@@ -7,9 +7,15 @@
 
 namespace AutoVibez { namespace Core { class AutoVibezApp; } }
 
+namespace AutoVibez {
+namespace Audio {
+
 bool initLoopback();
-void configureLoopback(AutoVibez::Core::AutoVibezApp *app);
-bool processLoopbackFrame(AutoVibez::Core::AutoVibezApp *app);
+void configureLoopback(Core::AutoVibezApp *app);
+bool processLoopbackFrame(Core::AutoVibezApp *app);
 bool cleanupLoopback();
+
+} // namespace Audio
+} // namespace AutoVibez
 
 #endif /* loopback_hpp */

@@ -38,6 +38,18 @@ using AutoVibez::Core::AutoVibezApp;
 #include "path_manager.hpp"
 #include "console_output.hpp"
 #include <filesystem>
+#include "mix_player.hpp"
+#include "mix_downloader.hpp"
+#include "mix_metadata.hpp"
+#include "mix_display.hpp"
+#include "loopback.hpp"
+
+using AutoVibez::Audio::processLoopbackFrame;
+using AutoVibez::Audio::cleanupLoopback;
+using AutoVibez::Audio::MixPlayer;
+using AutoVibez::Data::MixDownloader;
+using AutoVibez::Data::MixMetadata;
+using AutoVibez::Data::MixDisplay;
 
 static int mainLoop(void* userData) {
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp> *>(userData);

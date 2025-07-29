@@ -6,6 +6,8 @@
 #include <filesystem>
 #include "mix_metadata.hpp"
 
+using AutoVibez::Data::Mix;
+
 /**
  * @brief Test fixtures and utilities for autovibez tests
  */

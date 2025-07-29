@@ -4,6 +4,7 @@
 #include <fstream>
 #include "mp3_analyzer.hpp"
 #include "fixtures/test_fixtures.hpp"
+using AutoVibez::Audio::MP3Metadata;
 
 class MP3AnalyzerTest : public ::testing::Test {
 protected:

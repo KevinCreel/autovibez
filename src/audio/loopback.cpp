@@ -4,6 +4,8 @@
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
+namespace AutoVibez {
+namespace Audio {
 
 // ref https://blogs.msdn.microsoft.com/matthew_van_eerde/2008/12/16/sample-wasapi-loopback-capture-record-what-you-hear/
 #ifdef WASAPI_LOOPBACK
@@ -220,7 +222,7 @@ bool cleanupLoopback()
 #endif
 }
 
-void configureLoopback(AutoVibez::Core::AutoVibezApp *app) {
+void configureLoopback(Core::AutoVibezApp *app) {
     (void)app; // Parameter not used in current implementation
 #ifdef WASAPI_LOOPBACK
     // Default to WASAPI loopback if it was enabled at compilation.
@@ -230,7 +232,7 @@ void configureLoopback(AutoVibez::Core::AutoVibezApp *app) {
 #endif
 }
 
-bool processLoopbackFrame(AutoVibez::Core::AutoVibezApp *app) {
+bool processLoopbackFrame(Core::AutoVibezApp *app) {
     (void)app; // Parameter not used in current implementation
 #ifdef WASAPI_LOOPBACK
 	HRESULT hr;
@@ -283,3 +285,6 @@ bool processLoopbackFrame(AutoVibez::Core::AutoVibezApp *app) {
 
     return true;
 }
+
+} // namespace Audio
+} // namespace AutoVibez

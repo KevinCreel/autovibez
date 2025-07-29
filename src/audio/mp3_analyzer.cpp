@@ -15,6 +15,12 @@
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/textidentificationframe.h>
+#include "console_output.hpp"
+
+using AutoVibez::Audio::MP3Analyzer;
+
+namespace AutoVibez {
+namespace Audio {
 
 MP3Analyzer::MP3Analyzer() {
     last_error.clear();
@@ -210,4 +216,7 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
 #endif
     
     return metadata;
-} 
+}
+
+} // namespace Audio
+} // namespace AutoVibez 

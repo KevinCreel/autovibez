@@ -4,6 +4,7 @@
 #include <fstream>
 #include "mix_player.hpp"
 #include "fixtures/test_fixtures.hpp"
+using AutoVibez::Audio::MixPlayer;
 
 class MixPlayerTest : public ::testing::Test {
 protected:

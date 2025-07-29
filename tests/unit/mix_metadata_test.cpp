@@ -5,6 +5,9 @@
 #include "mix_metadata.hpp"
 #include "fixtures/test_fixtures.hpp"
 
+using AutoVibez::Data::MixMetadata;
+using AutoVibez::Data::Mix;
+
 class MixMetadataTest : public ::testing::Test {
 protected:
     void SetUp() override {

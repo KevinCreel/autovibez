@@ -4,6 +4,9 @@
 #include "mix_metadata.hpp"
 #include <string>
 
+namespace AutoVibez {
+namespace Data {
+
 /**
  * @brief Handles terminal UI for mix information display
  */
@@ -59,5 +62,8 @@ private:
      */
     std::string formatFileSize(size_t bytes);
 };
+
+} // namespace Data
+} // namespace AutoVibez
 
 #endif // MIX_DISPLAY_HPP 

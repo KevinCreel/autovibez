@@ -5,6 +5,8 @@
 #include <iostream>
 #include <filesystem>
 
+using AutoVibez::Data::MixDownloader;
+
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
     userp->append(static_cast<const char*>(contents), size * nmemb);
     return size * nmemb;
@@ -24,8 +26,10 @@ static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
     return 0;
 }
 
-MixDownloader::MixDownloader(const std::string& cache_dir)
-    : cache_dir(cache_dir) {
+namespace AutoVibez {
+namespace Data {
+
+MixDownloader::MixDownloader(const std::string& cacheDir) : cache_dir(cacheDir) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
@@ -112,4 +116,7 @@ bool MixDownloader::isMixDownloaded(const std::string& mix_id) {
 
 std::string MixDownloader::getLocalPath(const std::string& mix_id) {
     return cache_dir + "/" + mix_id + ".mp3";
-} 
+}
+
+} // namespace Data
+} // namespace AutoVibez 

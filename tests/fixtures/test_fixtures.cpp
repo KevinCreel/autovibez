@@ -6,6 +6,8 @@
 #include <sqlite3.h>
 #include <yaml-cpp/yaml.h>
 
+using AutoVibez::Data::Mix;
+
 int TestFixtures::test_counter = 0;
 
 std::string TestFixtures::createTempTestDir() {

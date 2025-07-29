@@ -1,10 +1,14 @@
 #include "mix_database.hpp"
 #include "console_output.hpp"
+#include "constants.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <random>
 #include <chrono>
+
+namespace AutoVibez {
+namespace Data {
 
 MixDatabase::MixDatabase(const std::string& db_path) 
     : db(nullptr), db_path(db_path), success(true) {
@@ -694,4 +698,7 @@ bool MixDatabase::executeQuery(const std::string& sql) {
     }
     
     return true;
-} 
+}
+
+} // namespace Data
+} // namespace AutoVibez 

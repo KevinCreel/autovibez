@@ -5,6 +5,9 @@
 #include <vector>
 #include <chrono>
 
+namespace AutoVibez {
+namespace Audio {
+
 struct MP3Metadata {
     std::string id;
     std::string title;
@@ -41,5 +44,8 @@ private:
     std::string last_error;
     bool _verbose = false;
 };
+
+} // namespace Audio
+} // namespace AutoVibez
 
 #endif // MP3_ANALYZER_HPP 

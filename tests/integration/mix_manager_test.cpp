@@ -6,6 +6,8 @@
 #include "mix_database.hpp"
 #include "mix_metadata.hpp"
 #include "fixtures/test_fixtures.hpp"
+using AutoVibez::Data::MixManager;
+using AutoVibez::Data::Mix;
 
 class MixManagerIntegrationTest : public ::testing::Test {
 protected:

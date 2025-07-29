@@ -3,6 +3,8 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+using AutoVibez::Audio::initLoopback;
+using AutoVibez::Audio::cleanupLoopback;
 
 class MemoryCleanupTest : public ::testing::Test {
 protected:

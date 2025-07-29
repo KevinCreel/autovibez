@@ -4,6 +4,7 @@
 #include <fstream>
 #include "config_manager.hpp"
 #include "fixtures/test_fixtures.hpp"
+using AutoVibez::Data::ConfigFile;
 
 class ConfigManagerTest : public ::testing::Test {
 protected:

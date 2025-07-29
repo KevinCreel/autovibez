@@ -1,6 +1,14 @@
-#ifndef audioCapture_hpp
-#define audioCapture_hpp
+#ifndef audio_capture_hpp
+#define audio_capture_hpp
 
-#include "autovibez_app.hpp"
+namespace AutoVibez {
+namespace Audio {
 
-#endif /* audioCapture_hpp */
+namespace AutoVibez { namespace Core { class AutoVibezApp; } }
+
+void audioInputCallbackF32(void* userData, const float* buffer, int len);
+
+} // namespace Audio
+} // namespace AutoVibez
+
+#endif /* audio_capture_hpp */

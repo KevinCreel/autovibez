@@ -47,8 +47,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 
 using std::string;
+
+namespace AutoVibez {
+namespace Data {
 
 class ConfigFile {
 // Data
@@ -161,121 +166,95 @@ public:
 			: key(key_) {} };
 };
 
+// Template method definitions must be inside the namespace
 
-/* static */
+// static
+// Convert from a T to a string
 template<class T>
-string ConfigFile::T_as_string( const T& t )
+string ConfigFile::T_as_string(const T& t)
 {
-	// Convert from a T to a string
-	// Type T must support << operator
-	std::ostringstream ost;
-	ost << t;
-	return ost.str();
+    std::ostringstream oss;
+    oss << t;
+    return oss.str();
 }
 
-
-/* static */
+// static
+// Convert from a string to a T
 template<class T>
-T ConfigFile::string_as_T( const string& s )
+T ConfigFile::string_as_T(const string& s)
 {
-	// Convert from a string to a T
-	// Type T must support >> operator
-	T t;
-	std::istringstream ist(s);
-	ist >> t;
-	return t;
+    std::istringstream iss(s);
+    T t;
+    iss >> t;
+    return t;
 }
 
-
-/* static */
+// static
+// Convert from a string to a string (specialization)
 template<>
-inline string ConfigFile::string_as_T<string>( const string& s )
+inline string ConfigFile::string_as_T<string>(const string& s)
 {
-	// Convert from a string to a string
-	// In other words, do nothing
-	return s;
+    return s;
 }
 
-
-/* static */
+// static
+// Convert from a string to a bool (specialization)
 template<>
-inline bool ConfigFile::string_as_T<bool>( const string& s )
+inline bool ConfigFile::string_as_T<bool>(const string& s)
 {
-	// Convert from a string to a bool
-	// Interpret "false", "F", "no", "n", "0" as false
-	// Interpret "true", "T", "yes", "y", "1", "-1", or anything else as true
-	bool b = true;
-	string sup = s;
-	for( string::iterator p = sup.begin(); p != sup.end(); ++p )
-		*p = toupper(*p);  // make string all caps
-	if( sup==string("FALSE") || sup==string("F") ||
-	    sup==string("NO") || sup==string("N") ||
-	    sup==string("0") || sup==string("NONE") )
-		b = false;
-	return b;
+    bool b = true;
+    string sup = s;
+    for (auto& c : sup) c = toupper(c);
+    if (sup == "FALSE" || sup == "F" || sup == "NO" || sup == "N" || sup == "0" || sup == "NONE")
+        b = false;
+    return b;
 }
-
 
 template<class T>
-T ConfigFile::read( const string& key ) const
+T ConfigFile::read(const string& key) const
 {
-	// Read the value corresponding to key
-	mapci p = myContents.find(key);
-	if( p == myContents.end() ) throw key_not_found(key);
-	return string_as_T<T>( p->second );
+    mapci p = myContents.find(key);
+    if (p == myContents.end()) throw key_not_found(key);
+    return string_as_T<T>(p->second);
 }
-
 
 template<class T>
-T ConfigFile::read( const string& key, const T& value ) const
+T ConfigFile::read(const string& key, const T& value) const
 {
-	// Return the value corresponding to key or given default value
-	// if key is not found
-	mapci p = myContents.find(key);
-	if( p == myContents.end() ) return value;
-	return string_as_T<T>( p->second );
+    mapci p = myContents.find(key);
+    if (p == myContents.end()) return value;
+    return string_as_T<T>(p->second);
 }
-
 
 template<class T>
-bool ConfigFile::readInto( T& var, const string& key ) const
+bool ConfigFile::readInto(T& var, const string& key) const
 {
-	// Get the value corresponding to key and store in var
-	// Return true if key is found
-	// Otherwise leave var untouched
-	mapci p = myContents.find(key);
-	bool found = ( p != myContents.end() );
-	if( found ) var = string_as_T<T>( p->second );
-	return found;
+    mapci p = myContents.find(key);
+    bool found = (p != myContents.end());
+    if (found) var = string_as_T<T>(p->second);
+    return found;
 }
-
 
 template<class T>
-bool ConfigFile::readInto( T& var, const string& key, const T& value ) const
+bool ConfigFile::readInto(T& var, const string& key, const T& value) const
 {
-	// Get the value corresponding to key and store in var
-	// Return true if key is found
-	// Otherwise set var to given default
-	mapci p = myContents.find(key);
-	bool found = ( p != myContents.end() );
-	if( found )
-		var = string_as_T<T>( p->second );
-	else
-		var = value;
-	return found;
+    mapci p = myContents.find(key);
+    bool found = (p != myContents.end());
+    var = found ? string_as_T<T>(p->second) : value;
+    return found;
 }
-
 
 template<class T>
-void ConfigFile::add( string key, const T& value )
+void ConfigFile::add(string key, const T& value)
 {
-	// Add a key with given value
-	string v = T_as_string( value );
-	trim(key);
-	trim(v);
-	myContents[key] = v;
-	return;
+    string v = T_as_string(value);
+    trim(key);
+    trim(v);
+    myContents[key] = v;
 }
+
+} // namespace Data
+} // namespace AutoVibez
 
 // Release notes:
 // v1.0  21 May 1999

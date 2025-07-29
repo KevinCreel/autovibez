@@ -5,6 +5,9 @@
 #include "mix_database.hpp"
 #include "fixtures/test_fixtures.hpp"
 
+using AutoVibez::Data::MixDatabase;
+using AutoVibez::Data::Mix;
+
 class MixDatabaseTest : public ::testing::Test {
 protected:
     void SetUp() override {

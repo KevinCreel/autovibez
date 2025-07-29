@@ -9,6 +9,9 @@
 #include <vector>
 #include <memory>
 
+namespace AutoVibez {
+namespace Data {
+
 /**
  * @brief Main orchestrator for mix management functionality
  */
@@ -162,8 +165,8 @@ private:
     std::unique_ptr<MixDatabase> database;
     std::unique_ptr<MixMetadata> metadata;
     std::unique_ptr<MixDownloader> downloader;
-    std::unique_ptr<MixPlayer> player;
-    std::unique_ptr<MP3Analyzer> mp3_analyzer;
+    std::unique_ptr<AutoVibez::Audio::MixPlayer> player;
+    std::unique_ptr<AutoVibez::Audio::MP3Analyzer> mp3_analyzer;
     std::string db_path;
     std::string cache_dir;
     std::string last_error;
@@ -186,4 +189,7 @@ private:
     // Genre management
     std::string _current_genre{"techno"};
     std::vector<std::string> _available_genres;
-}; 
+};
+
+} // namespace Data
+} // namespace AutoVibez 

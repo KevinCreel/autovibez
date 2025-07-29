@@ -2,6 +2,7 @@
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
 #include "config_manager.hpp"
+#include "mix_manager.hpp"
 #include "console_output.hpp"
 #include <SDL2/SDL.h>
 #include <iostream>
@@ -14,6 +15,11 @@ using AutoVibez::Core::AutoVibezApp;
 #include <cmath>
 #include <vector>
 #include <cstdlib>
+
+using AutoVibez::Data::ConfigFile;
+using AutoVibez::Data::MixManager;
+using AutoVibez::Audio::initLoopback;
+using AutoVibez::Audio::configureLoopback;
 
 // Helper function to expand tilde in paths (cross-platform)
 std::string expandTilde(const std::string& path) {
