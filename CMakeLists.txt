@@ -145,12 +145,12 @@ add_executable(autovibez
     src/data/mix_metadata.hpp
     
     # User interface
-    src/ui/app_state.cpp
-    src/ui/app_state.hpp
-    src/ui/input_handler.cpp
-    src/ui/input_handler.hpp
-    src/ui/preset_manager.cpp
-    src/ui/preset_manager.hpp
+    src/core/app_state.cpp
+    src/core/app_state.hpp
+    src/core/input_handler.cpp
+    src/core/input_handler.hpp
+    src/core/preset_manager.cpp
+    src/core/preset_manager.hpp
     src/ui/simple_ui.cpp
     src/ui/simple_ui.hpp
     
@@ -347,14 +347,14 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/data/mix_display.hpp
     
     # User interface
-    src/ui/app_state.cpp
-    src/ui/app_state.hpp
-    src/ui/preset_manager.cpp
-    src/ui/preset_manager.hpp
+    src/core/app_state.cpp
+    src/core/app_state.hpp
+    src/core/preset_manager.cpp
+    src/core/preset_manager.hpp
     src/ui/simple_ui.cpp
     src/ui/simple_ui.hpp
-    src/ui/input_handler.cpp
-    src/ui/input_handler.hpp
+    src/core/input_handler.cpp
+    src/core/input_handler.hpp
     
     # Platform-specific utilities
     src/platform/opengl.h
