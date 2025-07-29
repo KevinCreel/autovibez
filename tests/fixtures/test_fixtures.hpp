@@ -77,6 +77,13 @@ public:
      * @return Unique test ID string
      */
     static std::string generateTestId();
+    
+    /**
+     * @brief Create a test MP3 file for testing
+     * @param file_path Path where to create the MP3 file
+     * @return True if successful
+     */
+    static bool createTestMP3File(const std::string& file_path);
 
 private:
     static int test_counter;

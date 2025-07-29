@@ -70,7 +70,7 @@ make
 ```bash
 sudo make install
 ```
-This will install AutoVibez to `/usr/local/bin/` and assets to `/usr/local/share/autovibez/`.
+This will install AutoVibez to the system's standard locations.
 
 5. Run the application:
 ```bash
@@ -97,22 +97,69 @@ This will install AutoVibez to `/usr/local/bin/` and assets to `/usr/local/share
 
 ### Configuration
 
-The application looks for configuration in the following order:
-1. `~/.projectM/config.inp` (user configuration)
-2. `/usr/local/share/autovibez/config.inp` (system-wide default)
-3. `./config/config.inp` (local configuration)
+The application follows XDG Base Directory Specification and looks for configuration in the following order:
+1. `$AUTOVIBEZ_CONFIG` environment variable (if set)
+2. `$XDG_CONFIG_HOME/autovibez/config.inp` (or `~/.config/autovibez/config.inp` if not set)
+3. System-wide default location
+4. `./config/config.inp` (local configuration)
 
 ### Data Directory
 
-AutoVibez uses `/usr/local/share/autovibez/` as its data directory, which contains:
-- `presets/` - Symlinked to user's ProjectM presets
-- `textures/` - Symlinked to user's ProjectM textures  
-- `config.inp` - Default configuration file
+AutoVibez uses a **single source of truth** (`PathManager`) for all directory management, providing XDG-compliant, cross-platform directory resolution:
+
+**Linux/Unix:**
+- **Config**: `$XDG_CONFIG_HOME/autovibez/` (or `~/.config/autovibez/` if not set)
+- **Data**: `$XDG_DATA_HOME/autovibez/` (or `~/.local/share/autovibez/` if not set)
+- **Cache**: `$XDG_CACHE_HOME/autovibez/` (or `~/.cache/autovibez/` if not set)
+- **State**: `$XDG_STATE_HOME/autovibez/` (or `~/.local/state/autovibez/` if not set)
+
+**macOS:**
+- **Config**: `~/Library/Application Support/autovibez/config/`
+- **Data**: `~/Library/Application Support/autovibez/assets/`
+- **Cache**: `~/Library/Caches/autovibez/`
+- **State**: `~/Library/Application Support/autovibez/state/`
+
+**Windows:**
+- **Config**: `%APPDATA%/autovibez/config/`
+- **Data**: `%APPDATA%/autovibez/assets/`
+- **Cache**: `%APPDATA%/autovibez/cache/`
+- **State**: `%APPDATA%/autovibez/state/`
+
+The application automatically creates these directories if they don't exist and respects your XDG environment variables.
+
+### Using PathManager
+
+The `PathManager` class provides a comprehensive interface for all path operations:
+
+```cpp
+// Core directories
+std::string config_dir = PathManager::getConfigDirectory();
+std::string data_dir = PathManager::getDataDirectory();
+std::string cache_dir = PathManager::getCacheDirectory();
+std::string state_dir = PathManager::getStateDirectory();
+
+// File paths
+std::string db_path = PathManager::getDatabasePath();
+std::string mix_cache = PathManager::getMixCacheDirectory();
+std::string presets = PathManager::getPresetsDirectory();
+std::string textures = PathManager::getTexturesDirectory();
+
+// Search paths (in priority order)
+std::vector<std::string> config_paths = PathManager::getConfigFileSearchPaths();
+std::vector<std::string> preset_paths = PathManager::getPresetSearchPaths();
+std::vector<std::string> texture_paths = PathManager::getTextureSearchPaths();
+
+// Utilities
+std::string config_file = PathManager::findConfigFile();
+std::string expanded = PathManager::expandTilde("~/path");
+bool exists = PathManager::pathExists("/some/path");
+PathManager::ensureDirectoryExists("/some/directory");
+```
 
 ### Presets
 
 AutoVibez automatically uses your existing ProjectM presets through symlinks. The application looks for presets in:
-- `/usr/local/share/autovibez/presets/` (symlinked to your ProjectM presets)
+- System-wide preset directory (symlinked to your ProjectM presets)
 - Custom path specified in `preset_path` config option
 
 ## Configuration Options

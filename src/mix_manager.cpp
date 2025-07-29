@@ -314,6 +314,10 @@ bool MixManager::isPaused() const {
     return player && player->isPaused();
 }
 
+bool MixManager::hasFinished() {
+    return player && player->hasFinished();
+}
+
 int MixManager::getCurrentPosition() const {
     return player ? player->getCurrentPosition() : 0;
 }

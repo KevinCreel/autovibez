@@ -16,6 +16,8 @@ MixPlayer::MixPlayer()
     
     // Set volume
     Mix_Volume(-1, MIX_MAX_VOLUME);
+    
+
 }
 
 MixPlayer::~MixPlayer() {
@@ -179,6 +181,22 @@ int MixPlayer::getCurrentPosition() const {
 
 bool MixPlayer::isPlaying() const {
     return playing && !Mix_PausedMusic() && Mix_PlayingMusic();
+}
+
+bool MixPlayer::hasFinished() {
+    // Check if music has finished naturally
+    if (playing && !Mix_PlayingMusic() && !Mix_PausedMusic()) {
+        // Music has finished, update internal state
+        playing = false;
+        if (current_music) {
+            Mix_FreeMusic(current_music);
+            current_music = nullptr;
+        }
+        printf("🎵 Mix finished\n");
+        printf("\n");
+        return true;
+    }
+    return false;
 }
 
 bool MixPlayer::isPaused() const {

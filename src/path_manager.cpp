@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <SDL2/SDL.h>
+#include <algorithm>
 
 std::string PathManager::getConfigDirectory() {
     std::string config_dir;
@@ -65,21 +66,12 @@ std::string PathManager::getDataDirectory() {
 }
 
 std::string PathManager::findConfigFile() {
-    // Check environment variable first
-    const char* config_env = std::getenv("AUTOVIBEZ_CONFIG");
-    if (config_env) {
-        return std::string(config_env);
-    }
+    std::vector<std::string> search_paths = getConfigFileSearchPaths();
     
-    // Check XDG config directory
-    std::string xdg_config = getConfigDirectory() + "/config.inp";
-    if (std::filesystem::exists(xdg_config)) {
-        return xdg_config;
-    }
-    
-    // Check local config directory
-    if (std::filesystem::exists(Constants::DEFAULT_CONFIG_FILE)) {
-        return Constants::DEFAULT_CONFIG_FILE;
+    for (const auto& path : search_paths) {
+        if (pathExists(path)) {
+            return path;
+        }
     }
     
     return "";
@@ -114,34 +106,24 @@ std::string PathManager::expandTilde(const std::string& path) {
 std::string PathManager::getCacheDirectory() {
     std::string cache_dir;
     
-#ifdef _WIN32
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata) {
-        cache_dir = std::string(appdata) + "/autovibez/cache";
-    } else {
-        cache_dir = "build/data"; // Fallback
-    }
-#elif defined(__APPLE__)
-    const char* home = std::getenv("HOME");
-    if (home) {
-        cache_dir = std::string(home) + "/Library/Caches/autovibez";
-    } else {
-        cache_dir = "build/data"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG cache directory
-    const char* xdg_cache_home = std::getenv("XDG_CACHE_HOME");
-    if (xdg_cache_home && strlen(xdg_cache_home) > 0) {
-        cache_dir = std::string(xdg_cache_home) + "/autovibez";
-    } else {
-        const char* home = std::getenv("HOME");
-        if (home) {
-            cache_dir = std::string(home) + "/.cache/autovibez";
+    if (isWindows()) {
+        std::string appdata = getWindowsAppData();
+        if (!appdata.empty()) {
+            cache_dir = joinPath(appdata, "autovibez/cache");
         } else {
-            cache_dir = "build/data"; // Last resort fallback
+            cache_dir = "build/data"; // Fallback
         }
+    } else if (isMacOS()) {
+        std::string caches = getMacOSCaches();
+        if (!caches.empty()) {
+            cache_dir = joinPath(caches, "autovibez");
+        } else {
+            cache_dir = "build/data"; // Fallback
+        }
+    } else {
+        // Linux/Unix: Use XDG cache directory
+        cache_dir = joinPath(getXDGCacheHome(), "autovibez");
     }
-#endif
     
     ensureDirectoryExists(cache_dir);
     return cache_dir;
@@ -150,34 +132,24 @@ std::string PathManager::getCacheDirectory() {
 std::string PathManager::getStateDirectory() {
     std::string state_dir;
     
-#ifdef _WIN32
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata) {
-        state_dir = std::string(appdata) + "/autovibez/state";
-    } else {
-        state_dir = "build/data"; // Fallback
-    }
-#elif defined(__APPLE__)
-    const char* home = std::getenv("HOME");
-    if (home) {
-        state_dir = std::string(home) + "/Library/Application Support/autovibez/state";
-    } else {
-        state_dir = "build/data"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG state directory
-    const char* xdg_state_home = std::getenv("XDG_STATE_HOME");
-    if (xdg_state_home && strlen(xdg_state_home) > 0) {
-        state_dir = std::string(xdg_state_home) + "/autovibez";
-    } else {
-        const char* home = std::getenv("HOME");
-        if (home) {
-            state_dir = std::string(home) + "/.local/state/autovibez";
+    if (isWindows()) {
+        std::string appdata = getWindowsAppData();
+        if (!appdata.empty()) {
+            state_dir = joinPath(appdata, "autovibez/state");
         } else {
-            state_dir = "build/data"; // Last resort fallback
+            state_dir = "build/data"; // Fallback
         }
+    } else if (isMacOS()) {
+        std::string appsupport = getMacOSAppSupport();
+        if (!appsupport.empty()) {
+            state_dir = joinPath(appsupport, "autovibez/state");
+        } else {
+            state_dir = "build/data"; // Fallback
+        }
+    } else {
+        // Linux/Unix: Use XDG state directory
+        state_dir = joinPath(getXDGStateHome(), "autovibez");
     }
-#endif
     
     ensureDirectoryExists(state_dir);
     return state_dir;
@@ -215,4 +187,246 @@ void PathManager::ensureDirectoryExists(const std::string& path) {
     if (!std::filesystem::exists(path)) {
         std::filesystem::create_directories(path);
     }
+}
+
+// ===== File Path Methods =====
+
+std::string PathManager::getDatabasePath() {
+    return getStateDirectory() + "/autovibez_mixes.db";
+}
+
+std::string PathManager::getMixCacheDirectory() {
+    return getCacheDirectory() + "/mix_cache";
+}
+
+std::string PathManager::getPresetsDirectory() {
+    return getAssetsDirectory() + "/presets";
+}
+
+std::string PathManager::getTexturesDirectory() {
+    return getAssetsDirectory() + "/textures";
+}
+
+// ===== Utility Methods =====
+
+std::vector<std::string> PathManager::getConfigFileSearchPaths() {
+    std::vector<std::string> paths;
+    
+    // 1. Environment variable
+    const char* config_env = std::getenv("AUTOVIBEZ_CONFIG");
+    if (config_env) {
+        paths.push_back(std::string(config_env));
+    }
+    
+    // 2. XDG config directory
+    paths.push_back(getConfigDirectory() + "/config.inp");
+    
+    // 3. System-wide default
+    paths.push_back("/usr/local/share/autovibez/config.inp");
+    
+    // 4. Local config directory
+    paths.push_back(Constants::DEFAULT_CONFIG_FILE);
+    
+    return paths;
+}
+
+std::vector<std::string> PathManager::getPresetSearchPaths() {
+    std::vector<std::string> paths;
+    
+    // 1. XDG data directory
+    paths.push_back(getPresetsDirectory());
+    
+    // 2. System-wide presets
+    paths.push_back("/usr/local/share/autovibez/presets");
+    
+    // 3. Local assets
+    paths.push_back(Constants::DEFAULT_PRESET_PATH);
+    
+    return paths;
+}
+
+std::vector<std::string> PathManager::getTextureSearchPaths() {
+    std::vector<std::string> paths;
+    
+    // 1. XDG data directory
+    paths.push_back(getTexturesDirectory());
+    
+    // 2. System-wide textures
+    paths.push_back("/usr/local/share/autovibez/textures");
+    
+    // 3. Local assets
+    paths.push_back(Constants::DEFAULT_TEXTURE_PATH);
+    
+    return paths;
+}
+
+bool PathManager::pathExists(const std::string& path) {
+    return std::filesystem::exists(path);
+}
+
+std::string PathManager::getAppName() {
+    return "autovibez";
+}
+
+// ===== Platform Detection =====
+
+bool PathManager::isLinux() {
+#ifdef _WIN32
+    return false;
+#elif defined(__APPLE__)
+    return false;
+#else
+    return true;
+#endif
+}
+
+bool PathManager::isMacOS() {
+#ifdef __APPLE__
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool PathManager::isWindows() {
+#ifdef _WIN32
+    return true;
+#else
+    return false;
+#endif
+}
+
+// ===== XDG Base Directory Methods =====
+
+std::string PathManager::getXDGCacheHome() {
+    const char* xdg_cache_home = std::getenv("XDG_CACHE_HOME");
+    if (xdg_cache_home && strlen(xdg_cache_home) > 0) {
+        return std::string(xdg_cache_home);
+    } else {
+        const char* home = std::getenv("HOME");
+        if (home) {
+            return std::string(home) + "/.cache";
+        } else {
+            return "cache"; // Last resort fallback
+        }
+    }
+}
+
+std::string PathManager::getXDGStateHome() {
+    const char* xdg_state_home = std::getenv("XDG_STATE_HOME");
+    if (xdg_state_home && strlen(xdg_state_home) > 0) {
+        return std::string(xdg_state_home);
+    } else {
+        const char* home = std::getenv("HOME");
+        if (home) {
+            return std::string(home) + "/.local/state";
+        } else {
+            return "state"; // Last resort fallback
+        }
+    }
+}
+
+std::vector<std::string> PathManager::getXDGDataDirectories() {
+    std::vector<std::string> directories;
+    
+    // Add XDG_DATA_HOME
+    directories.push_back(getXDGDataHome());
+    
+    // Add XDG_DATA_DIRS (split by colon)
+    const char* xdg_data_dirs = std::getenv("XDG_DATA_DIRS");
+    if (xdg_data_dirs) {
+        std::string dirs_str(xdg_data_dirs);
+        size_t pos = 0;
+        while ((pos = dirs_str.find(':')) != std::string::npos) {
+            directories.push_back(dirs_str.substr(0, pos));
+            dirs_str.erase(0, pos + 1);
+        }
+        if (!dirs_str.empty()) {
+            directories.push_back(dirs_str);
+        }
+    } else {
+        // Default XDG data directories
+        directories.push_back("/usr/local/share");
+        directories.push_back("/usr/share");
+    }
+    
+    return directories;
+}
+
+// ===== Platform-Specific Methods =====
+
+std::string PathManager::getWindowsAppData() {
+    const char* appdata = std::getenv("APPDATA");
+    if (appdata) {
+        return std::string(appdata);
+    } else {
+        return ""; // Fallback handled by caller
+    }
+}
+
+std::string PathManager::getMacOSAppSupport() {
+    const char* home = std::getenv("HOME");
+    if (home) {
+        return std::string(home) + "/Library/Application Support";
+    } else {
+        return ""; // Fallback handled by caller
+    }
+}
+
+std::string PathManager::getMacOSCaches() {
+    const char* home = std::getenv("HOME");
+    if (home) {
+        return std::string(home) + "/Library/Caches";
+    } else {
+        return ""; // Fallback handled by caller
+    }
+}
+
+// ===== Internal Utilities =====
+
+std::string PathManager::getHomeDirectory() {
+    const char* home = std::getenv("HOME");
+    if (home) {
+        return std::string(home);
+    }
+    
+#ifdef _WIN32
+    const char* userprofile = std::getenv("USERPROFILE");
+    if (userprofile) {
+        return std::string(userprofile);
+    }
+#endif
+    
+    return ""; // Fallback handled by caller
+}
+
+std::string PathManager::joinPath(const std::string& base, const std::string& component) {
+    if (base.empty()) {
+        return component;
+    }
+    if (component.empty()) {
+        return base;
+    }
+    
+    // Handle trailing slash in base
+    std::string result = base;
+    if (result.back() != '/' && result.back() != '\\') {
+        result += '/';
+    }
+    
+    return result + component;
+}
+
+std::string PathManager::normalizePath(const std::string& path) {
+    std::string normalized = path;
+    
+#ifdef _WIN32
+    // Convert forward slashes to backslashes on Windows
+    std::replace(normalized.begin(), normalized.end(), '/', '\\');
+#else
+    // Convert backslashes to forward slashes on Unix-like systems
+    std::replace(normalized.begin(), normalized.end(), '\\', '/');
+#endif
+    
+    return normalized;
 } 

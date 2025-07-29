@@ -105,7 +105,7 @@ std::string getConfigDirectory() {
         if (home) {
             config_dir = std::string(home) + "/.config/autovibez";
         } else {
-            config_dir = "config"; // Last resort fallback
+            config_dir = Constants::DEFAULT_CONFIG_FILE; // Last resort fallback
         }
     }
 #endif
@@ -133,8 +133,8 @@ std::string findConfigFile() {
     }
     
     // Fallback to local config directory
-    if (std::filesystem::exists("config/config.inp")) {
-        return "config/config.inp";
+    if (std::filesystem::exists(Constants::DEFAULT_CONFIG_FILE)) {
+        return Constants::DEFAULT_CONFIG_FILE;
     }
     
     return "";

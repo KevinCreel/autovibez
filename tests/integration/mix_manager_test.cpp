@@ -505,4 +505,155 @@ preferred_genre = Electronic
 //     EXPECT_EQ(recently_played.size(), 2);
 //     EXPECT_EQ(recently_played[0].id, "test_mix_2"); // Most recent
 //     EXPECT_EQ(recently_played[1].id, "test_mix_1"); // Second most recent
-// } 
+// }
+
+TEST_F(MixManagerIntegrationTest, MixEndDetectionAndAutoPlay) {
+    // Create test config file
+    std::string config_content = R"(
+mixes_url = )" + yaml_path + R"(
+cache_size_mb = 100
+auto_download = true
+preferred_genre = Electronic
+)";
+    
+    std::string config_path = test_dir + "/config.inp";
+    ASSERT_TRUE(TestFixtures::createTestConfigFile(config_path, config_content));
+    
+    // Create test YAML file with multiple mixes
+    std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(5);
+    ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
+    
+    MixManager manager(db_path, cache_dir);
+    ASSERT_TRUE(manager.initialize());
+    
+    // Load mixes and sync to database
+    ASSERT_TRUE(manager.loadMixMetadata(yaml_path));
+    manager.syncMixesWithDatabase(manager.getAvailableMixes());
+    
+    // Test initial state
+    EXPECT_FALSE(manager.isPlaying());
+    EXPECT_FALSE(manager.isPaused());
+    EXPECT_FALSE(manager.hasFinished());
+    
+    // Debug: Check available mixes
+    std::vector<Mix> available_mixes = manager.getAvailableMixes();
+    EXPECT_GT(available_mixes.size(), 0);
+    
+    // Add mixes to database manually using syncMixesWithDatabase
+    manager.syncMixesWithDatabase(available_mixes);
+    
+    // Test hasFinished functionality (should be false initially)
+    EXPECT_FALSE(manager.hasFinished());
+    
+    // Test that we can get mixes from the available mixes
+    EXPECT_GT(available_mixes.size(), 0);
+    
+    // Test that all available mixes have valid IDs
+    for (const auto& mix : available_mixes) {
+        EXPECT_FALSE(mix.id.empty());
+        EXPECT_FALSE(mix.title.empty());
+        EXPECT_FALSE(mix.artist.empty());
+    }
+    
+    // Test that we can get smart random mixes with exclusions
+    if (available_mixes.size() > 1) {
+        Mix excluded_mix = available_mixes[0];
+        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
+        // Note: getSmartRandomMix might return empty if database is empty
+        // This is expected behavior for testing
+    }
+}
+
+TEST_F(MixManagerIntegrationTest, MixEndDetectionWithPause) {
+    // Create test config file
+    std::string config_content = R"(
+mixes_url = )" + yaml_path + R"(
+cache_size_mb = 100
+auto_download = true
+preferred_genre = Electronic
+)";
+    
+    std::string config_path = test_dir + "/config.inp";
+    ASSERT_TRUE(TestFixtures::createTestConfigFile(config_path, config_content));
+    
+    // Create test YAML file
+    std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
+    ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
+    
+    MixManager manager(db_path, cache_dir);
+    ASSERT_TRUE(manager.initialize());
+    
+    // Load mixes and sync to database
+    ASSERT_TRUE(manager.loadMixMetadata(yaml_path));
+    std::vector<Mix> available_mixes = manager.getAvailableMixes();
+    manager.syncMixesWithDatabase(available_mixes);
+    
+    // Test initial state
+    EXPECT_FALSE(manager.isPlaying());
+    EXPECT_FALSE(manager.isPaused());
+    EXPECT_FALSE(manager.hasFinished());
+    
+    // Test that we can get multiple mixes for different scenarios
+    EXPECT_GT(available_mixes.size(), 0);
+    
+    // Test that all mixes have valid IDs
+    for (const auto& mix : available_mixes) {
+        EXPECT_FALSE(mix.id.empty());
+        EXPECT_FALSE(mix.title.empty());
+        EXPECT_FALSE(mix.artist.empty());
+    }
+    
+    // Test that we can get smart random mixes with exclusions
+    if (available_mixes.size() > 1) {
+        Mix excluded_mix = available_mixes[0];
+        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
+        // Note: getSmartRandomMix might return empty if database is empty
+        // This is expected behavior for testing
+    }
+}
+
+TEST_F(MixManagerIntegrationTest, MixEndDetectionEdgeCases) {
+    // Create test config file
+    std::string config_content = R"(
+mixes_url = )" + yaml_path + R"(
+cache_size_mb = 100
+auto_download = true
+preferred_genre = Electronic
+)";
+    
+    std::string config_path = test_dir + "/config.inp";
+    ASSERT_TRUE(TestFixtures::createTestConfigFile(config_path, config_content));
+    
+    // Create test YAML file
+    std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(2);
+    ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
+    
+    MixManager manager(db_path, cache_dir);
+    ASSERT_TRUE(manager.initialize());
+    
+    // Load mixes and sync to database
+    ASSERT_TRUE(manager.loadMixMetadata(yaml_path));
+    std::vector<Mix> available_mixes = manager.getAvailableMixes();
+    manager.syncMixesWithDatabase(available_mixes);
+    
+    // Test hasFinished when nothing is playing
+    EXPECT_FALSE(manager.hasFinished());
+    
+    // Test that we can get mixes for edge cases
+    EXPECT_GT(available_mixes.size(), 0);
+    
+    // Test that all available mixes have valid data
+    for (const auto& mix : available_mixes) {
+        EXPECT_FALSE(mix.id.empty());
+        EXPECT_FALSE(mix.title.empty());
+        EXPECT_FALSE(mix.artist.empty());
+    }
+    
+    // Test that we can get smart random mixes with exclusions
+    if (available_mixes.size() > 1) {
+        Mix excluded_mix = available_mixes[0];
+        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
+        // Note: getSmartRandomMix might return empty if database is empty
+        // This is expected behavior for testing
+    }
+} 

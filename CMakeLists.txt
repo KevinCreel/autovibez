@@ -4,8 +4,76 @@ project(autovibez VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set data directory path
-set(DATADIR_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/autovibez")
+# Cross-platform installation paths
+# Platform-specific path detection and fallbacks
+if(WIN32)
+    # Windows: Use APPDATA environment variable
+    if(DEFINED ENV{APPDATA})
+        set(USER_DATA_HOME "$ENV{APPDATA}")
+    else()
+        set(USER_DATA_HOME "$ENV{USERPROFILE}/AppData/Roaming")
+    endif()
+    
+    if(DEFINED ENV{LOCALAPPDATA})
+        set(USER_CACHE_HOME "$ENV{LOCALAPPDATA}")
+    else()
+        set(USER_CACHE_HOME "$ENV{USERPROFILE}/AppData/Local")
+    endif()
+    
+    set(USER_CONFIG_HOME "${USER_DATA_HOME}")
+    set(USER_STATE_HOME "${USER_DATA_HOME}")
+    
+elseif(APPLE)
+    # macOS: Use standard macOS directories
+    set(USER_DATA_HOME "$ENV{HOME}/Library/Application Support")
+    set(USER_CONFIG_HOME "$ENV{HOME}/Library/Application Support")
+    set(USER_CACHE_HOME "$ENV{HOME}/Library/Caches")
+    set(USER_STATE_HOME "$ENV{HOME}/Library/Application Support")
+    
+else()
+    # Linux/Unix: Use XDG Base Directory Specification
+    if(DEFINED ENV{XDG_DATA_HOME})
+        set(USER_DATA_HOME "$ENV{XDG_DATA_HOME}")
+    else()
+        set(USER_DATA_HOME "$ENV{HOME}/.local/share")
+    endif()
+    
+    if(DEFINED ENV{XDG_CONFIG_HOME})
+        set(USER_CONFIG_HOME "$ENV{XDG_CONFIG_HOME}")
+    else()
+        set(USER_CONFIG_HOME "$ENV{HOME}/.config")
+    endif()
+    
+    if(DEFINED ENV{XDG_CACHE_HOME})
+        set(USER_CACHE_HOME "$ENV{XDG_CACHE_HOME}")
+    else()
+        set(USER_CACHE_HOME "$ENV{HOME}/.cache")
+    endif()
+    
+    if(DEFINED ENV{XDG_STATE_HOME})
+        set(USER_STATE_HOME "$ENV{XDG_STATE_HOME}")
+    else()
+        set(USER_STATE_HOME "$ENV{HOME}/.local/state")
+    endif()
+endif()
+
+# Set installation prefix based on platform and environment
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if(WIN32)
+        # Windows: Default to user's AppData
+        set(CMAKE_INSTALL_PREFIX "${USER_DATA_HOME}" CACHE PATH "Installation prefix" FORCE)
+    elseif(APPLE)
+        # macOS: Default to user's Application Support
+        set(CMAKE_INSTALL_PREFIX "${USER_DATA_HOME}" CACHE PATH "Installation prefix" FORCE)
+    else()
+        # Linux/Unix: Default to user's .local
+        set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "Installation prefix" FORCE)
+    endif()
+    message(STATUS "Setting default installation prefix to: ${CMAKE_INSTALL_PREFIX}")
+endif()
+
+# Set data directory path using platform-specific paths
+set(DATADIR_PATH "${USER_DATA_HOME}/autovibez")
 
 # Enable testing
 enable_testing()
@@ -98,42 +166,80 @@ target_link_libraries(autovibez
     ${IMGUI_LIBRARIES}
 )
 
-# Install executable
-install(TARGETS autovibez
-    RUNTIME DESTINATION bin
-)
-
-# Install assets (presets and textures)
-install(DIRECTORY assets/
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/autovibez
-    USE_SOURCE_PERMISSIONS
-)
-
-# Install rules
-install(TARGETS autovibez DESTINATION bin)
-
-# Install desktop file
-install(FILES assets/autovibez.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
-
-# Install icon (if it exists) - support multiple formats
-if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon.svg")
-    install(FILES assets/icon.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+# Platform-specific installation destinations
+if(WIN32)
+    # Windows: Install to user's AppData
+    install(TARGETS autovibez
+        RUNTIME DESTINATION bin
+    )
+    
+    # Install assets to user's AppData
+    install(DIRECTORY assets/
+        DESTINATION share/autovibez
+        USE_SOURCE_PERMISSIONS
+    )
+    
+    # Install desktop file (Windows doesn't use .desktop files)
+    # But we can install a shortcut or registry entry if needed
+    
+    # Install data files
+    install(DIRECTORY assets/ DESTINATION share/autovibez FILES_MATCHING PATTERN "*.milk" PATTERN "*.jpg" PATTERN "*.png")
+    
+elseif(APPLE)
+    # macOS: Install to user's Application Support
+    install(TARGETS autovibez
+        RUNTIME DESTINATION bin
+    )
+    
+    # Install assets to user's Application Support
+    install(DIRECTORY assets/
+        DESTINATION share/autovibez
+        USE_SOURCE_PERMISSIONS
+    )
+    
+    # Install desktop file (macOS uses .app bundles, not .desktop files)
+    # But we can install a .app bundle if needed
+    
+    # Install data files
+    install(DIRECTORY assets/ DESTINATION share/autovibez FILES_MATCHING PATTERN "*.milk" PATTERN "*.jpg" PATTERN "*.png")
+    
+else()
+    # Linux/Unix: Install to user's .local
+    install(TARGETS autovibez
+        RUNTIME DESTINATION bin
+    )
+    
+    # Install assets to user's .local/share
+    install(DIRECTORY assets/
+        DESTINATION share/autovibez
+        USE_SOURCE_PERMISSIONS
+    )
+    
+    # Install desktop file to user's applications directory
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/autovibez.desktop")
+        install(FILES assets/autovibez.desktop DESTINATION share/applications)
+    endif()
+        
+    # Install icon to user's icon directory (if it exists) - support multiple formats
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon.svg")
+        install(FILES assets/icon.svg DESTINATION share/icons/hicolor/scalable/apps)
+    endif()
+    
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-16.png")
+        install(FILES assets/icon-16.png DESTINATION share/icons/hicolor/16x16/apps)
+    endif()
+    
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-32.png")
+        install(FILES assets/icon-32.png DESTINATION share/icons/hicolor/32x32/apps)
+    endif()
+    
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-256.png")
+        install(FILES assets/icon-256.png DESTINATION share/icons/hicolor/256x256/apps)
+    endif()
+        
+    # Install data files to user's .local/share
+    install(DIRECTORY assets/ DESTINATION share/autovibez FILES_MATCHING PATTERN "*.milk" PATTERN "*.jpg" PATTERN "*.png")
 endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-16.png")
-    install(FILES assets/icon-16.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/16x16/apps)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-32.png")
-    install(FILES assets/icon-32.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/32x32/apps)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/assets/icon-256.png")
-    install(FILES assets/icon-256.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps)
-endif()
-
-# Install data files
-install(DIRECTORY assets/ DESTINATION ${CMAKE_INSTALL_DATADIR}/autovibez FILES_MATCHING PATTERN "*.milk" PATTERN "*.jpg" PATTERN "*.png")
 
 # Include directories
 target_include_directories(autovibez PRIVATE ${PROJECTM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS} ${TAGLIB_INCLUDE_DIRS})
@@ -212,12 +318,28 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/mp3_analyzer.hpp
     src/simple_ui.cpp
     src/simple_ui.hpp
+    # New modular components
+    src/constants.hpp
+    src/config_defaults.hpp
+    src/string_utils.hpp
+    src/path_manager.cpp
+    src/path_manager.hpp
+    src/app_state.cpp
+    src/app_state.hpp
+    src/preset_manager.cpp
+    src/preset_manager.hpp
+    src/audio_manager.cpp
+    src/audio_manager.hpp
+    src/input_handler.cpp
+    src/input_handler.hpp
     tests/fixtures/test_fixtures.cpp
     tests/fixtures/test_fixtures.hpp
     tests/unit/config_manager_test.cpp
     tests/unit/mix_metadata_test.cpp
     tests/unit/mix_database_test.cpp
     tests/unit/mp3_analyzer_test.cpp
+    tests/unit/mix_player_test.cpp
+    tests/unit/path_manager_test.cpp
     tests/integration/mix_manager_test.cpp
     tests/integration/audio_capture_test.cpp
     tests/feature/help_system_test.cpp

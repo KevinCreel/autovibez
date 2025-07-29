@@ -186,4 +186,31 @@ mixes:
 std::string TestFixtures::generateTestId() {
     return "test_" + std::to_string(++test_counter) + "_" + 
            std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
+}
+
+bool TestFixtures::createTestMP3File(const std::string& file_path) {
+    std::ofstream file(file_path, std::ios::binary);
+    if (!file.is_open()) {
+        return false;
+    }
+    
+    // Create a minimal valid MP3 file with ID3v2 header
+    // This is a simplified MP3 file structure for testing
+    
+    // ID3v2 header (10 bytes)
+    const unsigned char id3_header[] = {
+        0x49, 0x44, 0x33,  // "ID3"
+        0x03, 0x00,         // Version 2.3
+        0x00,               // Flags
+        0x00, 0x00, 0x00, 0x00  // Size (0 for this test)
+    };
+    
+    file.write(reinterpret_cast<const char*>(id3_header), sizeof(id3_header));
+    
+    // Add some dummy data to make it a "valid" file
+    const char dummy_data[] = "This is a test MP3 file for unit testing";
+    file.write(dummy_data, sizeof(dummy_data) - 1);
+    
+    file.close();
+    return true;
 } 

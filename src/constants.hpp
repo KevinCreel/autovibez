@@ -26,7 +26,7 @@ namespace Constants {
     constexpr int DEFAULT_FPS = 60;
     constexpr int FRAME_DELAY_MS = 1000 / DEFAULT_FPS;
     
-    // File paths
+    // File paths - These are fallbacks, actual paths are determined by PathManager
     constexpr const char* DEFAULT_CONFIG_FILE = "config/config.inp";
     constexpr const char* DEFAULT_PRESET_PATH = "assets/presets";
     constexpr const char* DEFAULT_TEXTURE_PATH = "assets/textures";

@@ -66,7 +66,13 @@ static int mainLoop(void *userData) {
         processLoopbackFrame(app);
         
         // Check for auto-play when music ends
-        app->checkAndAutoPlayNext();
+        if (app->isMixManagerInitialized()) {
+            // Check if current mix has finished
+            if (app->getMixManager()->hasFinished()) {
+                // Music has finished, trigger auto-play
+                app->checkAndAutoPlayNext();
+            }
+        }
         
         // Update crossfade if active
         if (app->isMixManagerInitialized()) {

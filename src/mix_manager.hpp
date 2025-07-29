@@ -105,6 +105,12 @@ public:
      * @return True if paused, false otherwise
      */
     bool isPaused() const;
+    
+    /**
+     * @brief Check if music has finished and update state
+     * @return True if music has finished, false otherwise
+     */
+    bool hasFinished();
     int getCurrentPosition() const;
     int getDuration() const;
     

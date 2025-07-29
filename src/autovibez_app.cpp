@@ -857,134 +857,17 @@ void AutoVibezApp::renderFpsCounter()
 
 // Get XDG data directory for autovibez (cross-platform)
 std::string AutoVibezApp::getDataDirectory() {
-    std::string data_dir;
-    
-#ifdef _WIN32
-    // Windows: Use %APPDATA%/autovibez
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata) {
-        data_dir = std::string(appdata) + "/autovibez";
-    } else {
-        data_dir = "data"; // Fallback
-    }
-#elif defined(__APPLE__)
-    // macOS: Use ~/Library/Application Support/autovibez
-    const char* home = std::getenv("HOME");
-    if (home) {
-        data_dir = std::string(home) + "/Library/Application Support/autovibez";
-    } else {
-        data_dir = "data"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG Base Directory Specification
-    const char* xdg_data_home = std::getenv("XDG_DATA_HOME");
-    if (xdg_data_home && strlen(xdg_data_home) > 0) {
-        data_dir = std::string(xdg_data_home) + "/autovibez";
-    } else {
-        // Fallback to default XDG location
-        const char* home = std::getenv("HOME");
-        if (home) {
-            data_dir = std::string(home) + "/.local/share/autovibez";
-        } else {
-            data_dir = "data"; // Last resort fallback
-        }
-    }
-#endif
-    
-    // Create directory if it doesn't exist
-    if (!std::filesystem::exists(data_dir)) {
-        std::filesystem::create_directories(data_dir);
-    }
-    
-    return data_dir;
+    return PathManager::getDataDirectory();
 }
 
 // Get XDG config directory for autovibez (cross-platform)
 std::string AutoVibezApp::getConfigDirectory() {
-    std::string config_dir;
-    
-#ifdef _WIN32
-    // Windows: Use %APPDATA%/autovibez/config
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata) {
-        config_dir = std::string(appdata) + "/autovibez/config";
-    } else {
-        config_dir = "config"; // Fallback
-    }
-#elif defined(__APPLE__)
-    // macOS: Use ~/Library/Application Support/autovibez/config
-    const char* home = std::getenv("HOME");
-    if (home) {
-        config_dir = std::string(home) + "/Library/Application Support/autovibez/config";
-    } else {
-        config_dir = "config"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG Base Directory Specification
-    const char* xdg_config_home = std::getenv("XDG_CONFIG_HOME");
-    if (xdg_config_home && strlen(xdg_config_home) > 0) {
-        config_dir = std::string(xdg_config_home) + "/autovibez";
-    } else {
-        // Fallback to default XDG location
-        const char* home = std::getenv("HOME");
-        if (home) {
-            config_dir = std::string(home) + "/.config/autovibez";
-        } else {
-            config_dir = "config"; // Last resort fallback
-        }
-    }
-#endif
-    
-    // Create directory if it doesn't exist
-    if (!std::filesystem::exists(config_dir)) {
-        std::filesystem::create_directories(config_dir);
-    }
-    
-    return config_dir;
+    return PathManager::getConfigDirectory();
 }
 
 // Get XDG cache directory for autovibez (cross-platform)
 std::string AutoVibezApp::getCacheDirectory() {
-    std::string cache_dir;
-    
-#ifdef _WIN32
-    // Windows: Use %LOCALAPPDATA%/autovibez/cache
-    const char* localappdata = std::getenv("LOCALAPPDATA");
-    if (localappdata) {
-        cache_dir = std::string(localappdata) + "/autovibez/cache";
-    } else {
-        cache_dir = "cache"; // Fallback
-    }
-#elif defined(__APPLE__)
-    // macOS: Use ~/Library/Caches/autovibez
-    const char* home = std::getenv("HOME");
-    if (home) {
-        cache_dir = std::string(home) + "/Library/Caches/autovibez";
-    } else {
-        cache_dir = "cache"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG Base Directory Specification
-    const char* xdg_cache_home = std::getenv("XDG_CACHE_HOME");
-    if (xdg_cache_home && strlen(xdg_cache_home) > 0) {
-        cache_dir = std::string(xdg_cache_home) + "/autovibez";
-    } else {
-        // Fallback to default XDG location
-        const char* home = std::getenv("HOME");
-        if (home) {
-            cache_dir = std::string(home) + "/.cache/autovibez";
-        } else {
-            cache_dir = "cache"; // Last resort fallback
-        }
-    }
-#endif
-    
-    // Create directory if it doesn't exist
-    if (!std::filesystem::exists(cache_dir)) {
-        std::filesystem::create_directories(cache_dir);
-    }
-    
-    return cache_dir;
+    return PathManager::getCacheDirectory();
 }
 
 // Get XDG state directory for autovibez (cross-platform)
@@ -1033,46 +916,7 @@ std::string AutoVibezApp::getStateDirectory() {
 
 // Get XDG assets directory for autovibez (cross-platform)
 std::string AutoVibezApp::getAssetsDirectory() {
-    std::string assets_dir;
-    
-#ifdef _WIN32
-    // Windows: Use %APPDATA%/autovibez/assets
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata) {
-        assets_dir = std::string(appdata) + "/autovibez/assets";
-    } else {
-        assets_dir = "assets"; // Fallback
-    }
-#elif defined(__APPLE__)
-    // macOS: Use ~/Library/Application Support/autovibez/assets
-    const char* home = std::getenv("HOME");
-    if (home) {
-        assets_dir = std::string(home) + "/Library/Application Support/autovibez/assets";
-    } else {
-        assets_dir = "assets"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG Base Directory Specification
-    const char* xdg_data_home = std::getenv("XDG_DATA_HOME");
-    if (xdg_data_home && strlen(xdg_data_home) > 0) {
-        assets_dir = std::string(xdg_data_home) + "/autovibez/assets";
-    } else {
-        // Fallback to default XDG location
-        const char* home = std::getenv("HOME");
-        if (home) {
-            assets_dir = std::string(home) + "/.local/share/autovibez/assets";
-        } else {
-            assets_dir = "assets"; // Last resort fallback
-        }
-    }
-#endif
-    
-    // Create directory if it doesn't exist
-    if (!std::filesystem::exists(assets_dir)) {
-        std::filesystem::create_directories(assets_dir);
-    }
-    
-    return assets_dir;
+    return PathManager::getAssetsDirectory();
 }
 
 // Mix management methods

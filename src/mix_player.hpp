@@ -78,6 +78,12 @@ public:
     bool isPaused() const;
     
     /**
+     * @brief Check if music has finished and update internal state
+     * @return True if music has finished, false otherwise
+     */
+    bool hasFinished();
+    
+    /**
      * @brief Get the last error message
      * @return Error message string
      */
