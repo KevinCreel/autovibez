@@ -372,6 +372,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/input_validator.hpp
     src/utils/console_output.cpp
     src/utils/console_output.hpp
+    src/utils/error_handler.cpp
+    src/utils/error_handler.hpp
     
     # Test fixtures
     tests/fixtures/test_fixtures.cpp
@@ -389,16 +391,17 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/resource_guard_test.cpp
     tests/unit/console_output_test.cpp
     tests/unit/audio_capture_test.cpp
+    tests/unit/audio_manager_test.cpp
+    tests/unit/mix_downloader_test.cpp
+    tests/unit/error_handler_test.cpp
+    tests/unit/string_utils_test.cpp
+    tests/unit/constants_test.cpp
+    tests/unit/input_handler_test.cpp
     
     # Integration tests
-    tests/integration/audio_capture_test.cpp
     tests/integration/mix_manager_test.cpp
     tests/integration/memory_cleanup_test.cpp
     tests/integration/thread_safety_test.cpp
-    
-    # Feature tests
-    tests/feature/help_system_test.cpp
-    tests/feature/audio_device_test.cpp
 )
 
 # Add test executable

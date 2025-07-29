@@ -13,6 +13,7 @@ namespace AutoVibez {
 
 class Error : public std::exception {
 public:
+    Error() : message_("") {} // Default constructor
     explicit Error(const std::string& message) : message_(message) {}
     
     const char* what() const noexcept override {

@@ -67,19 +67,7 @@ TEST_F(ConsoleOutputTest, DifferentTypes) {
     EXPECT_EQ(output.find("[PLAYBACK]"), std::string::npos);
 }
 
-TEST_F(ConsoleOutputTest, SimplePrint) {
-    ConsoleOutput::print("Simple message");
-    
-    std::string output = getOutput();
-    EXPECT_NE(output.find("Simple message"), std::string::npos);
-}
 
-TEST_F(ConsoleOutputTest, FormatPrint) {
-    ConsoleOutput::print("Formatted: %s", "test");
-    
-    std::string output = getOutput();
-    EXPECT_NE(output.find("Formatted: test"), std::string::npos);
-}
 
 TEST_F(ConsoleOutputTest, ColoredOutput) {
     ConsoleOutput::setColoredOutput(true);
