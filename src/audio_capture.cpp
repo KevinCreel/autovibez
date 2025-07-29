@@ -47,7 +47,7 @@ void AutoVibezApp::audioInputCallbackF32(void *userdata, unsigned char *stream, 
     // stream contains float data in native byte order, len is in bytes
     // Convert to float pointer safely
     const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));
-    int numSamples = len / sizeof(float);
+    int numSamples = len / sizeof(float) / 2;  // Divide by 2 to get correct sample count
     
     if (app->_audioChannelsCount == 1)
         projectm_pcm_add_float(app->_projectM, const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
