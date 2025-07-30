@@ -175,11 +175,24 @@ void HelpOverlay::render() {
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
+    
+    // Decorative line under the title
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 0.8f, 1.0f, 0.8f));
+    ImGui::Separator();
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
     ImGui::Spacing();
     
     // Current Status Section
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.8f, 1.0f));
     ImGui::TextUnformatted("CURRENT STATUS");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Subtle line under section header
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 1.0f, 0.8f, 0.4f));
+    ImGui::Separator();
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
@@ -273,6 +286,7 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Decorative line
     ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 1.0f, 0.8f, 0.6f));
@@ -281,10 +295,17 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Mix Management Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
     ImGui::TextUnformatted("MIX MANAGEMENT");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Subtle line under section header
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.6f, 0.0f, 0.4f));
+    ImGui::Separator();
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
@@ -301,6 +322,7 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Decorative line
     ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.6f, 0.0f, 0.6f));
@@ -309,10 +331,17 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Audio Controls Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
     ImGui::TextUnformatted("AUDIO CONTROLS");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Subtle line under section header
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.4f, 0.8f, 1.0f, 0.4f));
+    ImGui::Separator();
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
@@ -324,6 +353,7 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Decorative line
     ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.4f, 0.8f, 1.0f, 0.6f));
@@ -332,10 +362,17 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Visualizer Controls Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
     ImGui::TextUnformatted("VISUALIZER CONTROLS");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Subtle line under section header
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.8f, 0.4f, 1.0f, 0.4f));
+    ImGui::Separator();
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
@@ -350,6 +387,7 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Decorative line
     ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.8f, 0.4f, 1.0f, 0.6f));
@@ -358,10 +396,17 @@ void HelpOverlay::render() {
     
     ImGui::Spacing();
     ImGui::Spacing();
+    ImGui::Spacing();
     
     // Application Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
     ImGui::TextUnformatted("APPLICATION");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Subtle line under section header
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.4f, 0.4f, 0.4f));
+    ImGui::Separator();
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
