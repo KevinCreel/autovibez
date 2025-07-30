@@ -200,11 +200,13 @@ void HelpOverlay::toggle() {
     _visible = !_visible;
     
     if (_visible) {
-        // Hide cursor when overlay is shown using relative mouse mode
-        _cursorWasVisible = SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
-        SDL_SetRelativeMouseMode(SDL_TRUE);
+        // Only hide cursor in fullscreen mode
+        if (_isFullscreen) {
+            _cursorWasVisible = SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+        }
     } else {
-        // Restore cursor when overlay is hidden, but respect fullscreen state
+        // Only restore cursor if we're not in fullscreen mode
         if (!_isFullscreen) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
             if (_cursorWasVisible) {
@@ -221,9 +223,30 @@ void HelpOverlay::setFullscreenState(bool isFullscreen) {
 
 void HelpOverlay::setCursorVisibility(bool visible) {
     if (visible) {
-        SDL_ShowCursor(SDL_ENABLE);
+        SDL_SetCursor(_originalCursor);
     } else {
-        SDL_ShowCursor(SDL_DISABLE);
+        SDL_SetCursor(_blankCursor);
+    }
+}
+
+void HelpOverlay::rebuildFontAtlas() {
+    if (_imguiReady) {
+        // Ensure we have the OpenGL context
+        SDL_GL_MakeCurrent(_window, _glContext);
+        
+        // Rebuild the font atlas
+        ImGuiIO& io = ImGui::GetIO();
+        io.Fonts->Clear();
+        io.Fonts->AddFontDefault();
+        
+        // Build the font atlas
+        unsigned char* pixels;
+        int width, height;
+        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+        
+        // This forces ImGui to recreate its font texture
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
     }
 }
 

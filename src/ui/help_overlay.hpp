@@ -21,6 +21,7 @@ public:
     bool isVisible() const { return _visible; }
     void setCursorVisibility(bool visible);
     void setFullscreenState(bool isFullscreen);
+    void rebuildFontAtlas(); // Add method to rebuild font atlas
 
 private:
     SDL_Window* _window = nullptr;

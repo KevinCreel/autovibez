@@ -749,6 +749,11 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
     
     app->_manualPresetChange = false;
     
+    // Rebuild help overlay font atlas to fix text rendering issues
+    if (app->_helpOverlay) {
+        app->_helpOverlay->rebuildFontAtlas();
+    }
+    
     projectm_playlist_free_string(presetName);
     app->UpdateWindowTitle();
 }
