@@ -745,6 +745,12 @@ void AutoVibezApp::updateHelpOverlayInfo() {
     
     // Update beat sensitivity
     _helpOverlay->setBeatSensitivity(getBeatSensitivity());
+    
+    // Update mix table data
+    if (_mixManager) {
+        auto mixes = _mixManager->getAllMixes();
+        _helpOverlay->setMixTableData(mixes);
+    }
 }
 
 
@@ -837,6 +843,8 @@ void AutoVibezApp::toggleHelp()
         printHelpMenu();
     }
 }
+
+
 
 
 

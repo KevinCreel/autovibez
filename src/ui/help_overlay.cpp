@@ -50,6 +50,12 @@ void HelpOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
 void HelpOverlay::render() {
     if (!_visible) return;
     
+    // Auto-load mix data if not already loaded
+    if (_mixTableData.empty()) {
+        // This will be populated by the app when needed
+        // For now, we'll leave it empty and let the app handle it
+    }
+    
     // Handle deferred texture rebinding at the start of render cycle
     if (_needsDeferredTextureRebind) {
         ConsoleOutput::output("🔄 Executing deferred texture rebind...");
@@ -414,6 +420,160 @@ void HelpOverlay::render() {
     renderKeyBinding("  Ctrl+Q      ", "Quit application");
     ImGui::PopStyleColor();
     
+    // Mix Table Section (always shown if data is available)
+    if (!_mixTableData.empty()) {
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Decorative line
+        ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.4f, 0.4f, 0.6f));
+        ImGui::Separator();
+        ImGui::PopStyleColor();
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Mix Table Header
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.8f, 0.2f, 1.0f));
+        ImGui::TextUnformatted("MIX DATABASE TABLE");
+        ImGui::PopStyleColor();
+        ImGui::Spacing();
+        
+        // Subtle line under section header
+        ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.2f, 0.8f, 0.2f, 0.4f));
+        ImGui::Separator();
+        ImGui::PopStyleColor();
+        ImGui::Spacing();
+        
+        // Table header
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
+        
+        // Calculate column widths based on longest values
+        float artistWidth = ImGui::CalcTextSize("Artist").x;
+        float titleWidth = ImGui::CalcTextSize("Title").x;
+        float genreWidth = ImGui::CalcTextSize("Genre").x;
+        float durationWidth = ImGui::CalcTextSize("Duration").x;
+        float playsWidth = ImGui::CalcTextSize("Plays").x;
+        float favoriteWidth = ImGui::CalcTextSize("Favorite").x;
+        
+        // Find the longest values in each column
+        for (const auto& mix : _mixTableData) {
+            float artistTextWidth = ImGui::CalcTextSize(mix.artist.c_str()).x;
+            float titleTextWidth = ImGui::CalcTextSize(mix.title.c_str()).x;
+            float genreTextWidth = ImGui::CalcTextSize(mix.genre.c_str()).x;
+            
+            // Duration formatting
+            int minutes = mix.duration_seconds / 60;
+            int seconds = mix.duration_seconds % 60;
+            std::string duration = std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds);
+            float durationTextWidth = ImGui::CalcTextSize(duration.c_str()).x;
+            
+            // Plays
+            std::string plays = std::to_string(mix.play_count);
+            float playsTextWidth = ImGui::CalcTextSize(plays.c_str()).x;
+            
+            // Favorite
+            std::string favorite = mix.is_favorite ? "YES" : "NO";
+            float favoriteTextWidth = ImGui::CalcTextSize(favorite.c_str()).x;
+            
+            // Update maximum widths
+            artistWidth = std::max(artistWidth, artistTextWidth);
+            titleWidth = std::max(titleWidth, titleTextWidth);
+            genreWidth = std::max(genreWidth, genreTextWidth);
+            durationWidth = std::max(durationWidth, durationTextWidth);
+            playsWidth = std::max(playsWidth, playsTextWidth);
+            favoriteWidth = std::max(favoriteWidth, favoriteTextWidth);
+        }
+        
+        // Add some padding to each column
+        float padding = 20.0f;
+        artistWidth += padding;
+        titleWidth += padding;
+        genreWidth += padding;
+        durationWidth += padding;
+        playsWidth += padding;
+        favoriteWidth += padding;
+        
+        // Calculate column positions
+        float startX = ImGui::GetCursorPosX();
+        float artistX = startX;
+        float titleX = artistX + artistWidth;
+        float genreX = titleX + titleWidth;
+        float durationX = genreX + genreWidth;
+        float playsX = durationX + durationWidth;
+        float favoriteX = playsX + playsWidth;
+        
+        // Header row
+        ImGui::SetCursorPosX(artistX);
+        ImGui::TextUnformatted("Artist");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(titleX);
+        ImGui::TextUnformatted("Title");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(genreX);
+        ImGui::TextUnformatted("Genre");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(durationX);
+        ImGui::TextUnformatted("Duration");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(playsX);
+        ImGui::TextUnformatted("Plays");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(favoriteX);
+        ImGui::TextUnformatted("Favorite");
+        ImGui::PopStyleColor();
+        
+        ImGui::Spacing();
+        
+        // Table data
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+        for (const auto& mix : _mixTableData) {
+            // Artist
+            std::string artist = mix.artist;
+            ImGui::SetCursorPosX(artistX);
+            ImGui::TextUnformatted(artist.c_str());
+            
+            // Title
+            std::string title = mix.title;
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(titleX);
+            ImGui::TextUnformatted(title.c_str());
+            
+            // Genre
+            std::string genre = mix.genre;
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(genreX);
+            ImGui::TextUnformatted(genre.c_str());
+            
+            // Duration (format as MM:SS)
+            int minutes = mix.duration_seconds / 60;
+            int seconds = mix.duration_seconds % 60;
+            std::string duration = std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds);
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(durationX);
+            ImGui::TextUnformatted(duration.c_str());
+            
+            // Plays
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(playsX);
+            ImGui::TextUnformatted(std::to_string(mix.play_count).c_str());
+            
+            // Favorite (use text instead of emoji)
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(favoriteX);
+            if (mix.is_favorite) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                ImGui::TextUnformatted("YES");
+                ImGui::PopStyleColor();
+            } else {
+                ImGui::TextUnformatted("NO");
+            }
+        }
+        ImGui::PopStyleColor();
+    }
+    
     ImGui::End();
     
     // Render the Dear ImGui frame
@@ -634,6 +794,11 @@ void HelpOverlay::setAudioDevice(const std::string& device) {
 
 void HelpOverlay::setBeatSensitivity(float sensitivity) {
     _beatSensitivity = sensitivity;
+}
+
+// Mix table methods
+void HelpOverlay::setMixTableData(const std::vector<AutoVibez::Data::Mix>& mixes) {
+    _mixTableData = mixes;
 }
 
 } // namespace UI

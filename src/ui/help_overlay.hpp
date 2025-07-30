@@ -6,6 +6,7 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include "mix_metadata.hpp"
 
 namespace AutoVibez {
 namespace UI {
@@ -33,6 +34,9 @@ public:
     void setVolumeLevel(int volume);
     void setAudioDevice(const std::string& device);
     void setBeatSensitivity(float sensitivity);
+    
+    // Mix table methods
+    void setMixTableData(const std::vector<AutoVibez::Data::Mix>& mixes);
 
 private:
     SDL_Window* _window = nullptr;
@@ -52,9 +56,12 @@ private:
     std::string _currentArtist;
     std::string _currentTitle;
     std::string _currentGenre;
-    int _volumeLevel = 0;
+    int _volumeLevel = -1;
     std::string _audioDevice;
-    float _beatSensitivity = 1.0f;
+    float _beatSensitivity = 0.0f;
+    
+    // Mix table data
+    std::vector<AutoVibez::Data::Mix> _mixTableData;
     
     // Alternative rendering
     TTF_Font* _font = nullptr;
