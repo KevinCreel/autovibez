@@ -733,16 +733,16 @@ void HelpOverlay::reinitializeImGui() {
 
 void HelpOverlay::triggerTextureRebind() {
     _needsTextureRebind = true;
-    ConsoleOutput::output("🔄 Triggered texture rebind for next render");
+    // Debug notification removed - too verbose for normal operation
 }
 
 void HelpOverlay::triggerDeferredTextureRebind() {
     _needsDeferredTextureRebind = true;
-    ConsoleOutput::output("🔄 Triggered deferred texture rebind");
+    // Debug notification removed - too verbose for normal operation
 }
 
 void HelpOverlay::triggerCompleteReinitialization() {
-    ConsoleOutput::output("🔄 Triggering complete ImGui reinitialization...");
+    // Debug notification removed - too verbose for normal operation
     
     // Ensure we have the OpenGL context
     SDL_GL_MakeCurrent(_window, _glContext);
@@ -797,7 +797,7 @@ void HelpOverlay::triggerCompleteReinitialization() {
     glPopMatrix();
     glPopAttrib();
     
-    ConsoleOutput::output("✅ Complete ImGui reinitialization completed");
+    // Debug notification removed - too verbose for normal operation
 }
 
 // Dynamic information methods

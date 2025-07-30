@@ -817,7 +817,7 @@ void AutoVibezApp::cycleAudioDevice()
     if (_numAudioDevices > 0) {
         _selectedAudioDeviceIndex = (_selectedAudioDeviceIndex + 1) % _numAudioDevices;
         
-        // Get the device name for feedback
+        // Initialize audio device
         const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
         if (deviceName) {
             // Audio device notification removed - help overlay shows current device
@@ -956,12 +956,13 @@ void AutoVibezApp::initMixManager()
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
         
-        // Set initial genre from config
-        std::string preferred_genre = config.getPreferredGenre();
+        // Load preferred genre from config
+        std::string preferred_genre;
+        config.readInto(preferred_genre, "preferred_genre");
         if (!preferred_genre.empty()) {
-            ConsoleOutput::output("⚙️  Setting preferred genre from config: '%s'", preferred_genre.c_str());
+            // Configuration notification removed - help overlay shows current genre
         } else {
-            ConsoleOutput::output("⚙️  No preferred genre set in config - will use random genres");
+            // Configuration notification removed - help overlay shows current genre
         }
         _mixManager->setCurrentGenre(preferred_genre);
         
@@ -969,9 +970,9 @@ void AutoVibezApp::initMixManager()
         int audioDeviceIndex = config.getAudioDeviceIndex();
         const char* deviceName = SDL_GetAudioDeviceName(audioDeviceIndex, SDL_TRUE);
         if (deviceName) {
-            ConsoleOutput::output("🎚️  Using audio device: %s", deviceName);
+            // Audio device notification removed - help overlay shows current device
         } else {
-            ConsoleOutput::output("🎚️  Using audio device: %d", audioDeviceIndex);
+            // Audio device notification removed - help overlay shows current device
         }
     }
     
