@@ -62,7 +62,31 @@ std::string PathManager::getAssetsDirectory() {
 }
 
 std::string PathManager::getDataDirectory() {
-    return getAssetsDirectory();
+    std::string data_dir;
+    
+#ifdef _WIN32
+    // Windows: Use %APPDATA%/autovibez
+    const char* appdata = std::getenv("APPDATA");
+    if (appdata) {
+        data_dir = std::string(appdata) + "/autovibez";
+    } else {
+        data_dir = "data"; // Fallback
+    }
+#elif defined(__APPLE__)
+    // macOS: Use ~/Library/Application Support/autovibez
+    const char* home = std::getenv("HOME");
+    if (home) {
+        data_dir = std::string(home) + "/Library/Application Support/autovibez";
+    } else {
+        data_dir = "data"; // Fallback
+    }
+#else
+    // Linux/Unix: Use XDG Base Directory Specification
+    data_dir = getXDGDataHome() + "/autovibez";
+#endif
+    
+    ensureDirectoryExists(data_dir);
+    return data_dir;
 }
 
 std::string PathManager::findConfigFile() {
@@ -195,8 +219,8 @@ std::string PathManager::getDatabasePath() {
     return getStateDirectory() + "/autovibez_mixes.db";
 }
 
-std::string PathManager::getMixCacheDirectory() {
-    return getCacheDirectory() + "/mix_cache";
+std::string PathManager::getMixesDirectory() {
+    return getDataDirectory() + "/mixes";
 }
 
 std::string PathManager::getPresetsDirectory() {

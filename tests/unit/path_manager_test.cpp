@@ -54,9 +54,9 @@ TEST_F(PathManagerTest, FilePaths) {
     EXPECT_TRUE(db_path.find("autovibez_mixes.db") != std::string::npos);
     
     // Mix cache should be in cache directory
-    std::string mix_cache = PathManager::getMixCacheDirectory();
-    EXPECT_FALSE(mix_cache.empty());
-    EXPECT_TRUE(mix_cache.find("mix_cache") != std::string::npos);
+    std::string mixes_dir = PathManager::getMixesDirectory();
+    EXPECT_FALSE(mixes_dir.empty());
+    EXPECT_TRUE(mixes_dir.find("mixes") != std::string::npos);
     
     // Presets and textures should be in assets directory
     std::string presets = PathManager::getPresetsDirectory();

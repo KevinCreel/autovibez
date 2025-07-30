@@ -35,6 +35,7 @@
 #include "mix_metadata.hpp"
 #include "mix_downloader.hpp"
 #include "config_manager.hpp"
+#include "path_manager.hpp"
 
 #include <vector>
 #include <filesystem>
@@ -908,11 +909,10 @@ void AutoVibezApp::initMixManager()
 {
     if (_mixManagerInitialized) return;
     
-    std::string data_dir = getDataDirectory();
-    std::string db_path = getStateDirectory() + "/autovibez_mixes.db";
-    std::string cache_dir = getCacheDirectory() + "/mix_cache";
+    std::string db_path = PathManager::getStateDirectory() + "/autovibez_mixes.db";
+    std::string mixes_dir = PathManager::getMixesDirectory();
     
-    _mixManager = std::make_unique<MixManager>(db_path, cache_dir);
+    _mixManager = std::make_unique<MixManager>(db_path, mixes_dir);
     
     // Initialize database first (fast operation)
     if (!_mixManager->initialize()) {
@@ -1205,9 +1205,9 @@ void AutoVibezApp::startBackgroundDownloads()
     std::vector<Mix> mixesToAnalyze;
     
     for (const auto& mix : availableMixes) {
-        // Check if the mix file actually exists in cache
-        std::string cache_file = getCacheDirectory() + "/mix_cache/" + mix.id + ".mp3";
-        if (!std::filesystem::exists(cache_file)) {
+        // Check if the mix file actually exists in mixes directory
+        std::string mix_file = PathManager::getMixesDirectory() + "/" + mix.id + ".mp3";
+        if (!std::filesystem::exists(mix_file)) {
             pendingDownloads++;
             mixesToDownload.push_back(mix);
         } else {
@@ -1281,8 +1281,9 @@ void AutoVibezApp::autoPlayFromLocalDatabase()
         return;
     }
 
-    // Try to play a mix from the local database
-    Mix randomMix = _mixManager->getRandomMix();
+    // Try to play a mix from the local database with preferred genre
+    Mix randomMix = _mixManager->getSmartRandomMix("", _mixManager->getCurrentGenre());
+    
     if (!randomMix.id.empty()) {
         if (_mixManager->playMix(randomMix)) {
             _currentMix = randomMix;

@@ -115,6 +115,9 @@ public:
     size_t getErrorCount() const;
     double getAverageLogTime() const;
     
+    // Testing support
+    void reset(); // Reset all counters and statistics
+    
     // File management
     void rotateLogFile();
     void flush();

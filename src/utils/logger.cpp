@@ -74,7 +74,8 @@ void Logger::setLogFilePath(const std::string& path) {
     if (!path.empty()) {
         std::filesystem::path log_path(path);
         std::filesystem::create_directories(log_path.parent_path());
-        log_file_.open(path, std::ios::app);
+        log_file_.open(path, std::ios::out | std::ios::app);
+        
         current_file_size_ = std::filesystem::exists(path) ? std::filesystem::file_size(path) : 0;
     }
 }
@@ -139,6 +140,7 @@ void Logger::log(Level level, const std::string& message, const LogContext& cont
     
     // Output to file
     if (output_target_ == OutputTarget::FILE || output_target_ == OutputTarget::BOTH) {
+        std::cerr << "DEBUG: About to write to file: " << formatted_message.substr(0, 50) << "..." << std::endl;
         writeToFile(formatted_message);
     }
     
@@ -309,8 +311,10 @@ double Logger::endTimer(const std::string& timer_name) {
 
 void Logger::logPerformance(const std::string& operation, double duration_ms, 
                           const LogContext& context) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << duration_ms;
     std::string message = "Performance: " + operation + " took " + 
-                         std::to_string(duration_ms) + "ms";
+                         oss.str() + "ms";
     log(Level::INFO, message, context);
 }
 
@@ -331,9 +335,31 @@ double Logger::getAverageLogTime() const {
     return static_cast<double>(total_log_time_us_.load()) / (count * 1000.0); // Convert to milliseconds
 }
 
+void Logger::reset() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    
+    // Reset all log counts
+    for (auto& pair : log_counts_) {
+        pair.second.store(0);
+    }
+    
+    // Reset performance statistics
+    total_log_time_us_.store(0);
+    log_count_.store(0);
+    
+    // Reset error tracking
+    error_counter_.store(0);
+    error_history_.clear();
+    
+    // Reset timers
+    timers_.clear();
+    
+    // Reset start time
+    start_time_ = std::chrono::high_resolution_clock::now();
+}
+
 // File management
 void Logger::rotateLogFile() {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (log_file_path_.empty()) return;
     
     // Close current file
@@ -472,9 +498,23 @@ std::string Logger::getResetColorCode() const {
 }
 
 void Logger::writeToFile(const std::string& message) {
-    if (!log_file_.is_open()) return;
+    if (!log_file_.is_open()) {
+        std::cerr << "DEBUG: File not open in writeToFile" << std::endl;
+        return;
+    }
+    
+    if (!log_file_.good()) {
+        std::cerr << "DEBUG: File stream not good in writeToFile" << std::endl;
+        return;
+    }
     
     log_file_ << message << std::endl;
+    log_file_.flush(); // Ensure the data is written to disk
+    
+    if (!log_file_.good()) {
+        std::cerr << "DEBUG: File stream not good after write" << std::endl;
+    }
+    
     current_file_size_ += message.length() + 1; // +1 for newline
     
     checkFileRotation();

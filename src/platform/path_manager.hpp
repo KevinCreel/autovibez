@@ -50,9 +50,9 @@ public:
     static std::string getDatabasePath();
     
     /**
-     * Get the mix cache directory path
+     * Get the mixes directory path (user's downloaded music)
      */
-    static std::string getMixCacheDirectory();
+    static std::string getMixesDirectory();
     
     /**
      * Get the presets directory path

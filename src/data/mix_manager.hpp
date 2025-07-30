@@ -18,7 +18,7 @@ namespace Data {
  */
 class MixManager {
 public:
-    MixManager(const std::string& db_path, const std::string& cache_dir);
+    MixManager(const std::string& db_path, const std::string& data_dir);
     ~MixManager();
     
     // Core functionality
@@ -128,10 +128,10 @@ public:
     void setCrossfadeDuration(int duration_ms) { _crossfade_duration_ms = duration_ms; }
     int getCrossfadeDuration() const { return _crossfade_duration_ms; }
     
-    // Cache management
-    bool clearCache();
-    size_t getCacheSize() const;
-    bool cleanupCorruptedFiles();
+    // Mix files management
+    bool clearMixFiles();
+    size_t getMixFilesSize() const;
+    bool cleanupCorruptedMixFiles();
     
     // Background downloads
     bool downloadMixBackground(const Mix& mix);
@@ -171,7 +171,7 @@ private:
     std::unique_ptr<AutoVibez::Audio::MixPlayer> player;
     std::unique_ptr<AutoVibez::Audio::MP3Analyzer> mp3_analyzer;
     std::string db_path;
-    std::string cache_dir;
+    std::string data_dir;
     std::string last_error;
     bool success;
     Mix current_mix;

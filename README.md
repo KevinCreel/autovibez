@@ -140,7 +140,7 @@ std::string state_dir = PathManager::getStateDirectory();
 
 // File paths
 std::string db_path = PathManager::getDatabasePath();
-std::string mix_cache = PathManager::getMixCacheDirectory();
+std::string mixes_dir = PathManager::getMixesDirectory();
 std::string presets = PathManager::getPresetsDirectory();
 std::string textures = PathManager::getTexturesDirectory();
 

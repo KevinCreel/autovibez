@@ -62,18 +62,16 @@ std::string formatDuration(int seconds) {
     }
 }
 
-MixManager::MixManager(const std::string& db_path, const std::string& cache_dir)
-    : db_path(db_path), cache_dir(cache_dir), success(true) {
+MixManager::MixManager(const std::string& db_path, const std::string& data_dir)
+    : db_path(db_path), data_dir(data_dir), success(true) {
 }
 
 MixManager::~MixManager() {
 }
 
 bool MixManager::initialize() {
-    std::filesystem::create_directories(cache_dir);
-    
     // Clean up any corrupted files
-    cleanupCorruptedFiles();
+    cleanupCorruptedMixFiles();
     
     database = std::make_unique<MixDatabase>(db_path);
     if (!database->initialize()) {
@@ -84,7 +82,7 @@ bool MixManager::initialize() {
     
     metadata = std::make_unique<MixMetadata>();
     
-    downloader = std::make_unique<MixDownloader>(cache_dir);
+    downloader = std::make_unique<MixDownloader>(data_dir);
     
     mp3_analyzer = std::make_unique<MP3Analyzer>();
     
@@ -348,30 +346,30 @@ int MixManager::getDuration() const {
     return player ? player->getDuration() : 0;
 }
 
-// Cache management
-bool MixManager::clearCache() {
-    if (!std::filesystem::exists(cache_dir)) {
+// Mix files management
+bool MixManager::clearMixFiles() {
+    if (!std::filesystem::exists(data_dir)) {
         return true;
     }
     
     try {
-        std::filesystem::remove_all(cache_dir);
-        std::filesystem::create_directories(cache_dir);
-        // Cache clear notification removed - too verbose for normal operation
+        std::filesystem::remove_all(data_dir);
+        std::filesystem::create_directories(data_dir);
+        // Mix files clear notification removed - too verbose for normal operation
         return true;
     } catch (const std::exception& e) {
-        last_error = "Failed to clear cache: " + std::string(e.what());
+        last_error = "Failed to clear mix files: " + std::string(e.what());
         return false;
     }
 }
 
-size_t MixManager::getCacheSize() const {
-    if (!std::filesystem::exists(cache_dir)) {
+size_t MixManager::getMixFilesSize() const {
+    if (!std::filesystem::exists(data_dir)) {
         return 0;
     }
     
     size_t total_size = 0;
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(cache_dir)) {
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(data_dir)) {
         if (entry.is_regular_file()) {
             total_size += entry.file_size();
         }
@@ -379,13 +377,13 @@ size_t MixManager::getCacheSize() const {
     return total_size;
 }
 
-bool MixManager::cleanupCorruptedFiles() {
-    if (!std::filesystem::exists(cache_dir)) {
+bool MixManager::cleanupCorruptedMixFiles() {
+    if (!std::filesystem::exists(data_dir)) {
         return true;
     }
     
     int cleaned_count = 0;
-    for (const auto& entry : std::filesystem::directory_iterator(cache_dir)) {
+    for (const auto& entry : std::filesystem::directory_iterator(data_dir)) {
         if (entry.is_regular_file() && entry.path().extension() == ".mp3") {
             std::string file_path = entry.path().string();
             

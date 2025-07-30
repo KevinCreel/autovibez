@@ -121,7 +121,7 @@ public:
     std::string getMixesUrl() const {
         return read<std::string>("mixes_url", "");
     }
-    int getCacheSizeMb() const {
+    int getMixFilesSizeMb() const {
         return read<int>("cache_size_mb", 5120);  // 5GB default
     }
     bool getAutoDownload() const {

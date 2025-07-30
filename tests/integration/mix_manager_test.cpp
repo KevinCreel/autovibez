@@ -48,7 +48,7 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     EXPECT_NO_THROW({
-        MixManager manager(db_path, cache_dir);
+        MixManager manager(db_path, test_dir);
         EXPECT_TRUE(manager.isSuccess());
         EXPECT_TRUE(manager.getLastError().empty());
     });
@@ -70,7 +70,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Test loading mixes from YAML
@@ -96,7 +96,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Test syncing mixes to database
@@ -122,7 +122,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     Mix random_mix = manager.getRandomMix();
@@ -167,7 +167,7 @@ preferred_genre = Electronic
     
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     Mix smart_mix = manager.getSmartRandomMix();
@@ -193,7 +193,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     Mix smart_mix = manager.getSmartRandomMix("test_mix_0");
@@ -221,7 +221,7 @@ preferred_genre = Electronic
     
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     Mix smart_mix = manager.getSmartRandomMix("", "Electronic");
@@ -245,7 +245,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     Mix next_mix = manager.getNextMix("test_mix_0");
@@ -283,7 +283,7 @@ preferred_genre = Electronic
     
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     
     // Sync mixes to database first
     manager.syncMixesWithDatabase(test_mixes);
@@ -328,7 +328,7 @@ preferred_genre = Electronic
     
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     
     // Sync mixes to database first
     manager.syncMixesWithDatabase(test_mixes);
@@ -367,7 +367,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Test toggling favorite on non-existent mix
@@ -397,7 +397,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(1);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Test updating play stats on non-existent mix
@@ -427,7 +427,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     std::vector<Mix> downloaded_mixes = manager.getDownloadedMixes();
@@ -451,7 +451,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     std::vector<Mix> favorite_mixes = manager.getFavoriteMixes();
@@ -509,7 +509,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(5);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Load mixes and sync to database
@@ -562,7 +562,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Load mixes and sync to database
@@ -606,7 +606,7 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(2);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
-    MixManager manager(db_path, cache_dir);
+    MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
     
     // Load mixes and sync to database
