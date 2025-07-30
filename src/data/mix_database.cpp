@@ -74,6 +74,34 @@ bool MixDatabase::addMix(const Mix& mix) {
     success = true;
     last_error.clear();
     
+    // Validate mix data before insertion
+    if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
+        last_error = "Invalid mix data: missing required fields (id, title, artist, genre)";
+        success = false;
+        return false;
+    }
+    
+    // Prevent corrupted entries where title equals id
+    if (mix.title == mix.id) {
+        last_error = "Invalid mix data: title cannot be the same as id";
+        success = false;
+        return false;
+    }
+    
+    // Prevent "Unknown Artist" entries
+    if (mix.artist == "Unknown Artist" || mix.artist.empty()) {
+        last_error = "Invalid mix data: artist cannot be 'Unknown Artist' or empty";
+        success = false;
+        return false;
+    }
+    
+    // Validate duration
+    if (mix.duration_seconds <= 0) {
+        last_error = "Invalid mix data: duration must be greater than 0";
+        success = false;
+        return false;
+    }
+    
     const char* sql = R"(
         INSERT OR REPLACE INTO mixes 
         (id, title, artist, genre, url, local_path, duration_seconds, tags, description, date_added, last_played, play_count, is_favorite)
@@ -124,6 +152,30 @@ bool MixDatabase::addMix(const Mix& mix) {
 }
 
 bool MixDatabase::updateMix(const Mix& mix) {
+    // Validate mix data before update
+    if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
+        last_error = "Invalid mix data: missing required fields (id, title, artist, genre)";
+        return false;
+    }
+    
+    // Prevent corrupted entries where title equals id
+    if (mix.title == mix.id) {
+        last_error = "Invalid mix data: title cannot be the same as id";
+        return false;
+    }
+    
+    // Prevent "Unknown Artist" entries
+    if (mix.artist == "Unknown Artist" || mix.artist.empty()) {
+        last_error = "Invalid mix data: artist cannot be 'Unknown Artist' or empty";
+        return false;
+    }
+    
+    // Validate duration
+    if (mix.duration_seconds <= 0) {
+        last_error = "Invalid mix data: duration must be greater than 0";
+        return false;
+    }
+    
     const char* sql = "UPDATE mixes SET title = ?, artist = ?, genre = ?, url = ?, local_path = ?, duration_seconds = ?, tags = ?, description = ?, date_added = ?, last_played = ?, play_count = ?, is_favorite = ? WHERE id = ?";
     
     sqlite3_stmt* stmt;
@@ -167,7 +219,15 @@ bool MixDatabase::updateMix(const Mix& mix) {
         return false;
     }
     
-            // Database update notification removed - too verbose for normal operation
+    // Check if any rows were actually updated
+    int rows_affected = sqlite3_changes(db);
+    if (rows_affected == 0) {
+        last_error = "No mix found with id: " + mix.id;
+        success = false;
+        return false;
+    }
+    
+    success = true;
     return true;
 }
 

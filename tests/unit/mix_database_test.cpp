@@ -533,9 +533,260 @@ TEST_F(MixDatabaseTest, UpdateMixNonexistent) {
     MixDatabase db(db_path);
     ASSERT_TRUE(db.initialize());
     
-    Mix nonexistent_mix = TestFixtures::createSampleMix("nonexistent_mix");
+    // Create a valid mix that doesn't exist in the database
+    Mix test_mix = TestFixtures::createSampleMix("nonexistent_mix");
+    test_mix.id = "nonexistent-id-123";
+    test_mix.title = "Nonexistent Mix";
+    test_mix.artist = "Nonexistent Artist";
+    test_mix.genre = "Electronic";
+    test_mix.duration_seconds = 3600;
     
-    // The actual implementation may handle nonexistent mixes differently
-    bool result = db.updateMix(nonexistent_mix);
-    // Don't assert on the result as it depends on implementation
+    // Update a mix that doesn't exist in the database
+    // This should fail at the database level, not validation level
+    EXPECT_FALSE(db.updateMix(test_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+}
+
+// Validation Tests for addMix
+TEST_F(MixDatabaseTest, AddMixValidationEmptyId) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.id = ""; // Empty ID
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationEmptyTitle) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.title = ""; // Empty title
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationEmptyArtist) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.artist = ""; // Empty artist
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationEmptyGenre) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.genre = ""; // Empty genre
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationTitleEqualsId) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.title = invalid_mix.id; // Title equals ID
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("title cannot be the same as id"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationUnknownArtist) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.artist = "Unknown Artist"; // Invalid artist
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("artist cannot be 'Unknown Artist'"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationZeroDuration) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.duration_seconds = 0; // Zero duration
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("duration must be greater than 0"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, AddMixValidationNegativeDuration) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.duration_seconds = -1; // Negative duration
+    
+    EXPECT_FALSE(db.addMix(invalid_mix));
+    EXPECT_FALSE(db.isSuccess());
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("duration must be greater than 0"), std::string::npos);
+}
+
+// Validation Tests for updateMix
+TEST_F(MixDatabaseTest, UpdateMixValidationEmptyId) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.id = ""; // Empty ID
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationEmptyTitle) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.title = ""; // Empty title
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationEmptyArtist) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.artist = ""; // Empty artist
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationEmptyGenre) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.genre = ""; // Empty genre
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("missing required fields"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationTitleEqualsId) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.title = invalid_mix.id; // Title equals ID
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("title cannot be the same as id"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationUnknownArtist) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.artist = "Unknown Artist"; // Invalid artist
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("artist cannot be 'Unknown Artist'"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationZeroDuration) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.duration_seconds = 0; // Zero duration
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("duration must be greater than 0"), std::string::npos);
+}
+
+TEST_F(MixDatabaseTest, UpdateMixValidationNegativeDuration) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix invalid_mix = TestFixtures::createSampleMix("test_mix");
+    invalid_mix.duration_seconds = -1; // Negative duration
+    
+    EXPECT_FALSE(db.updateMix(invalid_mix));
+    EXPECT_FALSE(db.getLastError().empty());
+    EXPECT_NE(db.getLastError().find("duration must be greater than 0"), std::string::npos);
+}
+
+// Test that valid mixes still work correctly
+TEST_F(MixDatabaseTest, AddMixWithValidData) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    Mix valid_mix = TestFixtures::createSampleMix("valid_test_mix");
+    valid_mix.id = "test-id-123";
+    valid_mix.title = "Test Mix Title";
+    valid_mix.artist = "Test Artist";
+    valid_mix.genre = "Electronic";
+    valid_mix.duration_seconds = 3600; // 1 hour
+    
+    EXPECT_TRUE(db.addMix(valid_mix));
+    EXPECT_TRUE(db.isSuccess());
+    EXPECT_TRUE(db.getLastError().empty());
+}
+
+TEST_F(MixDatabaseTest, UpdateMixWithValidData) {
+    MixDatabase db(db_path);
+    ASSERT_TRUE(db.initialize());
+    
+    // First add a valid mix
+    Mix valid_mix = TestFixtures::createSampleMix("valid_test_mix");
+    valid_mix.id = "test-id-123";
+    valid_mix.title = "Test Mix Title";
+    valid_mix.artist = "Test Artist";
+    valid_mix.genre = "Electronic";
+    valid_mix.duration_seconds = 3600;
+    
+    ASSERT_TRUE(db.addMix(valid_mix));
+    
+    // Then update it with valid data
+    valid_mix.title = "Updated Test Mix Title";
+    valid_mix.artist = "Updated Test Artist";
+    valid_mix.duration_seconds = 7200; // 2 hours
+    
+    EXPECT_TRUE(db.updateMix(valid_mix));
+    EXPECT_TRUE(db.isSuccess());
+    EXPECT_TRUE(db.getLastError().empty());
 } 
