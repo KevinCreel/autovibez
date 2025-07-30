@@ -482,8 +482,49 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
         }
     }
     
-    // Fall back to any downloaded mix
-    return getRandomMix();
+    // Fall back to any downloaded mix (excluding the current mix)
+    std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != ''";
+    if (!exclude_mix_id.empty()) {
+        sql += " AND id != ?";
+    }
+    sql += " ORDER BY RANDOM() LIMIT 1";
+    
+    sqlite3_stmt* stmt;
+    rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    if (rc == SQLITE_OK) {
+        if (!exclude_mix_id.empty()) {
+            sqlite3_bind_text(stmt, 1, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+        }
+        Mix mix;
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            mix = rowToMix(stmt);
+        }
+        sqlite3_finalize(stmt);
+        if (!mix.id.empty()) {
+            return mix;
+        }
+    }
+    
+    // If still no mix found, fall back to any mix (excluding the current mix)
+    sql = "SELECT * FROM mixes";
+    if (!exclude_mix_id.empty()) {
+        sql += " WHERE id != ?";
+    }
+    sql += " ORDER BY RANDOM() LIMIT 1";
+    
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        if (!exclude_mix_id.empty()) {
+            sqlite3_bind_text(stmt, 1, exclude_mix_id.c_str(), -1, SQLITE_STATIC);
+        }
+        Mix mix;
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            mix = rowToMix(stmt);
+        }
+        sqlite3_finalize(stmt);
+        return mix;
+    }
+    
+    return Mix();
 }
 
 Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
