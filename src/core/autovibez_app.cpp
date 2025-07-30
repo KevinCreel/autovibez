@@ -639,7 +639,6 @@ void AutoVibezApp::renderFrame()
     projectm_opengl_render_frame(_projectM);
 
     // Render overlays
-    printHelpMenu();
     renderFpsCounter();
     renderHelpOverlay();
 
@@ -801,9 +800,6 @@ void AutoVibezApp::UpdateWindowTitle()
 void AutoVibezApp::toggleHelp()
 {
     _showHelp = !_showHelp;
-    if (_showHelp) {
-        printHelpMenu();
-    }
 }
 
 
@@ -831,22 +827,6 @@ void AutoVibezApp::cycleAudioDevice()
         beginAudioCapture();
     } else {
         // Audio device notification removed - help overlay shows current device
-    }
-}
-
-void AutoVibezApp::printHelpMenu()
-{
-    if (!_showHelp) return;
-    static bool helpShown = false;
-    if (!helpShown) {
-        const char* color_cyan = "\033[36m";
-        const char* color_green = "\033[32m";
-        const char* color_yellow = "\033[33m";
-        const char* color_purple = "\033[35m";
-        const char* color_reset = "\033[0m";
-        
-        // Console help output removed - help overlay provides better UI
-        helpShown = true;
     }
 }
 
@@ -1095,23 +1075,14 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             return;
             
         case SDLK_l:
-            // L: Toggle mix table filter when help overlay is visible, otherwise list downloaded mixes
+            // L: Toggle mix table filter when help overlay is visible
             if (_helpOverlay && _helpOverlay->isVisible()) {
-                // Toggle mix table filter in help overlay
                 _helpOverlay->toggleMixTableFilter();
-            } else {
-                // L: List downloaded mixes (console output)
-                auto downloadedMixes = _mixManager->getDownloadedMixes();
-                // Mix list notification removed - help overlay provides better mix information
             }
             return;
             
         case SDLK_v:
-            // V: List favorite mixes
-            {
-                auto favoriteMixes = _mixManager->getFavoriteMixes();
-                // Mix list notification removed - help overlay provides better mix information
-            }
+            // V: List favorite mixes (handled by help overlay)
             return;
     }
 }
