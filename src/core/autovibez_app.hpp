@@ -175,6 +175,7 @@ public:
     // Help Overlay
     void initHelpOverlay();
     void renderHelpOverlay();
+    void updateHelpOverlayInfo();
     
     // New modular component accessors
     PresetManager* getPresetManager() { return _presetManager.get(); }

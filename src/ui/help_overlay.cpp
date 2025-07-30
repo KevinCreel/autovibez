@@ -155,8 +155,79 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     ImGui::Spacing();
     
+    // Current Status Section
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.8f, 1.0f));
+    ImGui::TextUnformatted("📊 CURRENT STATUS");
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+    
+    // Current preset
+    if (!_currentPreset.empty()) {
+        ImGui::TextUnformatted("  🎨 Preset: ");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
+        ImGui::TextUnformatted(_currentPreset.c_str());
+        ImGui::PopStyleColor();
+    }
+    
+    // Current mix
+    if (!_currentArtist.empty() && !_currentTitle.empty()) {
+        ImGui::TextUnformatted("  🎵 Now playing: ");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
+        ImGui::TextUnformatted(_currentArtist.c_str());
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        ImGui::TextUnformatted(" - ");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
+        ImGui::TextUnformatted(_currentTitle.c_str());
+        ImGui::PopStyleColor();
+    }
+    
+    // Current genre
+    if (!_currentGenre.empty()) {
+        ImGui::TextUnformatted("  🎼 Genre: ");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
+        ImGui::TextUnformatted(_currentGenre.c_str());
+        ImGui::PopStyleColor();
+    }
+    
+    // Volume level
+    if (_volumeLevel >= 0) {
+        ImGui::TextUnformatted("  🔊 Volume: ");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
+        ImGui::TextUnformatted((std::to_string(_volumeLevel) + "%").c_str());
+        ImGui::PopStyleColor();
+    }
+    
+    // Audio device
+    if (!_audioDevice.empty()) {
+        ImGui::TextUnformatted("  🎚️  Device: ");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
+        ImGui::TextUnformatted(_audioDevice.c_str());
+        ImGui::PopStyleColor();
+    }
+    
+    // Beat sensitivity
+    ImGui::TextUnformatted("  🎯 Beat Sensitivity: ");
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
+    ImGui::TextUnformatted((std::to_string(_beatSensitivity).substr(0, 4)).c_str());
+    ImGui::PopStyleColor();
+    
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
+    ImGui::Spacing();
+    
     // Decorative line
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 0.8f, 1.0f, 0.6f));
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 1.0f, 0.8f, 0.6f));
     ImGui::Separator();
     ImGui::PopStyleColor();
     
@@ -447,6 +518,29 @@ void HelpOverlay::triggerCompleteReinitialization() {
     glPopAttrib();
     
     ConsoleOutput::output("✅ Complete ImGui reinitialization completed");
+}
+
+// Dynamic information methods
+void HelpOverlay::setCurrentPreset(const std::string& preset) {
+    _currentPreset = preset;
+}
+
+void HelpOverlay::setCurrentMix(const std::string& artist, const std::string& title, const std::string& genre) {
+    _currentArtist = artist;
+    _currentTitle = title;
+    _currentGenre = genre;
+}
+
+void HelpOverlay::setVolumeLevel(int volume) {
+    _volumeLevel = volume;
+}
+
+void HelpOverlay::setAudioDevice(const std::string& device) {
+    _audioDevice = device;
+}
+
+void HelpOverlay::setBeatSensitivity(float sensitivity) {
+    _beatSensitivity = sensitivity;
 }
 
 } // namespace UI

@@ -707,12 +707,45 @@ void AutoVibezApp::initHelpOverlay() {
 
 void AutoVibezApp::renderHelpOverlay() {
     if (_helpOverlay) {
+        // Update help overlay with current information
+        updateHelpOverlayInfo();
         _helpOverlay->render();
     }
 }
 
-
-
+void AutoVibezApp::updateHelpOverlayInfo() {
+    if (!_helpOverlay) return;
+    
+    // Update current preset
+    std::string currentPreset = getActivePresetName();
+    if (!currentPreset.empty()) {
+        // Extract just the filename for display
+        size_t last_slash = currentPreset.find_last_of('/');
+        if (last_slash != std::string::npos) {
+            currentPreset = currentPreset.substr(last_slash + 1);
+        }
+        _helpOverlay->setCurrentPreset(currentPreset);
+    }
+    
+    // Update current mix info
+    if (_mixManager && !_currentMix.id.empty()) {
+        _helpOverlay->setCurrentMix(_currentMix.artist, _currentMix.title, _currentMix.genre);
+    }
+    
+    // Update volume level
+    if (_mixManager) {
+        _helpOverlay->setVolumeLevel(_mixManager->getVolume());
+    }
+    
+    // Update audio device
+    const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
+    if (deviceName) {
+        _helpOverlay->setAudioDevice(deviceName);
+    }
+    
+    // Update beat sensitivity
+    _helpOverlay->setBeatSensitivity(getBeatSensitivity());
+}
 
 
 std::string AutoVibezApp::getActivePresetName()
