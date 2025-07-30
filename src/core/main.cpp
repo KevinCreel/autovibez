@@ -85,6 +85,16 @@ static int mainLoop(void* userData) {
                 // Music has finished, trigger auto-play
                 app->checkAndAutoPlayNext();
             }
+            
+            // Also check periodically to ensure music is always playing
+            static Uint32 last_check = 0;
+            Uint32 current_time = SDL_GetTicks();
+            if (current_time - last_check > 5000) { // Check every 5 seconds
+                if (!app->getMixManager()->isPlaying() && !app->getMixManager()->isPaused()) {
+                    app->checkAndAutoPlayNext();
+                }
+                last_check = current_time;
+            }
         }
         
         // Update crossfade if active

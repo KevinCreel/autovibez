@@ -65,6 +65,8 @@ void Logger::setLogFilePath(const std::string& path) {
     std::lock_guard<std::mutex> lock(mutex_);
     log_file_path_ = path;
     
+    std::cerr << "DEBUG: setLogFilePath called with path: " << path << std::endl;
+    
     // Close existing file if open
     if (log_file_.is_open()) {
         log_file_.close();
@@ -75,6 +77,10 @@ void Logger::setLogFilePath(const std::string& path) {
         std::filesystem::path log_path(path);
         std::filesystem::create_directories(log_path.parent_path());
         log_file_.open(path, std::ios::out | std::ios::app);
+        
+        std::cerr << "DEBUG: File opened, is_open: " << (log_file_.is_open() ? "YES" : "NO") << std::endl;
+        std::cerr << "DEBUG: File path: " << path << std::endl;
+        std::cerr << "DEBUG: Current working directory: " << std::filesystem::current_path() << std::endl;
         
         current_file_size_ = std::filesystem::exists(path) ? std::filesystem::file_size(path) : 0;
     }
@@ -140,7 +146,6 @@ void Logger::log(Level level, const std::string& message, const LogContext& cont
     
     // Output to file
     if (output_target_ == OutputTarget::FILE || output_target_ == OutputTarget::BOTH) {
-        std::cerr << "DEBUG: About to write to file: " << formatted_message.substr(0, 50) << "..." << std::endl;
         writeToFile(formatted_message);
     }
     
@@ -498,6 +503,7 @@ std::string Logger::getResetColorCode() const {
 }
 
 void Logger::writeToFile(const std::string& message) {
+    std::cerr << "DEBUG: writeToFile called, file open: " << (log_file_.is_open() ? "YES" : "NO") << std::endl;
     if (!log_file_.is_open()) {
         std::cerr << "DEBUG: File not open in writeToFile" << std::endl;
         return;
@@ -508,12 +514,9 @@ void Logger::writeToFile(const std::string& message) {
         return;
     }
     
+    std::cerr << "DEBUG: Writing to file: " << message.substr(0, 50) << "..." << std::endl;
     log_file_ << message << std::endl;
     log_file_.flush(); // Ensure the data is written to disk
-    
-    if (!log_file_.good()) {
-        std::cerr << "DEBUG: File stream not good after write" << std::endl;
-    }
     
     current_file_size_ += message.length() + 1; // +1 for newline
     

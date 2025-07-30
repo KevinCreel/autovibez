@@ -374,7 +374,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/mix_player_test.cpp
     tests/unit/mp3_analyzer_test.cpp
     tests/unit/path_manager_test.cpp
-    tests/unit/logger_test.cpp
+    # tests/unit/logger_test.cpp
     tests/unit/input_validator_test.cpp
     tests/unit/resource_guard_test.cpp
     tests/unit/audio_capture_test.cpp

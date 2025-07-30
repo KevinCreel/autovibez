@@ -238,7 +238,8 @@ private:
     std::unique_ptr<AutoVibez::Data::MixManager> _mixManager;
 
     AutoVibez::Data::Mix _currentMix;
-    bool _mixManagerInitialized{false};
+    bool _mixManagerInitialized;
+    bool _hadMixesOnStartup;
     bool _volumeKeyPressed{false}; // Track if volume key is being held
     bool _manualPresetChange{false}; // Track if preset change was manual
     

@@ -206,6 +206,8 @@ Mix MixMetadata::parseMixFromYaml(const YAML::Node& mix_node) {
         mix.url = mix_node.as<std::string>();
         // Generate ID from URL
         mix.id = generateIdFromUrl(mix.url);
+        // Extract original filename from URL
+        mix.original_filename = extractFilenameFromUrl(mix.url);
     } else {
         // Object format (for backward compatibility)
         if (mix_node["id"] && mix_node["id"].IsScalar()) {
@@ -213,6 +215,8 @@ Mix MixMetadata::parseMixFromYaml(const YAML::Node& mix_node) {
         }
         if (mix_node["url"] && mix_node["url"].IsScalar()) {
             mix.url = mix_node["url"].as<std::string>();
+            // Extract original filename from URL
+            mix.original_filename = extractFilenameFromUrl(mix.url);
         }
         
         // Optional fields (will be filled in from MP3 analysis)
@@ -279,6 +283,37 @@ std::string MixMetadata::generateIdFromUrl(const std::string& url) {
     }
     
     return ss.str();
+}
+
+std::string MixMetadata::extractFilenameFromUrl(const std::string& url) {
+    if (url.empty()) {
+        return "";
+    }
+    
+    // Find the last '/' character
+    size_t last_slash = url.find_last_of('/');
+    if (last_slash == std::string::npos) {
+        return "";
+    }
+    
+    // Extract the filename part after the last '/'
+    std::string filename = url.substr(last_slash + 1);
+    
+    // URL decode the filename
+    std::string decoded_filename;
+    for (size_t i = 0; i < filename.length(); ++i) {
+        if (filename[i] == '%' && i + 2 < filename.length()) {
+            // Convert hex to char
+            std::string hex = filename.substr(i + 1, 2);
+            char decoded_char = static_cast<char>(std::stoi(hex, nullptr, 16));
+            decoded_filename += decoded_char;
+            i += 2; // Skip the next two characters
+        } else {
+            decoded_filename += filename[i];
+        }
+    }
+    
+    return decoded_filename;
 }
 
 bool MixMetadata::validateMix(const Mix& mix) {

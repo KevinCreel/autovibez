@@ -9,9 +9,13 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 namespace AutoVibez {
 namespace Data {
+
+// Callback function type for first mix added
+using FirstMixAddedCallback = std::function<void(const Mix&)>;
 
 /**
  * @brief Main orchestrator for mix management functionality
@@ -26,8 +30,10 @@ public:
     bool loadMixMetadata(const std::string& yaml_url);
     bool checkForNewMixes(const std::string& yaml_url);
     bool downloadAndAnalyzeMix(const Mix& mix);
-    bool downloadMix(const Mix& mix);
     void syncMixesWithDatabase(const std::vector<Mix>& mixes);
+    
+    // Callback for first mix added
+    void setFirstMixAddedCallback(FirstMixAddedCallback callback) { _first_mix_callback = callback; }
     
     // Mix retrieval
     Mix getRandomMix();
@@ -193,6 +199,9 @@ private:
     
     // Genre management
     std::vector<std::string> _available_genres;
+
+    // Callback for first mix added
+    FirstMixAddedCallback _first_mix_callback;
 };
 
 } // namespace Data

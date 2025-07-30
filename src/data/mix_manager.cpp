@@ -67,6 +67,20 @@ MixManager::MixManager(const std::string& db_path, const std::string& data_dir)
 }
 
 MixManager::~MixManager() {
+    // Stop any playing music
+    if (player) {
+        player->stop();
+    }
+    
+    // Wait for any background downloads to complete
+    cleanupCompletedDownloads();
+    
+    // Clean up resources
+    player.reset();
+    downloader.reset();
+    mp3_analyzer.reset();
+    metadata.reset();
+    database.reset();
 }
 
 bool MixManager::initialize() {
@@ -82,7 +96,7 @@ bool MixManager::initialize() {
     
     metadata = std::make_unique<MixMetadata>();
     
-    downloader = std::make_unique<MixDownloader>(data_dir);
+    downloader = std::make_unique<MixDownloader>(PathManager::getMixesDirectory());
     
     mp3_analyzer = std::make_unique<MP3Analyzer>();
     
@@ -176,7 +190,7 @@ bool MixManager::checkForNewMixes(const std::string& yaml_url) {
 bool MixManager::downloadAndPlayMix(const Mix& mix) {
     // Check if already downloaded
     if (!downloader->isMixDownloaded(mix.id)) {
-        if (!downloadMix(mix)) {
+        if (!downloadAndAnalyzeMix(mix)) {
             return false;
         }
     }
@@ -429,32 +443,7 @@ bool MixManager::cleanupCorruptedMixFiles() {
 }
 
 // Private helper methods
-bool MixManager::downloadMix(const Mix& mix) {
-    if (!downloader) {
-        last_error = "Downloader not initialized";
-        return false;
-    }
-    
-    if (downloader->downloadMix(mix)) {
-        setLocalPath(mix.id, downloader->getLocalPath(mix.id));
-        return true;
-    } else {
-        last_error = "Download failed: " + downloader->getLastError();
-        return false;
-    }
-}
-
 bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
-    // Extract filename from URL for prettier display
-    std::string filename = mix.url;
-    size_t last_slash = filename.find_last_of('/');
-    if (last_slash != std::string::npos) {
-        filename = filename.substr(last_slash + 1);
-        filename = urlDecode(filename);
-    }
-    
-    // Download and analysis notification removed - too verbose for normal operation
-    
     // Check if already in database
     Mix existing_mix = database->getMixById(mix.id);
     if (!existing_mix.id.empty()) {
@@ -462,14 +451,29 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
         return true;
     }
     
-    // Step 1: Download the mix
-    if (!downloader->downloadMix(mix)) {
+    // Step 1: Download the mix with title-based naming
+    if (!downloader->downloadMixWithTitleNaming(mix, mp3_analyzer.get())) {
         last_error = "Failed to download mix: " + downloader->getLastError();
         return false;
     }
     
-    // Step 2: Get the local file path
+    // Step 2: Find the actual file path (it may have been renamed based on title)
     std::string local_path = downloader->getLocalPath(mix.id);
+    
+    // Check if the file exists at the expected path, if not, search for it
+    if (!std::filesystem::exists(local_path)) {
+        // The file may have been renamed based on title, so we need to find it
+        for (const auto& entry : std::filesystem::directory_iterator(data_dir)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".mp3") {
+                // This could be our file, let's analyze it to confirm
+                MP3Metadata temp_metadata = mp3_analyzer->analyzeFile(entry.path().string());
+                if (!temp_metadata.title.empty() && !temp_metadata.artist.empty()) {
+                    local_path = entry.path().string();
+                    break;
+                }
+            }
+        }
+    }
     
     // Step 3: Analyze the downloaded file to extract ALL metadata
     MP3Metadata mp3_metadata = mp3_analyzer->analyzeFile(local_path);
@@ -497,7 +501,16 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
     
     // Step 5: Add the mix to the database with complete metadata
     if (database) {
+        // Check if this is the first mix being added
+        bool is_first_mix = database->getAllMixes().empty();
+        
         database->addMix(updated_mix);
+        
+        // If this is the first mix and we have a callback, call it
+        if (is_first_mix && _first_mix_callback) {
+            _first_mix_callback(updated_mix);
+        }
+        
         // Analysis success notification removed - too verbose for normal operation
     }
     

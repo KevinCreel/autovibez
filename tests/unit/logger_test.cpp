@@ -329,10 +329,6 @@ TEST_F(LoggerTest, ThreadSafety) {
     logger.setOutputTarget(Logger::OutputTarget::FILE);
     logger.setLogFilePath(unique_log_path);
     
-    // Debug: Check logger configuration
-    std::cout << "DEBUG: Output target: " << static_cast<int>(logger.getOutputTarget()) << std::endl;
-    std::cout << "DEBUG: Log file path: " << logger.getLogFilePath() << std::endl;
-    
     // Ensure the file doesn't exist from previous runs
     if (std::filesystem::exists(unique_log_path)) {
         std::filesystem::remove(unique_log_path);
@@ -342,23 +338,24 @@ TEST_F(LoggerTest, ThreadSafety) {
     logger.info("Test message before threads");
     logger.flush();
     
-    std::cout << "DEBUG: After single message - File exists: " << (std::filesystem::exists(unique_log_path) ? "YES" : "NO") << std::endl;
-    
     // Check if the file is actually being written to
     std::ifstream test_file(unique_log_path);
     std::string test_content((std::istreambuf_iterator<char>(test_file)),
                             std::istreambuf_iterator<char>());
-    std::cout << "DEBUG: Test file content size: " << test_content.size() << std::endl;
-    std::cout << "DEBUG: Test file content: " << test_content.substr(0, 100) << std::endl;
     
     // Try to manually create and write to the file to see if it's a file system issue
     std::ofstream manual_file(unique_log_path, std::ios::app);
     if (manual_file.is_open()) {
         manual_file << "Manual test message\n";
         manual_file.close();
-        std::cout << "DEBUG: Manual file write successful" << std::endl;
-    } else {
-        std::cout << "DEBUG: Manual file write failed" << std::endl;
+    }
+    
+    // Try writing directly to the file using the same path as the logger
+    std::ofstream direct_file(unique_log_path, std::ios::app);
+    if (direct_file.is_open()) {
+        direct_file << "Direct test message\n";
+        direct_file.flush();
+        direct_file.close();
     }
     
     std::vector<std::thread> threads;
@@ -386,12 +383,6 @@ TEST_F(LoggerTest, ThreadSafety) {
     std::string content((std::istreambuf_iterator<char>(log_file)),
                         std::istreambuf_iterator<char>());
     
-    // Debug output
-    std::cout << "DEBUG: Log file path: " << unique_log_path << std::endl;
-    std::cout << "DEBUG: File exists: " << (std::filesystem::exists(unique_log_path) ? "YES" : "NO") << std::endl;
-    std::cout << "DEBUG: File size: " << content.size() << std::endl;
-    std::cout << "DEBUG: First 200 chars: " << content.substr(0, 200) << std::endl;
-    
     // Count total expected messages by looking for the actual message content
     int expected_messages = num_threads * messages_per_thread;
     int actual_messages = 0;
@@ -402,8 +393,6 @@ TEST_F(LoggerTest, ThreadSafety) {
         actual_messages++;
         pos++;
     }
-    
-    std::cout << "DEBUG: Found " << actual_messages << " messages, expected " << expected_messages << std::endl;
     
     EXPECT_EQ(actual_messages, expected_messages);
 }
@@ -466,4 +455,60 @@ TEST_F(LoggerTest, ThreadIdInLogs) {
     // The thread ID is a number in brackets
     EXPECT_THAT(output, ::testing::HasSubstr("INFO"));
     EXPECT_THAT(output, ::testing::HasSubstr("Thread ID test"));
+} 
+
+TEST_F(LoggerTest, SimpleFileWriting) {
+    Logger& logger = Logger::getInstance();
+    logger.reset();
+    
+    // Use a unique log file path for this test
+    std::string unique_log_path = std::filesystem::current_path().string() + "/simple_file_test.log";
+    logger.setOutputTarget(Logger::OutputTarget::FILE);
+    logger.setLogFilePath(unique_log_path);
+    
+    // Ensure the file doesn't exist from previous runs
+    if (std::filesystem::exists(unique_log_path)) {
+        std::filesystem::remove(unique_log_path);
+    }
+    
+    // Write a single message
+    logger.info("Test message");
+    logger.flush();
+    
+    // Add a small delay to see if the file appears
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    // Try to write directly to the file using the same approach as the logger
+    std::ofstream test_file("./test_direct.log", std::ios::out | std::ios::app);
+    if (test_file.is_open()) {
+        test_file << "Direct test message\n";
+        test_file.flush();
+        test_file.close();
+        std::cerr << "DEBUG: Direct file write successful" << std::endl;
+    } else {
+        std::cerr << "DEBUG: Direct file write failed" << std::endl;
+    }
+    
+    // Check if the direct file was created
+    std::cerr << "DEBUG: Direct file exists: " << (std::filesystem::exists("./test_direct.log") ? "YES" : "NO") << std::endl;
+    
+    // Check if the file was created and contains the message
+    std::cerr << "DEBUG: Checking if file exists: " << unique_log_path << std::endl;
+    std::cerr << "DEBUG: File exists: " << (std::filesystem::exists(unique_log_path) ? "YES" : "NO") << std::endl;
+    
+    if (std::filesystem::exists(unique_log_path)) {
+        std::cerr << "DEBUG: File size: " << std::filesystem::file_size(unique_log_path) << std::endl;
+    }
+    
+    EXPECT_TRUE(std::filesystem::exists(unique_log_path));
+    
+    std::ifstream log_file(unique_log_path);
+    std::string content((std::istreambuf_iterator<char>(log_file)),
+                        std::istreambuf_iterator<char>());
+    
+    std::cerr << "DEBUG: File content size: " << content.size() << std::endl;
+    std::cerr << "DEBUG: File content: " << content << std::endl;
+    
+    EXPECT_THAT(content, ::testing::HasSubstr("Test message"));
+    EXPECT_THAT(content, ::testing::HasSubstr("INFO"));
 } 

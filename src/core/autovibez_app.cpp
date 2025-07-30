@@ -67,6 +67,8 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     , _texturePath(texturePath)
     , _showFps(showFps)
     , _selectedAudioDeviceIndex(audioDeviceIndex)
+    , _mixManagerInitialized(false)
+    , _hadMixesOnStartup(false)
 {
     projectm_get_window_size(_projectM, &_width, &_height);
     projectm_playlist_set_preset_switched_event_callback(_playlist, &AutoVibezApp::presetSwitchedEvent, static_cast<void*>(this));
@@ -83,6 +85,11 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
 
 AutoVibezApp::~AutoVibezApp()
 {
+    // Stop any playing music and clean up MixManager
+    if (_mixManager) {
+        _mixManager->stop();
+    }
+    
     // Wait for background task to complete if it's running
     if (_backgroundTaskRunning.load()) {
         if (_backgroundTask.valid()) {
@@ -914,6 +921,16 @@ void AutoVibezApp::initMixManager()
     
     _mixManager = std::make_unique<MixManager>(db_path, mixes_dir);
     
+    // Set up callback for when first mix is added to empty database
+    _mixManager->setFirstMixAddedCallback([this](const AutoVibez::Data::Mix& mix) {
+        // Only auto-play if we started with an empty database
+        if (!_hadMixesOnStartup) {
+            if (_mixManager->playMix(mix)) {
+                _currentMix = mix;
+            }
+        }
+    });
+    
     // Initialize database first (fast operation)
     if (!_mixManager->initialize()) {
         // Mix manager initialization error notification removed - too verbose for normal operation
@@ -947,6 +964,9 @@ void AutoVibezApp::initMixManager()
     
     // Mark as initialized early so UI can work
     _mixManagerInitialized = true;
+    
+    // Check if there were mixes in the database when the app started
+    _hadMixesOnStartup = !_mixManager->getAllMixes().empty();
     
     // IMMEDIATELY try to play from local database (non-blocking)
     if (!configFilePath.empty()) {
@@ -1259,17 +1279,29 @@ void AutoVibezApp::checkAndAutoPlayNext() {
     
     // Check if music has stopped playing (not just paused)
     if (!_mixManager->isPlaying() && !_mixManager->isPaused()) {
-        // Music has ended, play next random mix
+        // Music has ended or stopped, play next random mix
         Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
         if (!nextMix.id.empty()) {
             // Auto-play next mix notification removed - too verbose for normal operation
             if (_mixManager->downloadAndPlayMix(nextMix)) {
                 _currentMix = nextMix;
             } else {
-                // Auto-play failed notification removed - too verbose for normal operation
+                // Auto-play failed, try another mix
+                nextMix = _mixManager->getSmartRandomMix(nextMix.id, _mixManager->getCurrentGenre());
+                if (!nextMix.id.empty()) {
+                    if (_mixManager->downloadAndPlayMix(nextMix)) {
+                        _currentMix = nextMix;
+                    }
+                }
             }
         } else {
-            // No more mixes available notification removed - too verbose for normal operation
+            // No more mixes available, try to get any mix
+            nextMix = _mixManager->getRandomMix();
+            if (!nextMix.id.empty()) {
+                if (_mixManager->downloadAndPlayMix(nextMix)) {
+                    _currentMix = nextMix;
+                }
+            }
         }
     }
 }
@@ -1289,10 +1321,22 @@ void AutoVibezApp::autoPlayFromLocalDatabase()
             _currentMix = randomMix;
             // Auto-play success notification removed - too verbose for normal operation
         } else {
-            // Play failed notification removed - too verbose for normal operation
+            // Play failed, try another mix
+            randomMix = _mixManager->getSmartRandomMix(randomMix.id, _mixManager->getCurrentGenre());
+            if (!randomMix.id.empty()) {
+                if (_mixManager->playMix(randomMix)) {
+                    _currentMix = randomMix;
+                }
+            }
         }
     } else {
-        // No mixes in local database notification removed - too verbose for normal operation
+        // No mixes with preferred genre, try any mix
+        randomMix = _mixManager->getRandomMix();
+        if (!randomMix.id.empty()) {
+            if (_mixManager->playMix(randomMix)) {
+                _currentMix = randomMix;
+            }
+        }
     }
 }
 

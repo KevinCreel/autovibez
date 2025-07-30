@@ -5,6 +5,12 @@
 #include <curl/curl.h>
 
 namespace AutoVibez {
+namespace Audio {
+    class MP3Analyzer;
+}
+}
+
+namespace AutoVibez {
 namespace Data {
 
 /**
@@ -12,7 +18,7 @@ namespace Data {
  */
 class MixDownloader {
 public:
-    explicit MixDownloader(const std::string& cache_dir);
+    MixDownloader(const std::string& mixes_dir);
     ~MixDownloader();
     
     /**
@@ -37,13 +43,42 @@ public:
     std::string getLocalPath(const std::string& mix_id);
     
     /**
+     * @brief Get local path for a mix using original filename
+     * @param mix Mix object containing original filename
+     * @return Local file path
+     */
+    std::string getLocalPathWithOriginalFilename(const Mix& mix);
+    
+    /**
+     * @brief Download a mix to a temporary file and rename based on MP3 title
+     * @param mix Mix to download
+     * @param mp3_analyzer MP3Analyzer instance to extract title
+     * @return True if successful, false otherwise
+     */
+    bool downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio::MP3Analyzer* mp3_analyzer);
+    
+    /**
+     * @brief Get temporary path for a mix during download
+     * @param mix_id Mix ID
+     * @return Temporary file path
+     */
+    std::string getTemporaryPath(const std::string& mix_id);
+    
+    /**
      * @brief Get the last error message
      * @return Error message string
      */
     std::string getLastError() const { return last_error; }
+    
+    /**
+     * @brief Create a safe filename from a title
+     * @param title Original title
+     * @return Safe filename string
+     */
+    std::string createSafeFilename(const std::string& title);
 
 private:
-    std::string cache_dir;
+    std::string mixes_dir;
     std::string last_error;
 };
 

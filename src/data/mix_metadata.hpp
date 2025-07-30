@@ -17,6 +17,7 @@ struct Mix {
     std::string artist;                // Artist/DJ name
     std::string genre;                 // Music genre
     std::string url;                   // Download URL
+    std::string original_filename;     // Original filename from URL
     std::string local_path;            // Local file path (if downloaded)
     int duration_seconds;              // Duration in seconds
 
@@ -90,6 +91,13 @@ private:
     bool validateMix(const Mix& mix);
 
     std::string generateIdFromUrl(const std::string& url);
+    
+    /**
+     * @brief Extract filename from URL
+     * @param url URL to extract filename from
+     * @return Extracted filename or empty string if not found
+     */
+    std::string extractFilenameFromUrl(const std::string& url);
 };
 
 } // namespace Data

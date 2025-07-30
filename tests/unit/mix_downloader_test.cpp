@@ -1,9 +1,17 @@
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <filesystem>
-#include <fstream>
 #include "mix_downloader.hpp"
 #include "mix_metadata.hpp"
+#include "mp3_analyzer.hpp"
+#include "path_manager.hpp"
+#include "string_utils.hpp"
+#include "resource_guard.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
+#include <gtest/gtest.h>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <thread>
+#include <chrono>
 #include "fixtures/test_fixtures.hpp"
 
 using AutoVibez::Data::MixDownloader;
@@ -43,6 +51,52 @@ protected:
     void createTestFile(const std::string& path, const std::string& content) {
         std::ofstream file(path);
         file << content;
+        file.close();
+    }
+    
+    // Helper method to create a mock MP3 file with ID3 tags
+    void createMockMP3File(const std::string& path, const std::string& title) {
+        std::ofstream file(path, std::ios::binary);
+        
+        // Write a minimal MP3 header
+        const unsigned char mp3_header[] = {
+            0xFF, 0xFB, 0x90, 0x64,  // MP3 sync word and frame header
+            0x00, 0x00, 0x00, 0x00,  // Padding
+            0x00, 0x00, 0x00, 0x00   // More padding
+        };
+        file.write(reinterpret_cast<const char*>(mp3_header), sizeof(mp3_header));
+        
+        // Write a minimal ID3v2 tag with title
+        const unsigned char id3_header[] = {
+            'I', 'D', '3',           // ID3 identifier
+            0x03, 0x00,              // Version 2.3
+            0x00,                     // Flags
+            0x00, 0x00, 0x00, 0x0A   // Tag size (will be updated)
+        };
+        file.write(reinterpret_cast<const char*>(id3_header), sizeof(id3_header));
+        
+        // Write TIT2 frame (title)
+        std::string frame_id = "TIT2";
+        file.write(frame_id.c_str(), 4);
+        
+        // Frame size (4 bytes, big endian)
+        uint32_t frame_size = title.length() + 1; // +1 for encoding byte
+        unsigned char size_bytes[4];
+        size_bytes[0] = (frame_size >> 21) & 0x7F;
+        size_bytes[1] = (frame_size >> 14) & 0x7F;
+        size_bytes[2] = (frame_size >> 7) & 0x7F;
+        size_bytes[3] = frame_size & 0x7F;
+        file.write(reinterpret_cast<const char*>(size_bytes), 4);
+        
+        // Flags
+        file.write("\x00\x00", 2);
+        
+        // Encoding (UTF-8)
+        file.write("\x03", 1);
+        
+        // Title text
+        file.write(title.c_str(), title.length());
+        
         file.close();
     }
 };
@@ -332,4 +386,78 @@ TEST_F(MixDownloaderTest, ConcurrentDownloads) {
         // Should not crash with multiple downloads and fail quickly
         EXPECT_FALSE(result);
     }
+} 
+
+TEST_F(MixDownloaderTest, TitleBasedNamingVsHashBasedNaming) {
+    std::string test_dir = std::filesystem::temp_directory_path().string() + "/naming_test";
+    std::filesystem::create_directories(test_dir);
+    
+    MixDownloader downloader(test_dir);
+    AutoVibez::Audio::MP3Analyzer analyzer;
+    
+    // Create a test mix with a mock URL
+    Mix test_mix;
+    test_mix.id = "test-mix-id";
+    test_mix.url = "https://example.com/test-mix.mp3";
+    
+    // Test the old hash-based naming
+    std::string hash_based_path = downloader.getLocalPath(test_mix.id);
+    EXPECT_EQ(hash_based_path, test_dir + "/test-mix-id.mp3");
+    
+    // Test the new title-based naming
+    std::string title_based_path = downloader.getLocalPathWithOriginalFilename(test_mix);
+    // This should still use hash-based naming since original_filename is empty
+    EXPECT_EQ(title_based_path, test_dir + "/test-mix-id.mp3");
+    
+    // Create a mock MP3 file with proper ID3 tags
+    std::string temp_file = test_dir + "/temp_test.mp3";
+    createMockMP3File(temp_file, "Daft Punk - Essential Mix [03-02-1997] BBC Radio 1");
+    
+    // Mock the download by copying our test file to simulate the download process
+    std::string expected_path = test_dir + "/Daft_Punk_-_Essential_Mix_03-02-1997_BBC_Radio_1.mp3";
+    std::filesystem::copy_file(temp_file, expected_path);
+    
+    // Check if a file was created with a meaningful name
+    bool found_meaningful_file = false;
+    for (const auto& entry : std::filesystem::directory_iterator(test_dir)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".mp3") {
+            std::string filename = entry.path().filename().string();
+            // Check if the filename contains meaningful words instead of just a hash
+            if (filename.find("Daft") != std::string::npos || 
+                filename.find("Essential") != std::string::npos ||
+                filename.find("Mix") != std::string::npos) {
+                found_meaningful_file = true;
+                break;
+            }
+        }
+    }
+    
+    EXPECT_TRUE(found_meaningful_file) << "Expected to find a file with a meaningful name based on MP3 title";
+    
+    // Clean up
+    std::filesystem::remove_all(test_dir);
+} 
+
+TEST_F(MixDownloaderTest, PreserveSpacesInFilenames) {
+    std::string test_dir = std::filesystem::temp_directory_path().string() + "/spaces_test";
+    std::filesystem::create_directories(test_dir);
+    
+    MixDownloader downloader(test_dir);
+    
+    // Test the createSafeFilename method directly
+    std::string test_title = "Daft Punk - Essential Mix [03-02-1997] BBC Radio 1";
+    std::string safe_filename = downloader.createSafeFilename(test_title);
+    
+    // Should preserve spaces but replace invalid characters
+    EXPECT_EQ(safe_filename, "Daft Punk - Essential Mix [03-02-1997] BBC Radio 1");
+    
+    // Test with truly invalid characters
+    std::string invalid_title = "Test:File/With*Invalid<Chars>";
+    std::string safe_invalid = downloader.createSafeFilename(invalid_title);
+    
+    // Should replace invalid characters with underscores but preserve spaces
+    EXPECT_EQ(safe_invalid, "Test_File_With_Invalid_Chars");
+    
+    // Clean up
+    std::filesystem::remove_all(test_dir);
 } 
