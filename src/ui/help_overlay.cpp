@@ -488,7 +488,7 @@ void HelpOverlay::render() {
         }
         
         // Add some padding to each column
-        float padding = 20.0f;
+        float padding = 40.0f;  // Increased from 20.0f to 40.0f for more spacing
         artistWidth += padding;
         titleWidth += padding;
         genreWidth += padding;
@@ -507,7 +507,7 @@ void HelpOverlay::render() {
         
         // Header row
         ImGui::SetCursorPosX(artistX);
-        ImGui::TextUnformatted("Artist");
+        ImGui::TextUnformatted("  Artist");
         ImGui::SameLine();
         ImGui::SetCursorPosX(titleX);
         ImGui::TextUnformatted("Title");
@@ -529,9 +529,26 @@ void HelpOverlay::render() {
         
         // Table data
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-        for (const auto& mix : _mixTableData) {
+        
+        // Sort the data: favorites first, then by artist
+        std::vector<AutoVibez::Data::Mix> sortedMixes = _mixTableData;
+        std::sort(sortedMixes.begin(), sortedMixes.end(), 
+            [](const AutoVibez::Data::Mix& a, const AutoVibez::Data::Mix& b) {
+                // First sort by favorite (favorites first)
+                if (a.is_favorite != b.is_favorite) {
+                    return a.is_favorite > b.is_favorite;
+                }
+                // Then by artist
+                if (a.artist != b.artist) {
+                    return a.artist < b.artist;
+                }
+                // Finally by title
+                return a.title < b.title;
+            });
+        
+        for (const auto& mix : sortedMixes) {
             // Artist
-            std::string artist = mix.artist;
+            std::string artist = "  " + mix.artist;
             ImGui::SetCursorPosX(artistX);
             ImGui::TextUnformatted(artist.c_str());
             
