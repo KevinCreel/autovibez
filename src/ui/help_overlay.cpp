@@ -62,8 +62,6 @@ void HelpOverlay::render() {
     
     // Handle deferred texture rebinding at the start of render cycle
     if (_needsDeferredTextureRebind) {
-        // Debug notification removed - too verbose for normal operation
-        
         // Execute the texture rebind
         if (_imguiReady) {
             ImGui_ImplOpenGL2_DestroyFontsTexture();
@@ -71,7 +69,6 @@ void HelpOverlay::render() {
         }
         
         _needsDeferredTextureRebind = false;
-        // Debug notification removed - too verbose for normal operation
     }
     
     // Lazy initialize ImGui on first render
@@ -650,8 +647,6 @@ void HelpOverlay::setCursorVisibility(bool visible) {
 
 void HelpOverlay::rebuildFontAtlas() {
     if (_imguiReady) {
-        // Debug notification removed - too verbose for normal operation
-        
         // Ensure we have the OpenGL context
         SDL_GL_MakeCurrent(_window, _glContext);
         
@@ -668,16 +663,10 @@ void HelpOverlay::rebuildFontAtlas() {
         // This forces ImGui to recreate its font texture
         ImGui_ImplOpenGL2_DestroyFontsTexture();
         ImGui_ImplOpenGL2_CreateFontsTexture();
-        
-        // Debug notification removed - too verbose for normal operation
-    } else {
-        // Debug notification removed - too verbose for normal operation
     }
 }
 
 void HelpOverlay::reinitializeImGui() {
-    // Debug notification removed - too verbose for normal operation
-    
     // Ensure we have the OpenGL context
     SDL_GL_MakeCurrent(_window, _glContext);
     
@@ -730,23 +719,17 @@ void HelpOverlay::reinitializeImGui() {
     // Restore OpenGL state
     glPopMatrix();
     glPopAttrib();
-    
-    // Debug notification removed - too verbose for normal operation
 }
 
 void HelpOverlay::triggerTextureRebind() {
     _needsTextureRebind = true;
-    // Debug notification removed - too verbose for normal operation
 }
 
 void HelpOverlay::triggerDeferredTextureRebind() {
     _needsDeferredTextureRebind = true;
-    // Debug notification removed - too verbose for normal operation
 }
 
 void HelpOverlay::triggerCompleteReinitialization() {
-    // Debug notification removed - too verbose for normal operation
-    
     // Ensure we have the OpenGL context
     SDL_GL_MakeCurrent(_window, _glContext);
     
@@ -799,8 +782,6 @@ void HelpOverlay::triggerCompleteReinitialization() {
     // Restore OpenGL state
     glPopMatrix();
     glPopAttrib();
-    
-    // Debug notification removed - too verbose for normal operation
 }
 
 // Dynamic information methods

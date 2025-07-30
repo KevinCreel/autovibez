@@ -78,18 +78,14 @@ static int mainLoop(void* userData) {
             app->addFakePCM();
         processLoopbackFrame(app);
         
-        // Check for auto-play when music ends
         if (app->isMixManagerInitialized()) {
-            // Check if current mix has finished
             if (app->getMixManager()->hasFinished()) {
-                // Music has finished, trigger auto-play
                 app->checkAndAutoPlayNext();
             }
             
-            // Also check periodically to ensure music is always playing
             static Uint32 last_check = 0;
             Uint32 current_time = SDL_GetTicks();
-            if (current_time - last_check > 5000) { // Check every 5 seconds
+            if (current_time - last_check > 5000) {
                 if (!app->getMixManager()->isPlaying() && !app->getMixManager()->isPaused()) {
                     app->checkAndAutoPlayNext();
                 }
@@ -98,12 +94,10 @@ static int mainLoop(void* userData) {
             }
         }
         
-        // Update crossfade if active
         if (app->isMixManagerInitialized()) {
             app->getMixManager()->updateCrossfade();
         }
         
-        // Cleanup completed background downloads
         if (app->isMixManagerInitialized()) {
             app->getMixManager()->cleanupCompletedDownloads();
         }
@@ -122,92 +116,8 @@ static int mainLoop(void* userData) {
     return 0;
 }
 
-void testMixManager() {
-    // Test audio integration
-    // Test notification removed - too verbose for normal operation
-    
-    // Test audio components
-    // Test notification removed - too verbose for normal operation
-    
-    // Test audio player
-    MixPlayer player;
-    // Test notification removed - too verbose for normal operation
-    
-    // Test volume control
-    player.setVolume(80);
-    // Test notification removed - too verbose for normal operation
-    
-    // Test downloader
-    MixDownloader downloader("./test_cache");
-    // Test notification removed - too verbose for normal operation
-    
-    // Test cache management
-    // Test notification removed - too verbose for normal operation
-    if (std::filesystem::exists("./test_cache")) {
-        // Test notification removed - too verbose for normal operation
-    } else {
-        // Test notification removed - too verbose for normal operation
-    }
-    
-    // Test notification removed - too verbose for normal operation
-    
-    // Test YAML parsing
-    // Test notification removed - too verbose for normal operation
-    
-    // Test YAML parsing
-    MixMetadata metadata;
-    std::string test_yaml_content = R"(
-mixes:
-  - name: Test Mix 1
-    url: https://example.com/mix1.mp3
-    duration: 300
-    artist: Artist 1
-    album: Album 1
-    genre: Rock
-    year: 2020
-    cover_art: https://example.com/cover1.jpg
-  - name: Test Mix 2
-    url: https://example.com/mix2.mp3
-    duration: 200
-    artist: Artist 2
-    album: Album 2
-    genre: Pop
-    year: 2021
-    cover_art: https://example.com/cover2.jpg
-)";
-    auto mixes = metadata.loadFromYaml(test_yaml_content);
-    if (!mixes.empty()) {
-        // Test notification removed - too verbose for normal operation
-        
-        // Test notification removed - too verbose for normal operation
-        
-        if (!mixes.empty()) {
-            const auto& first_mix = mixes[0];
-            // Test notification removed - too verbose for normal operation
-        }
-    } else {
-        // Test notification removed - too verbose for normal operation
-    }
-    
-    // Test notification removed - too verbose for normal operation
-    
-    // Test notification removed - too verbose for normal operation
-    // Test notification removed - too verbose for normal operation
-    // Test notification removed - too verbose for normal operation
-    // Test notification removed - too verbose for normal operation
-    // Test notification removed - too verbose for normal operation
-    
-    // Test notification removed - too verbose for normal operation
-    
-    // Test notification removed - too verbose for normal operation
-}
 
 int main(int argc, char* argv[]) {
-    // Check for test mode
-    if (argc > 1 && std::string(argv[1]) == "--test-mix") {
-        testMixManager();
-        return 0;
-    }
     
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
     

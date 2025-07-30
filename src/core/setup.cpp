@@ -24,7 +24,6 @@ using AutoVibez::Data::MixManager;
 using AutoVibez::Audio::initLoopback;
 using AutoVibez::Audio::configureLoopback;
 
-// Helper function to expand tilde in paths (cross-platform)
 std::string expandTilde(const std::string& path) {
     if (path.empty() || path[0] != '~') {
         return path;
@@ -59,22 +58,13 @@ void debugGL(GLenum source,
              GLsizei length,
              const GLchar* message,
              const void* userParam) {
-
-    /*if (type != GL_DEBUG_TYPE_OTHER)*/
-    {
-        std::cerr << " -- \n" << "Type: " <<
-        type << "; Source: " <<
-        source <<"; ID: " << id << "; Severity: " <<
-        severity << "\n" << message << "\n";
-    }
+    // Debug output disabled
 }
 #endif
 
-// return path to config file to use
 std::string getConfigFilePath(const std::string& datadir_path) {
     std::string config_path = datadir_path + "/config.inp";
     
-    // Check if the specified config file exists
     std::ifstream f_config(config_path);
     if (f_config.good()) {
         return config_path;
@@ -120,7 +110,6 @@ std::string getConfigDirectory() {
     }
 #endif
     
-    // Create directory if it doesn't exist
     if (!std::filesystem::exists(config_dir)) {
         std::filesystem::create_directories(config_dir);
     }
@@ -130,13 +119,11 @@ std::string getConfigDirectory() {
 
 // Find config file
 std::string findConfigFile() {
-    // Check for environment variable first
     const char* config_env = std::getenv("AUTOVIBEZ_CONFIG");
     if (config_env && std::filesystem::exists(config_env)) {
         return config_env;
     }
     
-    // Look for config in XDG config directory
     std::string xdg_config_path = getConfigDirectory() + "/config.inp";
     if (std::filesystem::exists(xdg_config_path)) {
         return xdg_config_path;
@@ -186,7 +173,6 @@ std::string getAssetsDirectory() {
     }
 #endif
     
-    // Create directory if it doesn't exist
     if (!std::filesystem::exists(assets_dir)) {
         std::filesystem::create_directories(assets_dir);
     }
@@ -276,7 +262,6 @@ AutoVibezApp *setupSDLApp() {
 
     initGL();
 
-    // Create window with default size, will be updated from config
     SDL_Window *win = SDL_CreateWindow("AutoVibez", 0, 0, 512, 512, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     int width, height;
     SDL_GL_GetDrawableSize(win,&width,&height);
@@ -301,24 +286,20 @@ AutoVibezApp *setupSDLApp() {
 
     std::string base_path = getAssetsDirectory();
 
-    // load configuration file - use XDG config directory
     std::string configFilePath = findConfigFile();
     if (configFilePath.empty()) {
         // Config file notification removed - too verbose for normal operation
         // Continue with defaults instead of returning early
     }
     
-    // Use XDG assets directory if it exists, otherwise fall back to system paths
     std::string presetURL = base_path + "/presets";
     std::string textureURL = base_path + "/textures";
     
-    // Check if XDG assets directory exists
     std::string xdg_assets = getAssetsDirectory();
     if (std::filesystem::exists(xdg_assets + "/presets")) {
         presetURL = xdg_assets + "/presets";
         textureURL = xdg_assets + "/textures";
     } else {
-        // Fallback to local assets directory if it exists
         std::string local_assets = "assets";
         if (std::filesystem::exists(local_assets + "/presets")) {
             presetURL = local_assets + "/presets";
@@ -331,7 +312,6 @@ AutoVibezApp *setupSDLApp() {
         std::string configPreset = config.getPresetPath();
         std::string configTexture = config.getTexturePath();
         
-        // Only use config paths if they actually exist
         if (!configPreset.empty()) {
             std::string expandedPreset = expandTilde(configPreset);
             if (std::filesystem::exists(expandedPreset)) {
@@ -346,17 +326,13 @@ AutoVibezApp *setupSDLApp() {
         }
     }
 
-    // Default values for new config settings
     int audioDeviceIndex = 0;
     bool showFps = false;
 
-    // Read config settings before creating the app
     if (! configFilePath.empty())
     {
-        // found config file, load it
         ConfigFile config(configFilePath);
         
-        // Read config settings (used in app initialization)
         audioDeviceIndex = config.getAudioDeviceIndex();
         showFps = config.getShowFps();
     }
@@ -365,7 +341,6 @@ AutoVibezApp *setupSDLApp() {
 
     if (! configFilePath.empty())
     {
-        // found config file, load it
         ConfigFile config(configFilePath);
         auto* projectMHandle = app->projectM();
 

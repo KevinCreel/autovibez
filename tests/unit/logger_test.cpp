@@ -484,30 +484,15 @@ TEST_F(LoggerTest, SimpleFileWriting) {
         test_file << "Direct test message\n";
         test_file.flush();
         test_file.close();
-        std::cerr << "DEBUG: Direct file write successful" << std::endl;
-    } else {
-        std::cerr << "DEBUG: Direct file write failed" << std::endl;
     }
-    
-    // Check if the direct file was created
-    std::cerr << "DEBUG: Direct file exists: " << (std::filesystem::exists("./test_direct.log") ? "YES" : "NO") << std::endl;
     
     // Check if the file was created and contains the message
-    std::cerr << "DEBUG: Checking if file exists: " << unique_log_path << std::endl;
-    std::cerr << "DEBUG: File exists: " << (std::filesystem::exists(unique_log_path) ? "YES" : "NO") << std::endl;
-    
-    if (std::filesystem::exists(unique_log_path)) {
-        std::cerr << "DEBUG: File size: " << std::filesystem::file_size(unique_log_path) << std::endl;
-    }
     
     EXPECT_TRUE(std::filesystem::exists(unique_log_path));
     
     std::ifstream log_file(unique_log_path);
     std::string content((std::istreambuf_iterator<char>(log_file)),
                         std::istreambuf_iterator<char>());
-    
-    std::cerr << "DEBUG: File content size: " << content.size() << std::endl;
-    std::cerr << "DEBUG: File content: " << content << std::endl;
     
     EXPECT_THAT(content, ::testing::HasSubstr("Test message"));
     EXPECT_THAT(content, ::testing::HasSubstr("INFO"));

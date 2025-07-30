@@ -108,7 +108,7 @@ private:
     int current_position;
     int duration;
     int volume;
-    Mix_Music* current_music; // Store current music object for seeking
+    Mix_Music* current_music;
     bool _verbose = false;
 };
 

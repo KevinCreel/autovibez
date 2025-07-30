@@ -521,7 +521,7 @@ preferred_genre = Electronic
     EXPECT_FALSE(manager.isPaused());
     EXPECT_FALSE(manager.hasFinished());
     
-    // Debug: Check available mixes
+
     std::vector<Mix> available_mixes = manager.getAvailableMixes();
     EXPECT_GT(available_mixes.size(), 0);
     

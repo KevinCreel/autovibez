@@ -10,7 +10,6 @@
  */
 class MusicResource {
 public:
-    // Custom deleter for Mix_Music*
     struct MusicDeleter {
         void operator()(Mix_Music* music) const {
             if (music) {
@@ -28,13 +27,10 @@ public:
         load(file_path);
     }
     
-    // Move constructor
     MusicResource(MusicResource&& other) noexcept = default;
     
-    // Move assignment
     MusicResource& operator=(MusicResource&& other) noexcept = default;
     
-    // Delete copy constructor and assignment
     MusicResource(const MusicResource&) = delete;
     MusicResource& operator=(const MusicResource&) = delete;
     
@@ -47,7 +43,6 @@ public:
     // Get the underlying Mix_Music pointer
     Mix_Music* get() const { return music_.get(); }
     
-    // Check if music is loaded
     bool isLoaded() const { return music_ != nullptr; }
     
     // Get last error

@@ -76,23 +76,18 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
     // On Unix-like systems, redirect stderr to /dev/null
     original_stderr_file = freopen("/dev/null", "w", stderr);
     if (!original_stderr_file) {
-        // If freopen fails, try using a null stream
         null_stream.open("/dev/null");
         if (!null_stream.is_open()) {
-            // Last resort: just proceed without redirecting
         }
     }
 #endif
     }
     
-    // Load and play the music
     current_music = Mix_LoadMUS(local_path.c_str());
     
-    // Restore stderr
     if (!_verbose) {
 #ifndef _WIN32
         if (freopen("/dev/stderr", "w", stderr) == nullptr) {
-            // If restoration fails, just continue
         }
 #endif
     }
@@ -109,13 +104,11 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
         return false;
     }
     
-    // Set volume
     Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / 100);
     
     playing = true;
     current_position = 0;
     
-    // Get duration (approximate)
     duration = Mix_MusicDuration(current_music);
     
     return true;
@@ -182,15 +175,12 @@ bool MixPlayer::isPlaying() const {
 }
 
 bool MixPlayer::hasFinished() {
-    // Check if music has finished naturally
     if (playing && !Mix_PlayingMusic() && !Mix_PausedMusic()) {
-        // Music has finished, update internal state
         playing = false;
         if (current_music) {
             Mix_FreeMusic(current_music);
             current_music = nullptr;
         }
-        // Mix finished notification removed - help overlay shows current state
         return true;
     }
     return false;
@@ -218,28 +208,21 @@ bool MixPlayer::isValidMP3File(const std::string& file_path) {
         return false;
     }
     
-    // Read the first 10 bytes to check for MP3 header
     char header[10];
     file.read(header, 10);
     
     if (file.gcount() < 10) {
-        return false;  // File too small
+        return false;
     }
     
-    // Check for MP3 sync word (0xFF 0xFB or 0xFF 0xFA or 0xFF 0xF3)
-    // MP3 files start with 0xFF followed by a sync byte
     if ((header[0] & 0xFF) == 0xFF && 
         ((header[1] & 0xE0) == 0xE0 || (header[1] & 0xF0) == 0xF0)) {
         return true;
     }
     
-    // Check for ID3v2 header (starts with "ID3")
     if (header[0] == 'I' && header[1] == 'D' && header[2] == '3') {
         return true;
     }
-    
-    // Check for ID3v1 header (at end of file, but we'll check the beginning too)
-    // This is less reliable but can help identify some MP3s
     
     return false;
 }

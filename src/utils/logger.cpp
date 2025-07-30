@@ -65,22 +65,14 @@ void Logger::setLogFilePath(const std::string& path) {
     std::lock_guard<std::mutex> lock(mutex_);
     log_file_path_ = path;
     
-    std::cerr << "DEBUG: setLogFilePath called with path: " << path << std::endl;
-    
-    // Close existing file if open
     if (log_file_.is_open()) {
         log_file_.close();
     }
     
-    // Open new file
     if (!path.empty()) {
         std::filesystem::path log_path(path);
         std::filesystem::create_directories(log_path.parent_path());
         log_file_.open(path, std::ios::out | std::ios::app);
-        
-        std::cerr << "DEBUG: File opened, is_open: " << (log_file_.is_open() ? "YES" : "NO") << std::endl;
-        std::cerr << "DEBUG: File path: " << path << std::endl;
-        std::cerr << "DEBUG: Current working directory: " << std::filesystem::current_path() << std::endl;
         
         current_file_size_ = std::filesystem::exists(path) ? std::filesystem::file_size(path) : 0;
     }
@@ -131,28 +123,24 @@ void Logger::log(Level level, const std::string& message, const LogContext& cont
     
     std::lock_guard<std::mutex> lock(mutex_);
     
-    // Update statistics
     log_counts_[level]++;
     log_count_++;
     
     std::string formatted_message = formatLogMessage(level, message, context);
     
-    // Output to console
     if (output_target_ == OutputTarget::CONSOLE || output_target_ == OutputTarget::BOTH) {
         std::string color_code = colored_output_ ? getColorCode(level) : "";
         std::string reset_code = colored_output_ ? getResetColorCode() : "";
         std::cout << color_code << formatted_message << reset_code << std::endl;
     }
     
-    // Output to file
     if (output_target_ == OutputTarget::FILE || output_target_ == OutputTarget::BOTH) {
         writeToFile(formatted_message);
     }
     
-    // Update performance statistics
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    total_log_time_us_.fetch_add(duration.count()); // Convert to milliseconds
+    total_log_time_us_.fetch_add(duration.count());
 }
 
 void Logger::log(Level level, const char* format, const LogContext& context, ...) {
@@ -160,7 +148,6 @@ void Logger::log(Level level, const char* format, const LogContext& context, ...
         return;
     }
     
-    // Format the message
     va_list args;
     va_start(args, context);
     
@@ -268,7 +255,6 @@ std::vector<Logger::ErrorInfo> Logger::getRecentErrors(size_t count) const {
     std::lock_guard<std::mutex> lock(mutex_);
     std::vector<ErrorInfo> recent_errors;
     
-    // Convert to vector and sort by timestamp
     std::vector<std::pair<std::string, ErrorInfo>> sorted_errors;
     for (const auto& [id, error] : error_history_) {
         sorted_errors.emplace_back(id, error);
@@ -279,7 +265,6 @@ std::vector<Logger::ErrorInfo> Logger::getRecentErrors(size_t count) const {
                   return a.second.timestamp > b.second.timestamp;
               });
     
-    // Take the most recent ones
     for (size_t i = 0; i < std::min(count, sorted_errors.size()); ++i) {
         recent_errors.push_back(sorted_errors[i].second);
     }
@@ -293,7 +278,6 @@ void Logger::clearErrorHistory() {
     error_counter_ = 0;
 }
 
-// Performance monitoring
 void Logger::startTimer(const std::string& timer_name) {
     std::lock_guard<std::mutex> lock(mutex_);
     timers_[timer_name] = std::chrono::high_resolution_clock::now();
@@ -323,7 +307,6 @@ void Logger::logPerformance(const std::string& operation, double duration_ms,
     log(Level::INFO, message, context);
 }
 
-// Statistics
 size_t Logger::getLogCount(Level level) const {
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = log_counts_.find(level);
@@ -337,7 +320,7 @@ size_t Logger::getErrorCount() const {
 double Logger::getAverageLogTime() const {
     size_t count = log_count_.load();
     if (count == 0) return 0.0;
-    return static_cast<double>(total_log_time_us_.load()) / (count * 1000.0); // Convert to milliseconds
+    return static_cast<double>(total_log_time_us_.load()) / (count * 1000.0);
 }
 
 void Logger::reset() {
@@ -442,7 +425,6 @@ std::string Logger::formatLogMessage(Level level, const std::string& message,
     // Thread ID
     oss << "[" << getThreadId() << "] ";
     
-    // Context (if available)
     if (!context.component.empty() || !context.function.empty()) {
         oss << "[" << context.component << "::" << context.function;
         if (!context.file.empty()) {
@@ -451,7 +433,6 @@ std::string Logger::formatLogMessage(Level level, const std::string& message,
         oss << "] ";
     }
     
-    // Message
     oss << message;
     
     return oss.str();
@@ -465,7 +446,6 @@ std::string Logger::formatTimestamp() const {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     
-    // Add milliseconds
     auto duration = now.time_since_epoch();
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration - seconds);
@@ -503,22 +483,18 @@ std::string Logger::getResetColorCode() const {
 }
 
 void Logger::writeToFile(const std::string& message) {
-    std::cerr << "DEBUG: writeToFile called, file open: " << (log_file_.is_open() ? "YES" : "NO") << std::endl;
     if (!log_file_.is_open()) {
-        std::cerr << "DEBUG: File not open in writeToFile" << std::endl;
         return;
     }
     
     if (!log_file_.good()) {
-        std::cerr << "DEBUG: File stream not good in writeToFile" << std::endl;
         return;
     }
     
-    std::cerr << "DEBUG: Writing to file: " << message.substr(0, 50) << "..." << std::endl;
     log_file_ << message << std::endl;
-    log_file_.flush(); // Ensure the data is written to disk
+    log_file_.flush();
     
-    current_file_size_ += message.length() + 1; // +1 for newline
+    current_file_size_ += message.length() + 1;
     
     checkFileRotation();
 }

@@ -90,7 +90,6 @@ AutoVibezApp::~AutoVibezApp()
         _mixManager->stop();
     }
     
-    // Wait for background task to complete if it's running
     if (_backgroundTaskRunning.load()) {
         if (_backgroundTask.valid()) {
             _backgroundTask.wait();
@@ -259,7 +258,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
         keymod = true;
     }
 
-    // handle keyboard input (for our app first, then projectM)
     switch (sdl_keycode)
     {
         case SDLK_q:
@@ -286,7 +284,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 // Stereo requires fullscreen
 #if !STEREOSCOPIC_SBS
                 if (!this->stretch)
-                { // if stretching is not already enabled, enable it.
+                {
                     stretchMonitors();
                     this->stretch = true;
                 }
@@ -307,7 +305,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 #if !STEREOSCOPIC_SBS
                 nextMonitor();
 #endif
-                this->stretch = false; // if we are switching monitors, ensure we disable monitor stretching.
+                this->stretch = false;
                 return;                // handled
             }
 
@@ -319,37 +317,30 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 #if !STEREOSCOPIC_SBS
                 toggleFullScreen();
 #endif
-                this->stretch = false; // if we are toggling fullscreen, ensure we disable monitor stretching.
+                this->stretch = false;
                 return;                // handled
             }
             break;
 
         case SDLK_UP:
-            // Handle volume control for mixes
             if (_mixManagerInitialized && _mixManager->isPlaying()) {
-                // Volume control handled in handleMixControls
             }
             break;
 
         case SDLK_DOWN:
-            // Handle volume control for mixes
             if (_mixManagerInitialized && _mixManager->isPlaying()) {
-                // Volume control handled in handleMixControls
             }
             break;
 
         case SDLK_b:
-            // B: Increase beat sensitivity
             {
                 float newSensitivity = getBeatSensitivity() + 0.1f;
                 if (newSensitivity > 1.0f) newSensitivity = 1.0f;
                 setBeatSensitivity(newSensitivity);
-                // Beat sensitivity notification removed - help overlay shows current sensitivity
             }
             break;
 
         case SDLK_j:
-            // J: Decrease beat sensitivity
             {
                 float newSensitivity = getBeatSensitivity() - 0.1f;
                 if (newSensitivity < 0.0f) newSensitivity = 0.0f;
