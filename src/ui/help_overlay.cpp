@@ -65,9 +65,6 @@ void HelpOverlay::render() {
         ConsoleOutput::output("✅ Deferred texture rebind completed");
     }
     
-    // For now, let's try a simpler approach - just render a basic overlay
-    // without complex ImGui setup to avoid rendering conflicts
-    
     // Lazy initialize ImGui on first render
     if (!_imguiReady) {
         // Ensure we have the OpenGL context
@@ -79,9 +76,14 @@ void HelpOverlay::render() {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         
-        // Disable font atlas completely to avoid rendering issues
+        // Add default font with explicit atlas building
         io.Fonts->AddFontDefault();
         io.FontGlobalScale = 1.0f;
+        
+        // Explicitly build the font atlas
+        unsigned char* pixels;
+        int width, height;
+        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
         
         // Set INI file path to user config directory
         std::string configDir = getConfigDirectory();
@@ -96,6 +98,9 @@ void HelpOverlay::render() {
         // Setup Platform/Renderer backends
         ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
         ImGui_ImplOpenGL2_Init();
+        
+        // Explicitly create the font texture
+        ImGui_ImplOpenGL2_CreateFontsTexture();
         
         _imguiReady = true;
     }
@@ -124,7 +129,24 @@ void HelpOverlay::render() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
     
-    // Get window size
+    // Helper function to create aligned text with consistent spacing
+    auto renderAlignedText = [](const std::string& label, const std::string& value, const ImVec4& valueColor) {
+        ImGui::TextUnformatted(label.c_str());
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, valueColor);
+        ImGui::TextUnformatted(value.c_str());
+        ImGui::PopStyleColor();
+    };
+    
+    // Helper function to create aligned key binding
+    auto renderKeyBinding = [](const std::string& key, const std::string& description) {
+        ImGui::TextUnformatted(key.c_str());
+        ImGui::SameLine();
+        ImGui::TextUnformatted(" - ");
+        ImGui::SameLine();
+        ImGui::TextUnformatted(description.c_str());
+    };
+    
     int windowWidth, windowHeight;
     SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
     
@@ -132,20 +154,20 @@ void HelpOverlay::render() {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
     ImGui::SetNextWindowBgAlpha(0.85f); // Semi-transparent instead of opaque
-    
-    ImGui::Begin("AutoVibez Help", nullptr, 
-                 ImGuiWindowFlags_NoTitleBar | 
-                 ImGuiWindowFlags_NoResize | 
+
+    ImGui::Begin("AutoVibez Help", nullptr,
+                 ImGuiWindowFlags_NoTitleBar |
+                 ImGuiWindowFlags_NoResize |
                  ImGuiWindowFlags_NoMove |
                  ImGuiWindowFlags_NoBringToFrontOnFocus);
-    
-    // Use very basic font rendering with no scaling
+
+    // Set larger font size
     ImGui::SetWindowFontScale(1.0f);
-    
+
     // Add some padding at the top
     ImGui::Spacing();
     ImGui::Spacing();
-    
+
     // Title with gradient-like effect and better styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 1.0f, 1.0f));
     ImGui::SetCursorPosX((windowWidth - ImGui::CalcTextSize("AUTOVIBEZ CONTROLS").x) * 0.5f);
@@ -163,10 +185,21 @@ void HelpOverlay::render() {
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
     
+    // Calculate the maximum label width for alignment
+    float maxLabelWidth = 0.0f;
+    std::vector<std::string> labels = {"Preset:", "Now playing:", "Genre:", "Volume:", "Device:", "Beat Sensitivity:"};
+    for (const auto& label : labels) {
+        float width = ImGui::CalcTextSize(("  " + label).c_str()).x;
+        maxLabelWidth = std::max(maxLabelWidth, width);
+    }
+    
     // Current preset
     if (!_currentPreset.empty()) {
-        ImGui::TextUnformatted("  Preset:           ");
+        std::string label = "  Preset:";
+        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+        ImGui::TextUnformatted(label.c_str());
         ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
         ImGui::TextUnformatted(_currentPreset.c_str());
         ImGui::PopStyleColor();
@@ -174,8 +207,11 @@ void HelpOverlay::render() {
     
     // Current mix
     if (!_currentArtist.empty() && !_currentTitle.empty()) {
-        ImGui::TextUnformatted("  Now playing:      ");
+        std::string label = "  Now playing:";
+        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+        ImGui::TextUnformatted(label.c_str());
         ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
         ImGui::TextUnformatted(_currentArtist.c_str());
         ImGui::PopStyleColor();
@@ -189,8 +225,11 @@ void HelpOverlay::render() {
     
     // Current genre
     if (!_currentGenre.empty()) {
-        ImGui::TextUnformatted("  Genre:            ");
+        std::string label = "  Genre:";
+        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+        ImGui::TextUnformatted(label.c_str());
         ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
         ImGui::TextUnformatted(_currentGenre.c_str());
         ImGui::PopStyleColor();
@@ -198,8 +237,11 @@ void HelpOverlay::render() {
     
     // Volume level
     if (_volumeLevel >= 0) {
-        ImGui::TextUnformatted("  Volume:           ");
+        std::string label = "  Volume:";
+        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+        ImGui::TextUnformatted(label.c_str());
         ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
         ImGui::TextUnformatted((std::to_string(_volumeLevel) + "%").c_str());
         ImGui::PopStyleColor();
@@ -207,16 +249,22 @@ void HelpOverlay::render() {
     
     // Audio device
     if (!_audioDevice.empty()) {
-        ImGui::TextUnformatted("  Device:           ");
+        std::string label = "  Device:";
+        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+        ImGui::TextUnformatted(label.c_str());
         ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
         ImGui::TextUnformatted(_audioDevice.c_str());
         ImGui::PopStyleColor();
     }
     
     // Beat sensitivity
-    ImGui::TextUnformatted("  Beat Sensitivity: ");
+    std::string label = "  Beat Sensitivity:";
+    float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
+    ImGui::TextUnformatted(label.c_str());
     ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
     ImGui::TextUnformatted((std::to_string(_beatSensitivity).substr(0, 4)).c_str());
     ImGui::PopStyleColor();
@@ -241,14 +289,14 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  N           - Play next mix");
-    ImGui::TextUnformatted("  F           - Toggle favorite");
-    ImGui::TextUnformatted("  V           - List favorite mixes");
-    ImGui::TextUnformatted("  L           - List available mixes");
-    ImGui::TextUnformatted("  G           - Play random mix in current genre");
-    ImGui::TextUnformatted("  Shift+G     - Switch to random genre");
-    ImGui::TextUnformatted("  Ctrl+G      - Show available genres");
-    ImGui::TextUnformatted("  SPACE       - Load random mix");
+    renderKeyBinding("  N           ", "Play next mix");
+    renderKeyBinding("  F           ", "Toggle favorite");
+    renderKeyBinding("  V           ", "List favorite mixes");
+    renderKeyBinding("  L           ", "List available mixes");
+    renderKeyBinding("  G           ", "Play random mix in current genre");
+    renderKeyBinding("  Shift+G     ", "Switch to random genre");
+    renderKeyBinding("  Ctrl+G      ", "Show available genres");
+    renderKeyBinding("  SPACE       ", "Load random mix");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
@@ -269,9 +317,9 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  P           - Pause/Resume playback");
-    ImGui::TextUnformatted("  Up/Down     - Volume up/down");
-    ImGui::TextUnformatted("  Tab         - Cycle through audio devices");
+    renderKeyBinding("  P           ", "Pause/Resume playback");
+    renderKeyBinding("  Up/Down     ", "Volume up/down");
+    renderKeyBinding("  Tab         ", "Cycle through audio devices");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
@@ -292,12 +340,12 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  H           - Toggle this help overlay");
-    ImGui::TextUnformatted("  F11         - Toggle fullscreen mode");
-    ImGui::TextUnformatted("  R           - Load random preset");
-    ImGui::TextUnformatted("  [ / ]       - Previous/Next preset");
-    ImGui::TextUnformatted("  B / J       - Increase/Decrease beat sensitivity");
-    ImGui::TextUnformatted("  Mouse Wheel - Next/Prev preset");
+    renderKeyBinding("  H           ", "Toggle this help overlay");
+    renderKeyBinding("  F11         ", "Toggle fullscreen mode");
+    renderKeyBinding("  R           ", "Load random preset");
+    renderKeyBinding("  [ / ]       ", "Previous/Next preset");
+    renderKeyBinding("  B / J       ", "Increase/Decrease beat sensitivity");
+    renderKeyBinding("  Mouse Wheel ", "Next/Prev preset");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
@@ -318,12 +366,12 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  Ctrl+Q      - Quit application");
+    renderKeyBinding("  Ctrl+Q      ", "Quit application");
     ImGui::PopStyleColor();
     
     ImGui::End();
     
-    // Rendering
+    // Render the Dear ImGui frame
     ImGui::Render();
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
     
