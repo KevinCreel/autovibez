@@ -151,8 +151,8 @@ add_executable(autovibez
     src/core/input_handler.hpp
     src/core/preset_manager.cpp
     src/core/preset_manager.hpp
-    src/ui/simple_ui.cpp
-    src/ui/simple_ui.hpp
+    src/ui/help_overlay.cpp
+    src/ui/help_overlay.hpp
     
     # Platform-specific utilities
     src/platform/opengl.h
@@ -351,10 +351,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/core/app_state.hpp
     src/core/preset_manager.cpp
     src/core/preset_manager.hpp
-    src/ui/simple_ui.cpp
-    src/ui/simple_ui.hpp
-    src/core/input_handler.cpp
-    src/core/input_handler.hpp
+    src/ui/help_overlay.cpp
+    src/ui/help_overlay.hpp
     
     # Platform-specific utilities
     src/platform/opengl.h
@@ -397,6 +395,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/string_utils_test.cpp
     tests/unit/constants_test.cpp
     tests/unit/input_handler_test.cpp
+    tests/unit/help_overlay_test.cpp
     
     # Integration tests
     tests/integration/mix_manager_test.cpp

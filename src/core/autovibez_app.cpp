@@ -54,6 +54,7 @@ using AutoVibez::Data::MixDisplay;
 using AutoVibez::Data::Mix;
 using AutoVibez::Audio::AudioManager;
 using AutoVibez::Data::ConfigFile;
+using AutoVibez::UI::HelpOverlay;
 
 namespace AutoVibez {
 namespace Core {
@@ -180,13 +181,19 @@ void AutoVibezApp::toggleFullScreen()
     {
         SDL_SetWindowFullscreen(_sdlWindow, 0);
         _isFullScreen = false;
-        SDL_ShowCursor(true);
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        if (_helpOverlay) {
+            _helpOverlay->setFullscreenState(false);
+        }
     }
     else
     {
-        SDL_ShowCursor(false);
+        SDL_SetRelativeMouseMode(SDL_TRUE);
         SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
         _isFullScreen = true;
+        if (_helpOverlay) {
+            _helpOverlay->setFullscreenState(true);
+        }
     }
 }
 
@@ -348,9 +355,9 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             // H: toggle help overlay
             toggleHelp();
             // Also toggle simple UI
-            if (_simpleUI) {
-                _simpleUI->toggle();
-            }
+                    if (_helpOverlay) {
+            _helpOverlay->toggle();
+        }
             break;
 
         case SDLK_TAB:
@@ -670,7 +677,7 @@ void AutoVibezApp::renderFrame()
     printHelpMenu();
     renderFpsCounter();
     displayMixStatus();
-    renderSimpleUI();
+    renderHelpOverlay();
 
     SDL_GL_SwapWindow(_sdlWindow);
 }
@@ -685,25 +692,22 @@ void AutoVibezApp::initialize(SDL_Window* window, const bool _renderToTexture)
     wasapi = true;
 #endif
 
-    // Initialize simple UI
-    _simpleUI = std::make_unique<SimpleUI>();
-    if (_simpleUI) {
-        _simpleUI->init(window, _openGlContext);
-    }
+    // Initialize help overlay
+    initHelpOverlay();
 }
 
-void AutoVibezApp::initSimpleUI() {
-    if (!_simpleUI) {
-        _simpleUI = std::make_unique<SimpleUI>();
-        if (_simpleUI) {
-            _simpleUI->init(_sdlWindow, _openGlContext);
+void AutoVibezApp::initHelpOverlay() {
+    if (!_helpOverlay) {
+        _helpOverlay = std::make_unique<HelpOverlay>();
+        if (_helpOverlay) {
+            _helpOverlay->init(_sdlWindow, _openGlContext);
         }
     }
 }
 
-void AutoVibezApp::renderSimpleUI() {
-    if (_simpleUI) {
-        _simpleUI->render();
+void AutoVibezApp::renderHelpOverlay() {
+    if (_helpOverlay) {
+        _helpOverlay->render();
     }
 }
 

@@ -52,7 +52,7 @@
 #include "mix_manager.hpp"
 #include "mix_display.hpp"
 #include "config_manager.hpp"
-#include "simple_ui.hpp"
+#include "help_overlay.hpp"
 
 // New modular components
 #include "constants.hpp"
@@ -172,9 +172,9 @@ public:
     int getWidth() const { return _width; }
     int getHeight() const { return _height; }
     
-    // Simple UI
-    void initSimpleUI();
-    void renderSimpleUI();
+    // Help Overlay
+    void initHelpOverlay();
+    void renderHelpOverlay();
     
     // New modular component accessors
     PresetManager* getPresetManager() { return _presetManager.get(); }
@@ -244,8 +244,8 @@ private:
     bool _volumeKeyPressed{false}; // Track if volume key is being held
     bool _manualPresetChange{false}; // Track if preset change was manual
     
-    // Simple UI
-    std::unique_ptr<SimpleUI> _simpleUI;
+    // Help Overlay
+    std::unique_ptr<AutoVibez::UI::HelpOverlay> _helpOverlay;
     
     // New modular components
     std::unique_ptr<PresetManager> _presetManager;
