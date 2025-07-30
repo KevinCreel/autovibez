@@ -128,10 +128,10 @@ void HelpOverlay::render() {
     int windowWidth, windowHeight;
     SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
     
-    // Set up the main window
+    // Set up the main window with semi-transparent background
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
-    ImGui::SetNextWindowBgAlpha(1.0f); // Make completely opaque to hide cursor
+    ImGui::SetNextWindowBgAlpha(0.85f); // Semi-transparent instead of opaque
     
     ImGui::Begin("AutoVibez Help", nullptr, 
                  ImGuiWindowFlags_NoTitleBar | 
@@ -142,78 +142,112 @@ void HelpOverlay::render() {
     // Use very basic font rendering with no scaling
     ImGui::SetWindowFontScale(1.0f);
     
-    // Title with gradient-like effect
+    // Add some padding at the top
+    ImGui::Spacing();
+    ImGui::Spacing();
+    
+    // Title with gradient-like effect and better styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 1.0f, 1.0f));
+    ImGui::SetCursorPosX((windowWidth - ImGui::CalcTextSize("AUTOVIBEZ CONTROLS").x) * 0.5f);
     ImGui::TextUnformatted("AUTOVIBEZ CONTROLS");
     ImGui::PopStyleColor();
+    
     ImGui::Spacing();
-    ImGui::Separator();
     ImGui::Spacing();
     
-    // Mix Management Section
+    // Decorative line
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 0.8f, 1.0f, 0.6f));
+    ImGui::Separator();
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
+    ImGui::Spacing();
+    
+    // Mix Management Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
-    ImGui::TextUnformatted("MIX MANAGEMENT");
+    ImGui::TextUnformatted("🎧 MIX MANAGEMENT");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-    ImGui::TextUnformatted("N     - Play next mix");
-    ImGui::TextUnformatted("F     - Toggle favorite");
-    ImGui::TextUnformatted("V     - List favorite mixes");
-    ImGui::TextUnformatted("L     - List available mixes");
-    ImGui::TextUnformatted("G     - Play random mix in current genre");
-    ImGui::TextUnformatted("Shift+G - Switch to random genre");
-    ImGui::TextUnformatted("Ctrl+G  - Show available genres");
-    ImGui::TextUnformatted("SPACE  - Load random mix");
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+    ImGui::TextUnformatted("  N     - Play next mix");
+    ImGui::TextUnformatted("  F     - Toggle favorite");
+    ImGui::TextUnformatted("  V     - List favorite mixes");
+    ImGui::TextUnformatted("  L     - List available mixes");
+    ImGui::TextUnformatted("  G     - Play random mix in current genre");
+    ImGui::TextUnformatted("  Shift+G - Switch to random genre");
+    ImGui::TextUnformatted("  Ctrl+G  - Show available genres");
+    ImGui::TextUnformatted("  SPACE  - Load random mix");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
+    ImGui::Spacing();
+    
+    // Decorative line
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.6f, 0.0f, 0.6f));
     ImGui::Separator();
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
     ImGui::Spacing();
     
-    // Audio Controls Section
+    // Audio Controls Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
-    ImGui::TextUnformatted("AUDIO CONTROLS");
+    ImGui::TextUnformatted("🎚️  AUDIO CONTROLS");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-    ImGui::TextUnformatted("P     - Pause/Resume playback");
-    ImGui::TextUnformatted("↑/↓   - Volume up/down");
-    ImGui::TextUnformatted("Tab   - Cycle through audio devices");
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+    ImGui::TextUnformatted("  P     - Pause/Resume playback");
+    ImGui::TextUnformatted("  ↑/↓   - Volume up/down");
+    ImGui::TextUnformatted("  Tab   - Cycle through audio devices");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
+    ImGui::Spacing();
+    
+    // Decorative line
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.4f, 0.8f, 1.0f, 0.6f));
     ImGui::Separator();
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
     ImGui::Spacing();
     
-    // Visualizer Controls Section
+    // Visualizer Controls Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
-    ImGui::TextUnformatted("VISUALIZER CONTROLS");
+    ImGui::TextUnformatted("🌈 VISUALIZER CONTROLS");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-    ImGui::TextUnformatted("H     - Toggle this help overlay");
-    ImGui::TextUnformatted("F11   - Toggle fullscreen mode");
-    ImGui::TextUnformatted("R     - Load random preset");
-    ImGui::TextUnformatted("[ / ]  - Previous/Next preset");
-    ImGui::TextUnformatted("B / J  - Increase/Decrease beat sensitivity");
-    ImGui::TextUnformatted("Mouse Wheel - Next/Prev preset");
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+    ImGui::TextUnformatted("  H     - Toggle this help overlay");
+    ImGui::TextUnformatted("  F11   - Toggle fullscreen mode");
+    ImGui::TextUnformatted("  R     - Load random preset");
+    ImGui::TextUnformatted("  [ / ]  - Previous/Next preset");
+    ImGui::TextUnformatted("  B / J  - Increase/Decrease beat sensitivity");
+    ImGui::TextUnformatted("  Mouse Wheel - Next/Prev preset");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
+    ImGui::Spacing();
+    
+    // Decorative line
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.8f, 0.4f, 1.0f, 0.6f));
     ImGui::Separator();
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
     ImGui::Spacing();
     
-    // Application Section
+    // Application Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-    ImGui::TextUnformatted("APPLICATION");
+    ImGui::TextUnformatted("⚙️  APPLICATION");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-    ImGui::TextUnformatted("Ctrl+Q - Quit application");
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+    ImGui::TextUnformatted("  Ctrl+Q - Quit application");
     ImGui::PopStyleColor();
     
     ImGui::End();
