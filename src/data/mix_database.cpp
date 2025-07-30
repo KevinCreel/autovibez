@@ -575,8 +575,6 @@ Mix MixDatabase::getRandomMixByArtist(const std::string& artist) {
     return mix;
 }
 
-
-
 bool MixDatabase::toggleFavorite(const std::string& mix_id) {
     const char* sql = "UPDATE mixes SET is_favorite = NOT is_favorite WHERE id = ?";
     

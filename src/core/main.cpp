@@ -59,8 +59,9 @@ static int mainLoop(void* userData) {
     
     // frame rate limiter
     int fps = app->fps();
-    if (fps <= 0)
+    if (fps <= 0) {
         fps = 60;
+    }
     const Uint32 frame_delay = 1000/fps;
     Uint32 last_time = SDL_GetTicks();
     
@@ -74,8 +75,9 @@ static int mainLoop(void* userData) {
         // render
         app->renderFrame();
         
-        if (app->fakeAudio)
+        if (app->fakeAudio) {
             app->addFakePCM();
+        }
         processLoopbackFrame(app);
         
         if (app->isMixManagerInitialized()) {
@@ -107,8 +109,9 @@ static int mainLoop(void* userData) {
 #else
         app->pollEvents();
         Uint32 elapsed = SDL_GetTicks() - last_time;
-        if (elapsed < frame_delay)
+        if (elapsed < frame_delay) {
             SDL_Delay(frame_delay - elapsed);
+        }
         last_time = SDL_GetTicks();
 #endif
     }
@@ -116,9 +119,7 @@ static int mainLoop(void* userData) {
     return 0;
 }
 
-
 int main(int argc, char* argv[]) {
-    
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
     
     int status = mainLoop(&app);
@@ -127,8 +128,9 @@ int main(int argc, char* argv[]) {
     cleanupLoopback();  // Add this line to clean up WASAPI resources
     SDL_GL_DeleteContext(app->_openGlContext);
 #if !FAKE_AUDIO
-    if (!app->wasapi) // not currently using WASAPI, so we need to endAudioCapture.
+    if (!app->wasapi) { // not currently using WASAPI, so we need to endAudioCapture.
         app->endAudioCapture();
+    }
 #endif
     
     // Get the window from the app and destroy it properly
@@ -139,5 +141,3 @@ int main(int argc, char* argv[]) {
     
     return status;
 }
-
-

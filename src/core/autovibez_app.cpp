@@ -68,8 +68,7 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     , _showFps(showFps)
     , _selectedAudioDeviceIndex(audioDeviceIndex)
     , _mixManagerInitialized(false)
-    , _hadMixesOnStartup(false)
-{
+    , _hadMixesOnStartup(false) {
     projectm_get_window_size(_projectM, &_width, &_height);
     projectm_playlist_set_preset_switched_event_callback(_playlist, &AutoVibezApp::presetSwitchedEvent, static_cast<void*>(this));
     projectm_playlist_add_path(_playlist, presetPath.c_str(), true, false);
@@ -83,8 +82,7 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     }
 }
 
-AutoVibezApp::~AutoVibezApp()
-{
+AutoVibezApp::~AutoVibezApp() {
     // Stop any playing music and clean up MixManager
     if (_mixManager) {
         _mixManager->stop();
@@ -107,11 +105,9 @@ AutoVibezApp::~AutoVibezApp()
 void AutoVibezApp::stretchMonitors()
 {
     int displayCount = SDL_GetNumVideoDisplays();
-    if (displayCount >= 2)
-    {
+    if (displayCount >= 2) {
         std::vector<SDL_Rect> displayBounds;
-        for (int i = 0; i < displayCount; i++)
-        {
+        for (int i = 0; i < displayCount; i++) {
             displayBounds.push_back(SDL_Rect());
             SDL_GetDisplayBounds(i, &displayBounds.back());
         }
@@ -121,25 +117,19 @@ void AutoVibezApp::stretchMonitors()
         int mostYUp = 0;
         int mostYDown = 0;
 
-        for (int i = 0; i < displayCount; i++)
-        {
-            if (displayBounds[i].x < mostXLeft)
-            {
+        for (int i = 0; i < displayCount; i++) {
+            if (displayBounds[i].x < mostXLeft) {
                 mostXLeft = displayBounds[i].x;
             }
-            if ((displayBounds[i].x + displayBounds[i].w) > mostXRight)
-            {
+            if ((displayBounds[i].x + displayBounds[i].w) > mostXRight) {
                 mostXRight = displayBounds[i].x + displayBounds[i].w;
             }
         }
-        for (int i = 0; i < displayCount; i++)
-        {
-            if (displayBounds[i].y < mostYUp)
-            {
+        for (int i = 0; i < displayCount; i++) {
+            if (displayBounds[i].y < mostYUp) {
                 mostYUp = displayBounds[i].y;
             }
-            if ((displayBounds[i].y + displayBounds[i].h) > mostYDown)
-            {
+            if ((displayBounds[i].y + displayBounds[i].h) > mostYDown) {
                 mostYDown = displayBounds[i].y + displayBounds[i].h;
             }
         }
@@ -157,17 +147,14 @@ void AutoVibezApp::nextMonitor()
 {
     int displayCount = SDL_GetNumVideoDisplays();
     int currentWindowIndex = SDL_GetWindowDisplayIndex(_sdlWindow);
-    if (displayCount >= 2)
-    {
+    if (displayCount >= 2) {
         std::vector<SDL_Rect> displayBounds;
         int nextWindow = currentWindowIndex + 1;
-        if (nextWindow >= displayCount)
-        {
+        if (nextWindow >= displayCount) {
             nextWindow = 0;
         }
 
-        for (int i = 0; i < displayCount; i++)
-        {
+        for (int i = 0; i < displayCount; i++) {
             displayBounds.push_back(SDL_Rect());
             SDL_GetDisplayBounds(i, &displayBounds.back());
         }
@@ -176,16 +163,13 @@ void AutoVibezApp::nextMonitor()
     }
 }
 
-void AutoVibezApp::syncFullscreenState()
-{
+void AutoVibezApp::syncFullscreenState() {
     Uint32 flags = SDL_GetWindowFlags(_sdlWindow);
     _isFullScreen = (flags & SDL_WINDOW_FULLSCREEN) || (flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
-void AutoVibezApp::toggleFullScreen()
-{
-    if (_isFullScreen)
-    {
+void AutoVibezApp::toggleFullScreen() {
+    if (_isFullScreen) {
         SDL_SetWindowFullscreen(_sdlWindow, 0);
         _isFullScreen = false;
         SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -378,9 +362,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 }
             }
             break;
-            
 
-            
         case SDLK_LEFTBRACKET:
             // [: Previous preset
             _manualPresetChange = true;
@@ -439,31 +421,22 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 }
             }
             break;
-            
-
-
     }
 }
 
-void AutoVibezApp::addFakePCM()
-{
+void AutoVibezApp::addFakePCM() {
     int i;
     std::array<int16_t, 2 * 512> pcm_data;
     /** Produce some fake PCM data to stuff into projectM */
-    for (i = 0; i < 512; i++)
-    {
-        if (i % 2 == 0)
-        {
+    for (i = 0; i < 512; i++) {
+        if (i % 2 == 0) {
+            pcm_data[2 * i] = (float) (rand() / ((float) RAND_MAX) * (pow(2, 14)));
+            pcm_data[2 * i + 1] = (float) (rand() / ((float) RAND_MAX) * (pow(2, 14)));
+        } else {
             pcm_data[2 * i] = (float) (rand() / ((float) RAND_MAX) * (pow(2, 14)));
             pcm_data[2 * i + 1] = (float) (rand() / ((float) RAND_MAX) * (pow(2, 14)));
         }
-        else
-        {
-            pcm_data[2 * i] = (float) (rand() / ((float) RAND_MAX) * (pow(2, 14)));
-            pcm_data[2 * i + 1] = (float) (rand() / ((float) RAND_MAX) * (pow(2, 14)));
-        }
-        if (i % 2 == 1)
-        {
+        if (i % 2 == 1) {
             pcm_data[2 * i] = -pcm_data[2 * i];
             pcm_data[2 * i + 1] = -pcm_data[2 * i + 1];
         }

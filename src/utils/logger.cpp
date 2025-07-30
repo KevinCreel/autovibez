@@ -13,7 +13,7 @@
 
 using namespace AutoVibez::Utils;
 
-Logger::Logger() 
+Logger::Logger()
     : current_level_(Level::INFO)
     , output_target_(OutputTarget::CONSOLE)
     , colored_output_(true)
@@ -24,7 +24,6 @@ Logger::Logger()
     , total_log_time_us_(0)
     , log_count_(0)
     , start_time_(std::chrono::high_resolution_clock::now()) {
-    
     // Initialize log counts
     for (int i = 0; i <= static_cast<int>(Level::FATAL); ++i) {
         log_counts_[static_cast<Level>(i)] = 0;
