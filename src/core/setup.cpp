@@ -1,9 +1,12 @@
 #include "setup.hpp"
 #include "autovibez_app.hpp"
-using AutoVibez::Core::AutoVibezApp;
+#include "path_manager.hpp"
 #include "config_manager.hpp"
-#include "mix_manager.hpp"
-#include "console_output.hpp"
+#include "resource_guard.hpp"
+#include "string_utils.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
+using AutoVibez::Core::AutoVibezApp;
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <filesystem>
@@ -301,7 +304,8 @@ AutoVibezApp *setupSDLApp() {
     // load configuration file - use XDG config directory
     std::string configFilePath = findConfigFile();
     if (configFilePath.empty()) {
-        ConsoleOutput::output("⚠️  Config file not found, using defaults");
+        // Config file notification removed - too verbose for normal operation
+        // Continue with defaults instead of returning early
     }
     
     // Use XDG assets directory if it exists, otherwise fall back to system paths
@@ -452,7 +456,6 @@ void advanceUnlockedFPSCounterFrame(int64_t startFrame) {
 	auto currentElapsedMs = startUnlockedFPSCounter();
 	if (currentElapsedMs - startFrame > 5000)
 	{
-        ConsoleOutput::output("Frames[%d]", frameCount);
         exit(0);
     }
 }

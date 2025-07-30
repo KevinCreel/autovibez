@@ -1,10 +1,14 @@
 #include "audio_manager.hpp"
-#include "autovibez_app.hpp"
+#include "audio_capture.hpp"
+#include "mix_player.hpp"
+#include "path_manager.hpp"
+#include "resource_guard.hpp"
+#include "string_utils.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 using AutoVibez::Core::AutoVibezApp;
 using AutoVibez::Audio::AudioManager;
-#include "constants.hpp"
 #include <iostream>
-#include "console_output.hpp"
 
 namespace AutoVibez {
 namespace Audio {

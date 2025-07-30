@@ -2,7 +2,6 @@
 #include "autovibez_app.hpp"
 #include "constants.hpp"
 #include "string_utils.hpp"
-#include "console_output.hpp"
 #include <iostream>
 
 using AutoVibez::Core::AutoVibezApp;

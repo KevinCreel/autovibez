@@ -160,7 +160,6 @@ public:
     std::string getAssetsDirectory();
     void initMixManager();
     void handleMixControls(SDL_Event* event);
-    void displayMixStatus();
     void autoDownloadRandomMix();
     void autoPlayOrDownload();
     void startBackgroundDownloads();

@@ -9,8 +9,11 @@
 #include <functional>
 #include <random>
 #include <iomanip>
-#include "console_output.hpp"
+#include "path_manager.hpp"
 #include "string_utils.hpp"
+#include "resource_guard.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 
 using AutoVibez::Data::Mix;
 using AutoVibez::Data::MixMetadata;

@@ -1,11 +1,15 @@
 #include "mix_player.hpp"
-#include "console_output.hpp"
+#include "mix_metadata.hpp"
+#include "path_manager.hpp"
+#include "string_utils.hpp"
+#include "resource_guard.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 #include <SDL2/SDL_mixer.h>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <cstdio>
-#include "constants.hpp"
 
 using AutoVibez::Audio::MixPlayer;
 

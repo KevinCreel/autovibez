@@ -1,6 +1,9 @@
 #include "help_overlay.hpp"
 #include "setup.hpp"
-#include "console_output.hpp"
+#include "resource_guard.hpp"
+#include "string_utils.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl2.h>
@@ -58,17 +61,16 @@ void HelpOverlay::render() {
     
     // Handle deferred texture rebinding at the start of render cycle
     if (_needsDeferredTextureRebind) {
-        ConsoleOutput::output("🔄 Executing deferred texture rebind...");
+        // Debug notification removed - too verbose for normal operation
+        
+        // Execute the texture rebind
         if (_imguiReady) {
-            // Ensure we have the OpenGL context
-            SDL_GL_MakeCurrent(_window, _glContext);
-            
-            // Force texture rebinding
             ImGui_ImplOpenGL2_DestroyFontsTexture();
             ImGui_ImplOpenGL2_CreateFontsTexture();
         }
+        
         _needsDeferredTextureRebind = false;
-        ConsoleOutput::output("✅ Deferred texture rebind completed");
+        // Debug notification removed - too verbose for normal operation
     }
     
     // Lazy initialize ImGui on first render
@@ -647,7 +649,7 @@ void HelpOverlay::setCursorVisibility(bool visible) {
 
 void HelpOverlay::rebuildFontAtlas() {
     if (_imguiReady) {
-        ConsoleOutput::output("🔄 Rebuilding font atlas...");
+        // Debug notification removed - too verbose for normal operation
         
         // Ensure we have the OpenGL context
         SDL_GL_MakeCurrent(_window, _glContext);
@@ -666,14 +668,14 @@ void HelpOverlay::rebuildFontAtlas() {
         ImGui_ImplOpenGL2_DestroyFontsTexture();
         ImGui_ImplOpenGL2_CreateFontsTexture();
         
-        ConsoleOutput::output("✅ Font atlas rebuilt successfully");
+        // Debug notification removed - too verbose for normal operation
     } else {
-        ConsoleOutput::output("⚠️  Cannot rebuild font atlas - ImGui not ready");
+        // Debug notification removed - too verbose for normal operation
     }
 }
 
 void HelpOverlay::reinitializeImGui() {
-    ConsoleOutput::output("🔄 Reinitializing ImGui...");
+    // Debug notification removed - too verbose for normal operation
     
     // Ensure we have the OpenGL context
     SDL_GL_MakeCurrent(_window, _glContext);
@@ -728,7 +730,7 @@ void HelpOverlay::reinitializeImGui() {
     glPopMatrix();
     glPopAttrib();
     
-    ConsoleOutput::output("✅ ImGui reinitialized successfully");
+    // Debug notification removed - too verbose for normal operation
 }
 
 void HelpOverlay::triggerTextureRebind() {

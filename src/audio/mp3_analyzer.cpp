@@ -15,7 +15,12 @@
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/textidentificationframe.h>
-#include "console_output.hpp"
+#include "mix_metadata.hpp"
+#include "path_manager.hpp"
+#include "string_utils.hpp"
+#include "resource_guard.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 
 using AutoVibez::Audio::MP3Analyzer;
 

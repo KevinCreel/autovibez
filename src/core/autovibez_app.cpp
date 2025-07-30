@@ -31,7 +31,6 @@
 #include "autovibez_app.hpp"
 #include "setup.hpp"
 #include "logger.hpp"
-#include "console_output.hpp"
 #include "mix_manager.hpp"
 #include "mix_metadata.hpp"
 #include "mix_downloader.hpp"
@@ -424,6 +423,8 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                         _showMixStatus = true;
                         _mixStatusDisplayTime = 300;
                         _mixInfoDisplayed = false;
+                    } else {
+                        // Genre switch notification removed - too verbose for normal operation
                     }
                 } else if (sdl_mod & KMOD_LCTRL || sdl_mod & KMOD_RCTRL) {
                     // Ctrl+G: Show available genres
@@ -440,12 +441,10 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                             _mixStatusDisplayTime = 300;
                             _mixInfoDisplayed = false;
                         } else {
-                            ConsoleOutput::output("❌ No other mixes found in genre: %s", _currentMix.genre.c_str());
-                            ConsoleOutput::output("");
+                            // Genre switch notification removed - too verbose for normal operation
                         }
                     } else {
-                        ConsoleOutput::output("❌ No mix currently playing or no genre available");
-                        ConsoleOutput::output("");
+                        // Genre switch notification removed - too verbose for normal operation
                     }
                 }
             }
@@ -642,7 +641,6 @@ void AutoVibezApp::renderFrame()
     // Render overlays
     printHelpMenu();
     renderFpsCounter();
-    displayMixStatus();
     renderHelpOverlay();
 
     SDL_GL_SwapWindow(_sdlWindow);
@@ -864,7 +862,7 @@ void AutoVibezApp::renderFpsCounter()
     Uint32 currentTime = SDL_GetTicks();
     if (currentTime - lastTime >= 1000) { // Update every second
         float current_fps = (float)frameCount * 1000.0f / (currentTime - lastTime);
-        ConsoleOutput::output("FPS: %.1f", current_fps);
+        // FPS notification removed - too verbose for normal operation
         frameCount = 0;
         lastTime = currentTime;
     }
@@ -947,7 +945,7 @@ void AutoVibezApp::initMixManager()
     
     
     if (!_mixManager->initialize()) {
-        ConsoleOutput::output("❌ Failed to initialize mix manager: %s", _mixManager->getLastError().c_str());
+        // Mix manager initialization error notification removed - too verbose for normal operation
         return;
     }
     
@@ -984,12 +982,12 @@ void AutoVibezApp::initMixManager()
     }
     
     if (yaml_url.empty()) {
-        ConsoleOutput::output("⚠️  No mixes_url configured, skipping mix metadata loading");
+        // Mix URL configuration notification removed - too verbose for normal operation
         return;
     }
     
     if (!_mixManager->loadMixMetadata(yaml_url)) {
-        ConsoleOutput::output("❌ Failed to load mix metadata: %s", _mixManager->getLastError().c_str());
+        // Mix metadata loading error notification removed - too verbose for normal operation
         return;
     }
     
@@ -1118,16 +1116,10 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
     }
 }
 
-void AutoVibezApp::displayMixStatus() {
-    // This method is now redundant - help overlay provides better mix status display
-    // Keeping the method signature to avoid breaking existing calls
-}
-
 void AutoVibezApp::autoPlayOrDownload()
 {
     if (!_mixManagerInitialized) {
-        ConsoleOutput::output("❌ Mix manager not initialized for auto-play");
-        ConsoleOutput::output("");
+        // Auto-play initialization error notification removed - too verbose for normal operation
         return;
     }
     
@@ -1151,8 +1143,7 @@ void AutoVibezApp::autoPlayOrDownload()
                 _mixStatusDisplayTime = 300;
                 _mixInfoDisplayed = false;
             } else {
-                ConsoleOutput::output("❌ Play failed");
-                ConsoleOutput::output("");
+                // Play failed notification removed - too verbose for normal operation
             }
         }
         
@@ -1162,8 +1153,7 @@ void AutoVibezApp::autoPlayOrDownload()
     }
     
     // Step 2: No existing mixes, download and play one from preferred genre
-    ConsoleOutput::output("📥 Downloading first mix...");
-    ConsoleOutput::output("");
+    // Download notification removed - too verbose for normal operation
     
     // Try to get a mix from the preferred genre first
     Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre());
@@ -1172,13 +1162,11 @@ void AutoVibezApp::autoPlayOrDownload()
         randomMix = _mixManager->getRandomAvailableMix();
     }
     if (randomMix.id.empty()) {
-        ConsoleOutput::output("❌ No mixes available");
-        ConsoleOutput::output("");
+        // No mixes available notification removed - too verbose for normal operation
         return;
     }
     
-    ConsoleOutput::output("🎵 Downloading: %s", randomMix.title.c_str());
-    ConsoleOutput::output("");
+    // Download notification removed - too verbose for normal operation
     
     if (_mixManager->downloadAndAnalyzeMix(randomMix)) {
         // Get the updated mix with complete metadata from database
@@ -1191,21 +1179,21 @@ void AutoVibezApp::autoPlayOrDownload()
                 _mixStatusDisplayTime = 300;
                 _mixInfoDisplayed = false;
             } else {
-                ConsoleOutput::output("❌ Play failed");
+                // Play failed notification removed - too verbose for normal operation
             }
         }
         
         // Start background download of remaining mixes
         startBackgroundDownloads();
     } else {
-        ConsoleOutput::output("❌ Download failed");
+        // Download failed notification removed - too verbose for normal operation
     }
 }
 
 void AutoVibezApp::autoDownloadRandomMix()
 {
     if (!_mixManagerInitialized) {
-        ConsoleOutput::output("❌ Mix manager not initialized for auto-download");
+        // Auto-download initialization error notification removed - too verbose for normal operation
         return;
     }
     
@@ -1228,16 +1216,15 @@ void AutoVibezApp::autoDownloadRandomMix()
         randomMix = _mixManager->getRandomMix();
     }
     if (randomMix.id.empty()) {
-        ConsoleOutput::output("❌ No mixes available for auto-download");
+        // No mixes available for auto-download notification removed - too verbose for normal operation
         return;
     }
     
-    ConsoleOutput::output("🎵 Auto-downloading and analyzing: %s by %s", 
-           randomMix.title.c_str(), randomMix.artist.c_str());
+    // Auto-download notification removed - too verbose for normal operation
     
     // Use the new download-first approach
     if (_mixManager->downloadAndAnalyzeMix(randomMix)) {
-        ConsoleOutput::output("✅ Auto-download and analysis successful");
+        // Auto-download success notification removed - too verbose for normal operation
         
         // Get the updated mix with complete metadata from database
         Mix updatedMix = _mixManager->getMixById(randomMix.id);
@@ -1248,15 +1235,15 @@ void AutoVibezApp::autoDownloadRandomMix()
                 _showMixStatus = true;
                 _mixStatusDisplayTime = 300;
                 _mixInfoDisplayed = false;
-                ConsoleOutput::output("✅ Auto-play successful");
+                // Auto-play success notification removed - too verbose for normal operation
             } else {
-                ConsoleOutput::output("❌ Auto-play failed: %s", _mixManager->getLastError().c_str());
+                // Auto-play failed notification removed - too verbose for normal operation
             }
         } else {
-            ConsoleOutput::output("❌ Failed to retrieve updated mix from database");
+            // Database retrieval error notification removed - too verbose for normal operation
         }
     } else {
-        ConsoleOutput::output("❌ Auto-download and analysis failed: %s", _mixManager->getLastError().c_str());
+        // Auto-download failed notification removed - too verbose for normal operation
     }
 }
 
@@ -1292,7 +1279,7 @@ void AutoVibezApp::startBackgroundDownloads()
     }
     
     if (pendingDownloads > 0) {
-        ConsoleOutput::output("🔄 Downloading %d mixes in background...", pendingDownloads);
+        // Background download notification removed - too verbose for normal operation
         
         // Download mixes in background (synchronously for now)
         for (const auto& mix : mixesToDownload) {
@@ -1300,26 +1287,26 @@ void AutoVibezApp::startBackgroundDownloads()
             if (_mixManager->downloadMixBackground(mix)) {
                 // Silent success
             } else {
-                ConsoleOutput::output("❌ Failed: %s", mix.title.c_str());
+                // Download failed notification removed - too verbose for normal operation
             }
         }
         
-        ConsoleOutput::output("✅ Background downloads completed");
+        // Background download completion notification removed - too verbose for normal operation
     }
     
     if (pendingAnalysis > 0) {
-        ConsoleOutput::output("🔍 Analyzing %d existing mixes...", pendingAnalysis);
+        // Analysis notification removed - too verbose for normal operation
         
         // Analyze existing mixes and add to database
         for (const auto& mix : mixesToAnalyze) {
             if (_mixManager->downloadMixBackground(mix)) {
                 // Silent success
             } else {
-                ConsoleOutput::output("❌ Failed to analyze: %s", mix.title.c_str());
+                // Analysis failed notification removed - too verbose for normal operation
             }
         }
         
-        ConsoleOutput::output("✅ Analysis completed");
+        // Analysis completion notification removed - too verbose for normal operation
     }
 }
 
@@ -1333,17 +1320,17 @@ void AutoVibezApp::checkAndAutoPlayNext() {
         // Music has ended, play next random mix
         Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
         if (!nextMix.id.empty()) {
-            ConsoleOutput::output("🎵 Auto-playing next mix: %s by %s", nextMix.title.c_str(), nextMix.artist.c_str());
+            // Auto-play next mix notification removed - too verbose for normal operation
             if (_mixManager->downloadAndPlayMix(nextMix)) {
                 _currentMix = nextMix;
                 _showMixStatus = true;
                 _mixStatusDisplayTime = 300;
                 _mixInfoDisplayed = false;
             } else {
-                ConsoleOutput::output("❌ Auto-play failed: %s", _mixManager->getLastError().c_str());
+                // Auto-play failed notification removed - too verbose for normal operation
             }
         } else {
-            ConsoleOutput::output("❌ No more mixes available for auto-play");
+            // No more mixes available notification removed - too verbose for normal operation
         }
     }
 }

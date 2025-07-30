@@ -1,8 +1,9 @@
 #include "preset_manager.hpp"
+#include "autovibez_app.hpp"
+#include "mix_manager.hpp"
 #include "string_utils.hpp"
 #include <iostream>
 #include <random> // Added for random preset selection
-#include "console_output.hpp"
 
 PresetManager::PresetManager(projectm_playlist_handle playlist)
     : _playlist(playlist) {

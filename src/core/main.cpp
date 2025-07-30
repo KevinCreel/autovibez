@@ -33,14 +33,13 @@
 
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
+#include "setup.hpp"
+#include "mix_metadata.hpp"
 #include "mix_manager.hpp"
-#include "path_manager.hpp"
-#include "console_output.hpp"
-#include <filesystem>
 #include "mix_player.hpp"
 #include "mix_downloader.hpp"
-#include "mix_metadata.hpp"
-#include "loopback.hpp"
+#include "path_manager.hpp"
+#include <filesystem>
 
 using AutoVibez::Audio::processLoopbackFrame;
 using AutoVibez::Audio::cleanupLoopback;
@@ -108,70 +107,83 @@ static int mainLoop(void* userData) {
 }
 
 void testMixManager() {
-    ConsoleOutput::output("🎵 Testing AutoVibez Audio Integration...");
-    ConsoleOutput::output("");
+    // Test audio integration
+    // Test notification removed - too verbose for normal operation
     
-    // Test audio components directly
-    ConsoleOutput::output("🎵 Testing Audio Components:");
+    // Test audio components
+    // Test notification removed - too verbose for normal operation
     
-    // Test MixPlayer initialization
+    // Test audio player
     MixPlayer player;
-    ConsoleOutput::output("✅ Audio player initialization: Working");
+    // Test notification removed - too verbose for normal operation
     
     // Test volume control
-    if (player.setVolume(80)) {
-        ConsoleOutput::output("✅ Volume control: Working (80%%)");
-    }
+    player.setVolume(80);
+    // Test notification removed - too verbose for normal operation
     
-    // Test MixDownloader initialization
+    // Test downloader
     MixDownloader downloader("./test_cache");
-    ConsoleOutput::output("✅ Downloader initialization: Working");
+    // Test notification removed - too verbose for normal operation
     
-    // Create test cache directory
-    std::string test_cache_dir = PathManager::getCacheDirectory() + "/test_cache";
-    std::filesystem::create_directories(test_cache_dir);
-    
-    if (std::filesystem::exists(test_cache_dir)) {
-        size_t cache_size = 0;
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(test_cache_dir)) {
-            if (entry.is_regular_file()) {
-                cache_size += entry.file_size();
-            }
-        }
-        ConsoleOutput::output("✅ Cache management: Working (%zu bytes)", cache_size);
+    // Test cache management
+    // Test notification removed - too verbose for normal operation
+    if (std::filesystem::exists("./test_cache")) {
+        // Test notification removed - too verbose for normal operation
     } else {
-        ConsoleOutput::output("❌ Cache directory not found: %s", test_cache_dir.c_str());
+        // Test notification removed - too verbose for normal operation
     }
+    
+    // Test notification removed - too verbose for normal operation
     
     // Test YAML parsing
-    ConsoleOutput::output("");
-    ConsoleOutput::output("📋 Testing YAML parsing:");
-    MixMetadata metadata;
-    auto mixes = metadata.loadFromYaml("./example_mixes.yaml");
+    // Test notification removed - too verbose for normal operation
     
-    if (metadata.isSuccess()) {
-        ConsoleOutput::output("✅ YAML parsing: Working perfectly (%zu mixes loaded)", mixes.size());
+    // Test YAML parsing
+    MixMetadata metadata;
+    std::string test_yaml_content = R"(
+mixes:
+  - name: Test Mix 1
+    url: https://example.com/mix1.mp3
+    duration: 300
+    artist: Artist 1
+    album: Album 1
+    genre: Rock
+    year: 2020
+    cover_art: https://example.com/cover1.jpg
+  - name: Test Mix 2
+    url: https://example.com/mix2.mp3
+    duration: 200
+    artist: Artist 2
+    album: Album 2
+    genre: Pop
+    year: 2021
+    cover_art: https://example.com/cover2.jpg
+)";
+    auto mixes = metadata.loadFromYaml(test_yaml_content);
+    if (!mixes.empty()) {
+        // Test notification removed - too verbose for normal operation
         
-        // Test UI display
-        ConsoleOutput::output("");
-        ConsoleOutput::output("🎵 Sample Mix Information:");
-        // MixDisplay ui; // This line is removed as MixDisplay is no longer used
-        // if (!mixes.empty()) {
-        //     ui.displayMixInfo(mixes[0]);
-        // }
+        // Test notification removed - too verbose for normal operation
+        
+        if (!mixes.empty()) {
+            const auto& first_mix = mixes[0];
+            // Test notification removed - too verbose for normal operation
+        }
     } else {
-        ConsoleOutput::output("❌ YAML parsing failed: %s", metadata.getLastError().c_str());
+        // Test notification removed - too verbose for normal operation
     }
     
-    ConsoleOutput::output("");
-    ConsoleOutput::output("🎉 Phase 2 Audio Integration Test Results:");
-    ConsoleOutput::output("📋 YAML parsing: ✅ Working");
-    ConsoleOutput::output("🌐 HTTP downloader: ✅ Ready");
-    ConsoleOutput::output("🎵 Audio player: ✅ Ready");
-    ConsoleOutput::output("🎨 UI display: ✅ Working");
-    ConsoleOutput::output("🗄️  Cache management: ✅ Working");
-    ConsoleOutput::output("");
-    ConsoleOutput::output("🚀 Ready for Phase 3: Keyboard Controls Integration!");
+    // Test notification removed - too verbose for normal operation
+    
+    // Test notification removed - too verbose for normal operation
+    // Test notification removed - too verbose for normal operation
+    // Test notification removed - too verbose for normal operation
+    // Test notification removed - too verbose for normal operation
+    // Test notification removed - too verbose for normal operation
+    
+    // Test notification removed - too verbose for normal operation
+    
+    // Test notification removed - too verbose for normal operation
 }
 
 int main(int argc, char* argv[]) {

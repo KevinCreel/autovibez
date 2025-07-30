@@ -1,5 +1,10 @@
 #include "mix_downloader.hpp"
-#include "console_output.hpp"
+#include "mix_metadata.hpp"
+#include "path_manager.hpp"
+#include "string_utils.hpp"
+#include "resource_guard.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 #include <curl/curl.h>
 #include <fstream>
 #include <iostream>
@@ -18,10 +23,10 @@ static size_t WriteFileCallback(void* contents, size_t size, size_t nmemb, FILE*
 
 static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     (void)clientp; (void)ultotal; (void)ulnow; // Parameters not used in current implementation
+    // Update progress
     if (dltotal > 0) {
         int progress = static_cast<int>((dlnow * 100) / dltotal);
-        ConsoleOutput::output("\r📥 Downloading: %d%% (%ld/%ld bytes)", progress, dlnow, dltotal);
-        fflush(stdout);
+        // Download progress notification removed - too verbose for normal operation
     }
     return 0;
 }
@@ -58,15 +63,10 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     // Handle local file URLs
     if (mix.url.substr(0, 7) == "file://") {
         std::string source_path = mix.url.substr(7);
-        ConsoleOutput::output("📁 Copying local file: %s", source_path.c_str());
-        
-        try {
-            std::filesystem::copy_file(source_path, local_path, std::filesystem::copy_options::overwrite_existing);
-            ConsoleOutput::output("✅ Local file copied: %s", local_path.c_str());
+        // Copy local file
+        if (std::filesystem::copy_file(source_path, local_path, std::filesystem::copy_options::overwrite_existing)) {
+            // Local file copy notification removed - too verbose for normal operation
             return true;
-        } catch (const std::exception& e) {
-            last_error = "Failed to copy local file: " + std::string(e.what());
-            return false;
         }
     }
     

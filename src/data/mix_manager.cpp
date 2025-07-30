@@ -4,7 +4,11 @@
 #include "mix_downloader.hpp"
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
-#include "console_output.hpp"
+#include "path_manager.hpp"
+#include "string_utils.hpp"
+#include "resource_guard.hpp"
+#include "constants.hpp"
+#include "config_defaults.hpp"
 #include <iostream>
 #include <filesystem>
 #include <random>
@@ -13,7 +17,6 @@
 #include <sstream>
 #include <SDL2/SDL.h>
 #include <algorithm>
-#include "constants.hpp"
 
 using AutoVibez::Audio::MixPlayer;
 using AutoVibez::Audio::MP3Analyzer;
@@ -142,8 +145,7 @@ bool MixManager::checkForNewMixes(const std::string& yaml_url) {
     }
     
     if (!new_mixes_to_add.empty()) {
-        ConsoleOutput::output("🆕 Found %zu new mixes, downloading in background...", new_mixes_to_add.size());
-        ConsoleOutput::output("");
+        // Mix manager status notification removed - too verbose for normal operation
         
         // Add new mixes to available_mixes for background download
         available_mixes.insert(available_mixes.end(), new_mixes_to_add.begin(), new_mixes_to_add.end());
@@ -252,14 +254,14 @@ bool MixManager::playMix(const Mix& mix) {
     // Validate that the file is actually a valid MP3 before attempting playback
     if (!player->isValidMP3File(local_path)) {
         last_error = "Mix file is corrupted or invalid: " + mix.title;
-                    ConsoleOutput::output("⚠️  Corrupted file detected: %s", local_path.c_str());
+        // Corrupted file notification removed - too verbose for normal operation
         
         // Clean up the corrupted file
         try {
             std::filesystem::remove(local_path);
-            ConsoleOutput::output("🗑️  Removed corrupted file: %s", std::filesystem::path(local_path).filename().c_str());
+            // Corrupted file removal notification removed - too verbose for normal operation
         } catch (const std::exception& e) {
-            ConsoleOutput::output("⚠️  Failed to remove corrupted file: %s", e.what());
+            // Corrupted file removal error notification removed - too verbose for normal operation
         }
         
         return false;
@@ -340,8 +342,7 @@ bool MixManager::clearCache() {
     try {
         std::filesystem::remove_all(cache_dir);
         std::filesystem::create_directories(cache_dir);
-        ConsoleOutput::output("🗑️  Cache cleared");
-        ConsoleOutput::output("");
+        // Cache clear notification removed - too verbose for normal operation
         return true;
     } catch (const std::exception& e) {
         last_error = "Failed to clear cache: " + std::string(e.what());
@@ -402,14 +403,13 @@ bool MixManager::cleanupCorruptedFiles() {
                 // Not a valid MP3, remove it
                 std::filesystem::remove(file_path);
                 cleaned_count++;
-                ConsoleOutput::output("🗑️  Removed corrupted file: %s", std::filesystem::path(file_path).filename().c_str());
+                // Corrupted file notification removed - too verbose for normal operation
             }
         }
     }
     
     if (cleaned_count > 0) {
-        ConsoleOutput::output("🧹 Cleaned up %d corrupted files", cleaned_count);
-        ConsoleOutput::output("");
+        // Cleanup notification removed - too verbose for normal operation
     }
     
     return true;
@@ -440,12 +440,12 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
         filename = urlDecode(filename);
     }
     
-            ConsoleOutput::output("🔄 Downloading and analyzing mix: %s", filename.c_str());
+    // Download and analysis notification removed - too verbose for normal operation
     
-    // Check if mix is already in database
-    if (database && database->getMixById(mix.id).id == mix.id) {
-        Mix existing_mix = database->getMixById(mix.id);
-        ConsoleOutput::output("📋 Mix already in database: %s", existing_mix.title.c_str());
+    // Check if already in database
+    Mix existing_mix = database->getMixById(mix.id);
+    if (!existing_mix.id.empty()) {
+        // Mix already exists notification removed - too verbose for normal operation
         return true;
     }
     
@@ -485,17 +485,10 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
     // Step 5: Add the mix to the database with complete metadata
     if (database) {
         database->addMix(updated_mix);
-        ConsoleOutput::output("✅ Added mix to database with complete metadata: %s", updated_mix.title.c_str());
-        ConsoleOutput::output("");
+        // Analysis success notification removed - too verbose for normal operation
     }
     
-        ConsoleOutput::output("✅ Successfully downloaded and analyzed: %s", updated_mix.title.c_str());
-        ConsoleOutput::output("");
-        ConsoleOutput::output("   🎧 Artist: %s", updated_mix.artist.c_str());
-        ConsoleOutput::output("   🎼 Genre: %s", updated_mix.genre.c_str());
-        ConsoleOutput::output("   ⏱️  Duration: %s", formatDuration(updated_mix.duration_seconds).c_str());
-        ConsoleOutput::output("   📁 Format: %s", mp3_metadata.format.c_str());
-        ConsoleOutput::output("   💾 File size: %ld bytes", mp3_metadata.file_size);
+    // Analysis success notification removed - too verbose for normal operation
     
     return true;
 }

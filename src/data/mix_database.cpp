@@ -1,6 +1,10 @@
 #include "mix_database.hpp"
-#include "console_output.hpp"
+#include "mix_metadata.hpp"
+#include "path_manager.hpp"
+#include "string_utils.hpp"
+#include "resource_guard.hpp"
 #include "constants.hpp"
+#include "config_defaults.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -163,7 +167,7 @@ bool MixDatabase::updateMix(const Mix& mix) {
         return false;
     }
     
-            ConsoleOutput::output("✅ Updated mix in database: %s", mix.title.c_str());
+            // Database update notification removed - too verbose for normal operation
     return true;
 }
 
