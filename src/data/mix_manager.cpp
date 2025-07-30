@@ -16,6 +16,7 @@
 #include <set>
 #include <sstream>
 #include <SDL2/SDL.h>
+#include <future>
 #include <algorithm>
 
 using AutoVibez::Audio::MixPlayer;
@@ -98,21 +99,32 @@ bool MixManager::loadMixMetadata(const std::string& yaml_url) {
         return false;
     }
     
-    std::vector<Mix> mixes = metadata->loadFromYaml(yaml_url);
-    
-    if (!metadata->isSuccess()) {
-        last_error = "Failed to load metadata: " + metadata->getLastError();
-        return false;
+    // Try up to 3 times with exponential backoff
+    const int max_retries = 3;
+    for (int attempt = 1; attempt <= max_retries; ++attempt) {
+        std::vector<Mix> mixes = metadata->loadFromYaml(yaml_url);
+        
+        if (metadata->isSuccess()) {
+            try {
+                syncMixesWithDatabase(mixes);
+                return true;
+            } catch (const std::exception& e) {
+                last_error = "Database sync failed: " + std::string(e.what());
+                return false;
+            }
+        }
+        
+        // If this is not the last attempt, wait before retrying
+        if (attempt < max_retries) {
+            // Exponential backoff: 1s, 2s, 4s
+            int delay_ms = (1 << (attempt - 1)) * 1000;
+            SDL_Delay(delay_ms);
+        }
     }
     
-    try {
-        syncMixesWithDatabase(mixes);
-    } catch (const std::exception& e) {
-        last_error = "Database sync failed: " + std::string(e.what());
-        return false;
-    }
-    
-    return true;
+    // All attempts failed
+    last_error = "Failed to load metadata after " + std::to_string(max_retries) + " attempts: " + metadata->getLastError();
+    return false;
 }
 
 bool MixManager::checkForNewMixes(const std::string& yaml_url) {
@@ -639,7 +651,27 @@ bool MixManager::setLocalPath(const std::string& mix_id, const std::string& loca
 }
 
 bool MixManager::downloadMixBackground(const Mix& mix) {
-    return downloadAndAnalyzeMix(mix);
+    // Launch download in background thread
+    auto future = std::async(std::launch::async, [this, mix]() {
+        return downloadAndAnalyzeMix(mix);
+    });
+    
+    // Store the future for later checking
+    _download_futures.push_back(std::move(future));
+    
+    // Return true immediately (download started)
+    return true;
+}
+
+void MixManager::cleanupCompletedDownloads() {
+    // Remove completed futures
+    _download_futures.erase(
+        std::remove_if(_download_futures.begin(), _download_futures.end(),
+            [](const std::future<bool>& future) {
+                return future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+            }),
+        _download_futures.end()
+    );
 }
 
 void MixManager::syncMixesWithDatabase(const std::vector<Mix>& mixes) {

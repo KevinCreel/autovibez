@@ -914,25 +914,22 @@ void AutoVibezApp::initMixManager()
     
     _mixManager = std::make_unique<MixManager>(db_path, cache_dir);
     
-    
+    // Initialize database first (fast operation)
     if (!_mixManager->initialize()) {
         // Mix manager initialization error notification removed - too verbose for normal operation
         return;
     }
     
-    // Load configuration
+    // Load configuration (fast operation)
     std::string configFilePath = findConfigFile();
+    std::string yaml_url;
+    std::string preferred_genre;
+    
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
         
         // Load preferred genre from config
-        std::string preferred_genre;
         config.readInto(preferred_genre, "preferred_genre");
-        if (!preferred_genre.empty()) {
-            // Configuration notification removed - help overlay shows current genre
-        } else {
-            // Configuration notification removed - help overlay shows current genre
-        }
         _mixManager->setCurrentGenre(preferred_genre);
         
         // Show current audio device
@@ -943,47 +940,42 @@ void AutoVibezApp::initMixManager()
         } else {
             // Audio device notification removed - help overlay shows current device
         }
-    }
-    
-    // Load mix metadata from YAML
-    std::string yaml_url;
-    if (!configFilePath.empty()) {
-        ConfigFile config(configFilePath);
+        
+        // Get YAML URL
         yaml_url = config.getMixesUrl();
     }
     
-    if (yaml_url.empty()) {
-        // Mix URL configuration notification removed - too verbose for normal operation
-        return;
-    }
-    
-    if (!_mixManager->loadMixMetadata(yaml_url)) {
-        // Mix metadata loading error notification removed - too verbose for normal operation
-        return;
-    }
-    
-    // Check for new mixes from remote YAML in background (non-blocking)
-    // This will download new mixes but not block startup
-    if (!_backgroundTaskRunning.load()) {
-        _backgroundTaskRunning.store(true);
-        _backgroundTask = std::async(std::launch::async, [this, yaml_url]() {
-            std::lock_guard<std::mutex> lock(_mixManagerMutex);
-            if (_mixManager) {
-                _mixManager->checkForNewMixes(yaml_url);
-            }
-            _backgroundTaskRunning.store(false);
-        });
-    }
-    
+    // Mark as initialized early so UI can work
     _mixManagerInitialized = true;
     
-    // Auto-play functionality: play existing mix or download and play
-    // (moved here after mix manager is fully initialized)
+    // IMMEDIATELY try to play from local database (non-blocking)
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
         if (config.getAutoDownload()) {
-            autoPlayOrDownload();
+            // Try to play existing mix immediately
+            autoPlayFromLocalDatabase();
         }
+    }
+    
+    // Load mix metadata in background (non-blocking)
+    if (!yaml_url.empty() && !_backgroundTaskRunning.load()) {
+        _backgroundTaskRunning.store(true);
+        _backgroundTask = std::async(std::launch::async, [this, yaml_url, configFilePath]() {
+            // Load mix metadata from YAML
+            if (_mixManager->loadMixMetadata(yaml_url)) {
+                // Check for new mixes from remote YAML in background (non-blocking)
+                _mixManager->checkForNewMixes(yaml_url);
+                
+                // Start background downloads if no local mixes were found
+                if (!configFilePath.empty()) {
+                    ConfigFile config(configFilePath);
+                    if (config.getAutoDownload()) {
+                        startBackgroundDownloads();
+                    }
+                }
+            }
+            _backgroundTaskRunning.store(false);
+        });
     }
 }
 
@@ -1118,7 +1110,7 @@ void AutoVibezApp::autoPlayOrDownload()
         randomMix = _mixManager->getRandomAvailableMix();
     }
     if (randomMix.id.empty()) {
-        // No mixes available notification removed - too verbose for normal operation
+        // If no mixes available notification removed - too verbose for normal operation
         return;
     }
     
@@ -1279,6 +1271,27 @@ void AutoVibezApp::checkAndAutoPlayNext() {
         } else {
             // No more mixes available notification removed - too verbose for normal operation
         }
+    }
+}
+
+void AutoVibezApp::autoPlayFromLocalDatabase()
+{
+    if (!_mixManagerInitialized) {
+        // Auto-play initialization error notification removed - too verbose for normal operation
+        return;
+    }
+
+    // Try to play a mix from the local database
+    Mix randomMix = _mixManager->getRandomMix();
+    if (!randomMix.id.empty()) {
+        if (_mixManager->playMix(randomMix)) {
+            _currentMix = randomMix;
+            // Auto-play success notification removed - too verbose for normal operation
+        } else {
+            // Play failed notification removed - too verbose for normal operation
+        }
+    } else {
+        // No mixes in local database notification removed - too verbose for normal operation
     }
 }
 

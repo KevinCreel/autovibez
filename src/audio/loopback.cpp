@@ -55,12 +55,14 @@ bool initLoopback()
     hr = CoInitialize(NULL);
     if (FAILED(hr)) {
         ERR(L"CoInitialize failed: hr = 0x%08x", hr);
+        return false;
     }
     
     // open default device if not specified
     if (NULL == pMMDevice) {
         hr = get_default_device(&pMMDevice);
         if (FAILED(hr)) {
+            ERR(L"Failed to get default audio device");
             return false;
         }
     }
@@ -229,6 +231,15 @@ void configureLoopback(Core::AutoVibezApp *app) {
     app->wasapi = true;
     // Notify that loopback capture was started.
     SDL_Log("Opened audio capture loopback.");
+    
+    // Initialize the loopback
+    if (!initLoopback()) {
+        SDL_Log("Failed to initialize WASAPI loopback - falling back to fake audio");
+        app->fakeAudio = true;
+        app->wasapi = false;
+    } else {
+        SDL_Log("WASAPI loopback initialized successfully");
+    }
 #endif
 }
 

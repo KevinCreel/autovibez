@@ -421,10 +421,20 @@ AutoVibezApp *setupSDLApp() {
     enableGLDebugOutput();
     configureLoopback(app);
 
-#if !FAKE_AUDIO && !WASAPI_LOOPBACK
-    // get an audio input device
-    if (app->initializeAudioInput())
-        app->beginAudioCapture();
+#if !FAKE_AUDIO
+    #ifdef _WIN32
+        // On Windows, use WASAPI if available, otherwise SDL
+        #ifdef WASAPI_LOOPBACK
+            // WASAPI is handled in configureLoopback()
+        #else
+            if (app->initializeAudioInput())
+                app->beginAudioCapture();
+        #endif
+    #else
+        // On Linux/macOS, always use SDL audio
+        if (app->initializeAudioInput())
+            app->beginAudioCapture();
+    #endif
 #endif
 
 #if TEST_ALL_PRESETS

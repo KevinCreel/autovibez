@@ -92,6 +92,11 @@ static int mainLoop(void* userData) {
             app->getMixManager()->updateCrossfade();
         }
         
+        // Cleanup completed background downloads
+        if (app->isMixManagerInitialized()) {
+            app->getMixManager()->cleanupCompletedDownloads();
+        }
+        
 #if UNLOCK_FPS
         advanceUnlockedFPSCounterFrame(start);
 #else

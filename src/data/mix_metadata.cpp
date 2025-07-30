@@ -55,7 +55,32 @@ std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
     std::vector<Mix> mixes;
     
     try {
-        YAML::Node config = YAML::LoadFile(file_path);
+        // Check if file exists and is readable
+        std::ifstream file(file_path);
+        if (!file.is_open()) {
+            last_error = "Cannot open file: " + file_path;
+            success = false;
+            return mixes;
+        }
+        
+        // Read file content to check for basic YAML structure
+        std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+        
+        if (content.empty()) {
+            last_error = "File is empty: " + file_path;
+            success = false;
+            return mixes;
+        }
+        
+        // Check for basic YAML structure
+        if (content.find("mixes:") == std::string::npos) {
+            last_error = "No 'mixes:' section found in file";
+            success = false;
+            return mixes;
+        }
+        
+        YAML::Node config = YAML::Load(content);
         
         if (!config["mixes"]) {
             last_error = "No 'mixes' section found in YAML file";
@@ -64,6 +89,11 @@ std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
         }
         
         YAML::Node mixes_node = config["mixes"];
+        if (!mixes_node.IsSequence()) {
+            last_error = "Invalid 'mixes' section - expected sequence";
+            success = false;
+            return mixes;
+        }
         
         for (const auto& mix_node : mixes_node) {
             try {
@@ -72,6 +102,7 @@ std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
                     mixes.push_back(mix);
                 }
             } catch (const std::exception& e) {
+                // Skip invalid mixes but continue processing
                 continue;
             }
         }
@@ -107,12 +138,21 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "AutoVibez/1.0");
     
     CURLcode res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
         last_error = "HTTP request failed: " + std::string(curl_easy_strerror(res));
+        success = false;
+        return mixes;
+    }
+    
+    // Check if response is empty or too small
+    if (response.empty() || response.length() < 10) {
+        last_error = "Empty or invalid response from server";
         success = false;
         return mixes;
     }
@@ -127,10 +167,21 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
         }
         
         YAML::Node mixes_node = config["mixes"];
+        if (!mixes_node.IsSequence()) {
+            last_error = "Invalid 'mixes' section - expected sequence";
+            success = false;
+            return mixes;
+        }
+        
         for (const auto& mix_node : mixes_node) {
-            Mix mix = parseMixFromYaml(mix_node);
-            if (validateMix(mix)) {
-                mixes.push_back(mix);
+            try {
+                Mix mix = parseMixFromYaml(mix_node);
+                if (validateMix(mix)) {
+                    mixes.push_back(mix);
+                }
+            } catch (const std::exception& e) {
+                // Skip invalid mixes but continue processing
+                continue;
             }
         }
         
@@ -200,33 +251,13 @@ Mix MixMetadata::parseMixFromYaml(const YAML::Node& mix_node) {
 }
 
 std::string MixMetadata::generateIdFromUrl(const std::string& url) {
-    // Generate a deterministic UUID based on URL hash
+    // Generate a hash-based ID from the URL
     std::hash<std::string> hasher;
     size_t hash = hasher(url);
     
-    // Use the hash to generate a deterministic UUID v5 (name-based)
-    unsigned char uuid_bytes[16];
-    
-    // Use first 16 bytes of hash (or repeat if shorter)
-    for (int i = 0; i < 16; i++) {
-        uuid_bytes[i] = (hash >> (i % 8 * 8)) & 0xFF;
-    }
-    
-    // Set version (5) and variant bits for deterministic UUID
-    uuid_bytes[6] = (uuid_bytes[6] & 0x0F) | 0x50;  // Version 5
-    uuid_bytes[8] = (uuid_bytes[8] & 0x3F) | 0x80;  // Variant 1
-    
-    // Convert to UUID string format
+    // Convert to hex string
     std::stringstream ss;
-    ss << std::hex << std::setfill('0');
-    
-    for (int i = 0; i < 16; i++) {
-        if (i == 4 || i == 6 || i == 8 || i == 10) {
-            ss << "-";
-        }
-        ss << std::setw(2) << static_cast<int>(uuid_bytes[i]);
-    }
-    
+    ss << std::hex << hash;
     return ss.str();
 }
 

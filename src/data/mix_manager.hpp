@@ -5,6 +5,7 @@
 #include "mix_downloader.hpp"
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
+#include <future>
 #include <string>
 #include <vector>
 #include <memory>
@@ -134,6 +135,7 @@ public:
     
     // Background downloads
     bool downloadMixBackground(const Mix& mix);
+    void cleanupCompletedDownloads();
     
     /**
      * @brief Get the last error message
@@ -172,7 +174,9 @@ private:
     std::string last_error;
     bool success;
     Mix current_mix;
-    std::vector<Mix> available_mixes;  // Mixes loaded from YAML but not yet downloaded
+    std::vector<Mix> available_mixes;
+    std::vector<std::future<bool>> _download_futures;
+    std::string _current_genre;
     
     // Crossfade state
     bool _crossfade_enabled{false};
@@ -187,7 +191,6 @@ private:
     bool _suppress_volume_output{false};
     
     // Genre management
-    std::string _current_genre{"techno"};
     std::vector<std::string> _available_genres;
 };
 

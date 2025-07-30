@@ -162,6 +162,7 @@ public:
     void autoDownloadRandomMix();
     void autoPlayOrDownload();
     void startBackgroundDownloads();
+    void autoPlayFromLocalDatabase();
     void checkAndAutoPlayNext();
     bool isMixManagerInitialized() const { return _mixManagerInitialized; }
     AutoVibez::Data::MixManager* getMixManager() { return _mixManager.get(); }
