@@ -22,6 +22,10 @@ public:
     void setCursorVisibility(bool visible);
     void setFullscreenState(bool isFullscreen);
     void rebuildFontAtlas(); // Add method to rebuild font atlas
+    void reinitializeImGui(); // Add method to completely reinitialize ImGui
+    void triggerTextureRebind(); // Add method to trigger texture rebinding
+    void triggerDeferredTextureRebind(); // Add method for deferred texture rebinding
+    void triggerCompleteReinitialization(); // Add method for complete reinitialization
 
 private:
     SDL_Window* _window = nullptr;
@@ -31,6 +35,8 @@ private:
     bool _isFullscreen = false;
     bool _initialized = false;
     bool _imguiReady = false;
+    bool _needsTextureRebind = false; // Add flag for texture rebinding
+    bool _needsDeferredTextureRebind = false; // Add flag for deferred texture rebinding
     SDL_Cursor* _originalCursor = nullptr;
     SDL_Cursor* _blankCursor = nullptr;
     

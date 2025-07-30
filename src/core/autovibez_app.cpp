@@ -745,14 +745,19 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
         }
         
                             ConsoleOutput::output("🎨 Preset: %s", preset_name.c_str());
+        
+        // Use complete reinitialization for automatic changes to ensure clean state
+        if (app->_helpOverlay) {
+            app->_helpOverlay->triggerCompleteReinitialization();
+        }
+    } else {
+        // Use immediate texture rebind for manual changes
+        if (app->_helpOverlay) {
+            app->_helpOverlay->triggerTextureRebind();
+        }
     }
     
     app->_manualPresetChange = false;
-    
-    // Rebuild help overlay font atlas to fix text rendering issues
-    if (app->_helpOverlay) {
-        app->_helpOverlay->rebuildFontAtlas();
-    }
     
     projectm_playlist_free_string(presetName);
     app->UpdateWindowTitle();

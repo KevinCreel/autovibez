@@ -50,6 +50,21 @@ void HelpOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
 void HelpOverlay::render() {
     if (!_visible) return;
     
+    // Handle deferred texture rebinding at the start of render cycle
+    if (_needsDeferredTextureRebind) {
+        ConsoleOutput::output("🔄 Executing deferred texture rebind...");
+        if (_imguiReady) {
+            // Ensure we have the OpenGL context
+            SDL_GL_MakeCurrent(_window, _glContext);
+            
+            // Force texture rebinding
+            ImGui_ImplOpenGL2_DestroyFontsTexture();
+            ImGui_ImplOpenGL2_CreateFontsTexture();
+        }
+        _needsDeferredTextureRebind = false;
+        ConsoleOutput::output("✅ Deferred texture rebind completed");
+    }
+    
     // For now, let's try a simpler approach - just render a basic overlay
     // without complex ImGui setup to avoid rendering conflicts
     
@@ -85,9 +100,24 @@ void HelpOverlay::render() {
         _imguiReady = true;
     }
     
+    // Save current OpenGL state and isolate ImGui rendering
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushMatrix();
+    
+    // Completely isolate ImGui's texture state
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
     // Use a very simple rendering approach
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // Force texture rebinding if needed
+    if (_needsTextureRebind) {
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+        _needsTextureRebind = false;
+    }
     
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL2_NewFrame();
@@ -149,7 +179,7 @@ void HelpOverlay::render() {
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
     ImGui::TextUnformatted("P     - Pause/Resume playback");
-    ImGui::TextUnformatted("Up/Down - Volume up/down");
+    ImGui::TextUnformatted("↑/↓   - Volume up/down");
     ImGui::TextUnformatted("Tab   - Cycle through audio devices");
     ImGui::PopStyleColor();
     
@@ -192,8 +222,9 @@ void HelpOverlay::render() {
     ImGui::Render();
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
     
-    // Minimal cleanup
-    glDisable(GL_BLEND);
+    // Restore OpenGL state
+    glPopMatrix();
+    glPopAttrib();
 }
 
 void HelpOverlay::toggle() {
@@ -231,6 +262,8 @@ void HelpOverlay::setCursorVisibility(bool visible) {
 
 void HelpOverlay::rebuildFontAtlas() {
     if (_imguiReady) {
+        ConsoleOutput::output("🔄 Rebuilding font atlas...");
+        
         // Ensure we have the OpenGL context
         SDL_GL_MakeCurrent(_window, _glContext);
         
@@ -247,7 +280,139 @@ void HelpOverlay::rebuildFontAtlas() {
         // This forces ImGui to recreate its font texture
         ImGui_ImplOpenGL2_DestroyFontsTexture();
         ImGui_ImplOpenGL2_CreateFontsTexture();
+        
+        ConsoleOutput::output("✅ Font atlas rebuilt successfully");
+    } else {
+        ConsoleOutput::output("⚠️  Cannot rebuild font atlas - ImGui not ready");
     }
+}
+
+void HelpOverlay::reinitializeImGui() {
+    ConsoleOutput::output("🔄 Reinitializing ImGui...");
+    
+    // Ensure we have the OpenGL context
+    SDL_GL_MakeCurrent(_window, _glContext);
+    
+    // Save current OpenGL state
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushMatrix();
+    
+    // Shutdown existing ImGui if it exists
+    if (_imguiReady) {
+        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
+        _imguiReady = false;
+    }
+    
+    // Setup Dear ImGui context with minimal configuration
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    
+    // Add default font with explicit atlas building
+    io.Fonts->AddFontDefault();
+    io.FontGlobalScale = 1.0f;
+    
+    // Explicitly build the font atlas
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    
+    // Set INI file path to user config directory
+    std::string configDir = getConfigDirectory();
+    if (!configDir.empty()) {
+        std::string iniPath = configDir + "/imgui.ini";
+        io.IniFilename = strdup(iniPath.c_str());
+    }
+    
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
+    ImGui_ImplOpenGL2_Init();
+    
+    // Explicitly create the font texture
+    ImGui_ImplOpenGL2_CreateFontsTexture();
+    
+    _imguiReady = true;
+    
+    // Restore OpenGL state
+    glPopMatrix();
+    glPopAttrib();
+    
+    ConsoleOutput::output("✅ ImGui reinitialized successfully");
+}
+
+void HelpOverlay::triggerTextureRebind() {
+    _needsTextureRebind = true;
+    ConsoleOutput::output("🔄 Triggered texture rebind for next render");
+}
+
+void HelpOverlay::triggerDeferredTextureRebind() {
+    _needsDeferredTextureRebind = true;
+    ConsoleOutput::output("🔄 Triggered deferred texture rebind");
+}
+
+void HelpOverlay::triggerCompleteReinitialization() {
+    ConsoleOutput::output("🔄 Triggering complete ImGui reinitialization...");
+    
+    // Ensure we have the OpenGL context
+    SDL_GL_MakeCurrent(_window, _glContext);
+    
+    // Save current OpenGL state
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushMatrix();
+    
+    // Shutdown existing ImGui if it exists
+    if (_imguiReady) {
+        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
+        _imguiReady = false;
+    }
+    
+    // Setup Dear ImGui context with minimal configuration
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    
+    // Add default font with explicit atlas building
+    io.Fonts->AddFontDefault();
+    io.FontGlobalScale = 1.0f;
+    
+    // Explicitly build the font atlas
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    
+    // Set INI file path to user config directory
+    std::string configDir = getConfigDirectory();
+    if (!configDir.empty()) {
+        std::string iniPath = configDir + "/imgui.ini";
+        io.IniFilename = strdup(iniPath.c_str());
+    }
+    
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
+    ImGui_ImplOpenGL2_Init();
+    
+    // Explicitly create the font texture
+    ImGui_ImplOpenGL2_CreateFontsTexture();
+    
+    _imguiReady = true;
+    
+    // Restore OpenGL state
+    glPopMatrix();
+    glPopAttrib();
+    
+    ConsoleOutput::output("✅ Complete ImGui reinitialization completed");
 }
 
 } // namespace UI
