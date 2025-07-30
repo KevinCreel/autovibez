@@ -9,29 +9,40 @@ PresetManager::PresetManager(projectm_playlist_handle playlist)
 }
 
 void PresetManager::nextPreset() {
-    projectm_playlist_play_next(_playlist, true);
-    _currentPresetName = getCurrentPresetName();
-    ConsoleOutput::output("⏭️  Next preset: %s", _currentPresetName.c_str());
+    if (_playlist) {
+        projectm_playlist_play_next(_playlist, true);
+        _currentPresetName = getCurrentPresetName();
+        // Preset change notification removed - help overlay shows current preset
+    }
 }
 
 void PresetManager::previousPreset() {
-    projectm_playlist_play_previous(_playlist, true);
-    _currentPresetName = getCurrentPresetName();
-    ConsoleOutput::output("⏮️  Previous preset: %s", _currentPresetName.c_str());
+    if (_playlist) {
+        projectm_playlist_play_previous(_playlist, true);
+        _currentPresetName = getCurrentPresetName();
+        // Preset change notification removed - help overlay shows current preset
+    }
 }
 
 void PresetManager::randomPreset() {
-    // Implement true random selection
-    uint32_t preset_count = projectm_playlist_size(_playlist);
-    if (preset_count > 0) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<uint32_t> dis(0, preset_count - 1);
-        uint32_t random_index = dis(gen);
-        projectm_playlist_set_position(_playlist, random_index, true);
-        _currentPresetName = getCurrentPresetName();
-        ConsoleOutput::output("🎨 Loaded random preset: %s", _currentPresetName.c_str());
+    if (_playlist) {
+        // Use a different approach for random preset since projectm_playlist_play_random doesn't exist
+        uint32_t preset_count = projectm_playlist_size(_playlist);
+        if (preset_count > 0) {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<uint32_t> dis(0, preset_count - 1);
+            uint32_t random_index = dis(gen);
+            projectm_playlist_set_position(_playlist, random_index, true);
+            _currentPresetName = getCurrentPresetName();
+            // Preset change notification removed - help overlay shows current preset
+        }
     }
+}
+
+void PresetManager::togglePause() {
+    _isPaused = !_isPaused;
+    // Preset pause/resume notification removed - help overlay shows current state
 }
 
 std::string PresetManager::getCurrentPresetName() const {
@@ -50,13 +61,4 @@ void PresetManager::setPresetPath(const std::string& path) {
 
 bool PresetManager::isPlaying() const {
     return _isPlaying && !_isPaused;
-}
-
-void PresetManager::togglePause() {
-    _isPaused = !_isPaused;
-    if (_isPaused) {
-        ConsoleOutput::output("⏸️  Preset paused");
-    } else {
-        ConsoleOutput::output("▶️  Preset resumed");
-    }
 } 

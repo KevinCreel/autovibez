@@ -223,7 +223,6 @@ void InputHandler::handleBeatSensitivityControls(SDL_Keycode key) {
     }
     
     _app->setBeatSensitivity(newSensitivity);
-            ConsoleOutput::output("🎵 Beat Sensitivity: %.1f", newSensitivity);
 }
 
 void InputHandler::handlePresetNavigation(SDL_Keycode key) {
@@ -247,14 +246,18 @@ void InputHandler::handleGenreControls(SDL_Keymod mod) {
     if (mod & KMOD_LSHIFT || mod & KMOD_RSHIFT) {
         // Shift+G: Switch to random genre
         std::string newGenre = _app->getMixManager()->getRandomGenre();
-        ConsoleOutput::output("🎼 Switched to genre: %s", newGenre.c_str());
+        // Genre change notification removed - help overlay shows current genre
+        
+        // Play a random mix in the new genre
+        AutoVibez::Data::Mix genreMix = _app->getMixManager()->getRandomMixByGenre(newGenre);
+        if (!genreMix.id.empty()) {
+            _app->getMixManager()->downloadAndPlayMix(genreMix);
+            // Current mix is updated automatically by the mix manager
+        }
     } else if (mod & KMOD_LCTRL || mod & KMOD_RCTRL) {
         // Ctrl+G: Show available genres
         auto genres = _app->getMixManager()->getAvailableGenres();
-        ConsoleOutput::output("🎼 Available genres (%zu):", genres.size());
-        for (const auto& genre : genres) {
-            ConsoleOutput::output("  • %s", StringUtils::toTitleCase(genre).c_str());
-        }
+        // Genre list notification removed - help overlay shows current genre
     } else {
         // G: Random mix in current genre
         // Genre mix logic handled in AutoVibezApp

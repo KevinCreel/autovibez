@@ -50,7 +50,8 @@
 
 // Mix management
 #include "mix_manager.hpp"
-#include "mix_display.hpp"
+#include "mix_metadata.hpp"
+#include "mix_downloader.hpp"
 #include "config_manager.hpp"
 #include "help_overlay.hpp"
 
@@ -236,7 +237,7 @@ private:
 
     // Mix management
     std::unique_ptr<AutoVibez::Data::MixManager> _mixManager;
-    std::unique_ptr<AutoVibez::Data::MixDisplay> _mixUI;
+
     AutoVibez::Data::Mix _currentMix;
     bool _mixManagerInitialized{false};
     bool _showMixStatus{false};

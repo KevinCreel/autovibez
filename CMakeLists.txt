@@ -135,8 +135,6 @@ add_executable(autovibez
     src/data/config_manager.hpp
     src/data/mix_database.cpp
     src/data/mix_database.hpp
-    src/data/mix_display.cpp
-    src/data/mix_display.hpp
     src/data/mix_downloader.cpp
     src/data/mix_downloader.hpp
     src/data/mix_manager.cpp
@@ -343,8 +341,6 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/data/mix_manager.hpp
     src/data/mix_metadata.cpp
     src/data/mix_metadata.hpp
-    src/data/mix_display.cpp
-    src/data/mix_display.hpp
     
     # User interface
     src/core/app_state.cpp

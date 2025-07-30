@@ -33,7 +33,8 @@
 #include "logger.hpp"
 #include "console_output.hpp"
 #include "mix_manager.hpp"
-#include "mix_display.hpp"
+#include "mix_metadata.hpp"
+#include "mix_downloader.hpp"
 #include "config_manager.hpp"
 
 #include <vector>
@@ -50,7 +51,7 @@
 #endif
 
 using AutoVibez::Data::MixManager;
-using AutoVibez::Data::MixDisplay;
+
 using AutoVibez::Data::Mix;
 using AutoVibez::Audio::AudioManager;
 using AutoVibez::Data::ConfigFile;
@@ -204,24 +205,32 @@ void AutoVibezApp::scrollHandler(const SDL_Event* sdl_evt)
     {
         _manualPresetChange = true;
         projectm_playlist_play_previous(_playlist, true);
-        std::string preset_name = getActivePresetName();
-        size_t last_slash = preset_name.find_last_of('/');
-        if (last_slash != std::string::npos) {
-            preset_name = preset_name.substr(last_slash + 1);
+        // Previous preset
+        if (_playlist) {
+            projectm_playlist_play_previous(_playlist, true);
+            std::string preset_name = getActivePresetName();
+            size_t last_slash = preset_name.find_last_of('/');
+            if (last_slash != std::string::npos) {
+                preset_name = preset_name.substr(last_slash + 1);
+            }
+            // Preset change notification removed - help overlay shows current preset
         }
-        ConsoleOutput::output("⏮️  Previous preset: %s", preset_name.c_str());
     }
     // handle mouse scroll wheel - down--
     if (sdl_evt->wheel.y < 0)
     {
         _manualPresetChange = true;
         projectm_playlist_play_next(_playlist, true);
-        std::string preset_name = getActivePresetName();
-        size_t last_slash = preset_name.find_last_of('/');
-        if (last_slash != std::string::npos) {
-            preset_name = preset_name.substr(last_slash + 1);
+        // Next preset
+        if (_playlist) {
+            projectm_playlist_play_next(_playlist, true);
+            std::string preset_name = getActivePresetName();
+            size_t last_slash = preset_name.find_last_of('/');
+            if (last_slash != std::string::npos) {
+                preset_name = preset_name.substr(last_slash + 1);
+            }
+            // Preset change notification removed - help overlay shows current preset
         }
-        ConsoleOutput::output("⏭️  Next preset: %s", preset_name.c_str());
     }
 }
 
@@ -325,24 +334,20 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
         case SDLK_b:
             // B: Increase beat sensitivity
             {
-                float currentSensitivity = projectm_get_beat_sensitivity(_projectM);
-                float newSensitivity = currentSensitivity + 0.1f;
-                if (newSensitivity > 5.0f) newSensitivity = 5.0f; // Cap at 5.0
-                projectm_set_beat_sensitivity(_projectM, newSensitivity);
-                ConsoleOutput::output("🎵 Beat Sensitivity: %.1f", newSensitivity);
-                ConsoleOutput::output("");
+                float newSensitivity = getBeatSensitivity() + 0.1f;
+                if (newSensitivity > 1.0f) newSensitivity = 1.0f;
+                setBeatSensitivity(newSensitivity);
+                // Beat sensitivity notification removed - help overlay shows current sensitivity
             }
             break;
 
         case SDLK_j:
             // J: Decrease beat sensitivity
             {
-                float currentSensitivity = projectm_get_beat_sensitivity(_projectM);
-                float newSensitivity = currentSensitivity - 0.1f;
+                float newSensitivity = getBeatSensitivity() - 0.1f;
                 if (newSensitivity < 0.0f) newSensitivity = 0.0f;
-                projectm_set_beat_sensitivity(_projectM, newSensitivity);
-                ConsoleOutput::output("🎵 Beat Sensitivity: %.1f", newSensitivity);
-                ConsoleOutput::output("");
+                setBeatSensitivity(newSensitivity);
+                // Beat sensitivity notification removed - help overlay shows current sensitivity
             }
             break;
 
@@ -385,14 +390,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             // [: Previous preset
             _manualPresetChange = true;
             projectm_playlist_play_previous(_playlist, true);
-            {
-                std::string preset_name = getActivePresetName();
-                size_t last_slash = preset_name.find_last_of('/');
-                if (last_slash != std::string::npos) {
-                    preset_name = preset_name.substr(last_slash + 1);
-                }
-                ConsoleOutput::output("⏮️  Previous preset: %s", preset_name.c_str());
-            }
+            // Preset change notification removed - help overlay shows current preset
             break;
             
         case SDLK_RIGHTBRACKET:
@@ -405,7 +403,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 if (last_slash != std::string::npos) {
                     preset_name = preset_name.substr(last_slash + 1);
                 }
-                ConsoleOutput::output("⏭️  Next preset: %s", preset_name.c_str());
+                // Preset change notification removed - help overlay shows current preset
             }
             break;
             
@@ -416,8 +414,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 if (sdl_mod & KMOD_LSHIFT || sdl_mod & KMOD_RSHIFT) {
                     // Shift+G: Switch to random genre
                     std::string newGenre = _mixManager->getRandomGenre();
-                    ConsoleOutput::output("🎼 Switched to genre: %s", newGenre.c_str());
-                    ConsoleOutput::output("");
+                    // Genre change notification removed - help overlay shows current genre
                     
                     // Play a random mix in the new genre
                     Mix genreMix = _mixManager->getRandomMixByGenre(newGenre);
@@ -431,38 +428,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 } else if (sdl_mod & KMOD_LCTRL || sdl_mod & KMOD_RCTRL) {
                     // Ctrl+G: Show available genres
                     auto genres = _mixManager->getAvailableGenres();
-                    ConsoleOutput::output("🎼 Available genres (%zu):", genres.size());
-                    for (const auto& genre : genres) {
-                        // Create a local copy for Title Case display only
-                        std::string display_genre = genre;
-                        bool capitalize = true;
-                        for (char& c : display_genre) {
-                            if (capitalize && std::isalpha(c)) {
-                                c = std::toupper(c);
-                                capitalize = false;
-                            } else if (std::isspace(c) || c == '-') {
-                                capitalize = true;
-                            } else if (std::isalpha(c)) {
-                                c = std::tolower(c);
-                            }
-                        }
-                        ConsoleOutput::output("  • %s", display_genre.c_str());
-                    }
-                    // Create a local copy for current genre Title Case display only
-                    std::string display_current_genre = _currentMix.genre;
-                    bool capitalize = true;
-                    for (char& c : display_current_genre) {
-                        if (capitalize && std::isalpha(c)) {
-                            c = std::toupper(c);
-                            capitalize = false;
-                        } else if (std::isspace(c) || c == '-') {
-                            capitalize = true;
-                        } else if (std::isalpha(c)) {
-                            c = std::tolower(c);
-                        }
-                    }
-                    ConsoleOutput::output("🎼 Current genre: %s", display_current_genre.c_str());
-                    ConsoleOutput::output("");
+                    // Genre list notification removed - help overlay shows current genre
                 } else {
                     // G: Random mix in current mix's genre
                     if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
@@ -590,7 +556,7 @@ void AutoVibezApp::handleKeyDownEvent(const SDL_Event& evt) {
 
 void AutoVibezApp::handleKeyUpEvent(const SDL_Event& evt) {
     if (_volumeKeyPressed && (evt.key.keysym.sym == SDLK_UP || evt.key.keysym.sym == SDLK_DOWN)) {
-        ConsoleOutput::output("🔊 Volume: %d%%", _mixManager->getVolume());
+        // Volume notification removed - help overlay shows current volume
         _volumeKeyPressed = false;
     }
 }
@@ -783,8 +749,6 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
             preset_name = preset_name.substr(last_slash + 1);
         }
         
-                            ConsoleOutput::output("🎨 Preset: %s", preset_name.c_str());
-        
         // Use complete reinitialization for automatic changes to ensure clean state
         if (app->_helpOverlay) {
             app->_helpOverlay->triggerCompleteReinitialization();
@@ -856,9 +820,9 @@ void AutoVibezApp::cycleAudioDevice()
         // Get the device name for feedback
         const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
         if (deviceName) {
-            ConsoleOutput::output("🎚️  Switched to audio device: %s", deviceName);
+            // Audio device notification removed - help overlay shows current device
         } else {
-            ConsoleOutput::output("🎚️  Switched to audio device: %d", _selectedAudioDeviceIndex);
+            // Audio device notification removed - help overlay shows current device
         }
         
         // Reopen audio with new device
@@ -868,7 +832,7 @@ void AutoVibezApp::cycleAudioDevice()
         initializeAudioInput();  // Use initializeAudioInput directly instead of openAudioInput
         beginAudioCapture();
     } else {
-        ConsoleOutput::output("🎚️  No audio devices available");
+        // Audio device notification removed - help overlay shows current device
     }
 }
 
@@ -883,35 +847,7 @@ void AutoVibezApp::printHelpMenu()
         const char* color_purple = "\033[35m";
         const char* color_reset = "\033[0m";
         
-        ConsoleOutput::output("\n");
-        ConsoleOutput::output("%s✨🎵 %sAutoVibez Controls%s 🎵✨%s", color_purple, color_green, color_reset, color_purple);
-        ConsoleOutput::output("\n");
-        ConsoleOutput::output("%s🎧 %sMix Management:%s", "\033[32m", color_green, color_reset);
-        ConsoleOutput::output("%sN%s     - Play next mix", "\033[32m", color_reset);
-        ConsoleOutput::output("%sF%s     - Toggle favorite", "\033[32m", color_reset);
-        ConsoleOutput::output("%sV%s     - List favorite mixes", "\033[32m", color_reset);
-        ConsoleOutput::output("%sL%s     - List available mixes", "\033[32m", color_reset);
-        ConsoleOutput::output("%sG%s     - Play random mix in current genre", "\033[32m", color_reset);
-        ConsoleOutput::output("%sShift+G%s - Switch to random genre", "\033[32m", color_reset);
-        ConsoleOutput::output("%sCtrl+G%s  - Show available genres", "\033[32m", color_reset);
-        ConsoleOutput::output("%sSPACE%s  - Load random mix", "\033[32m", color_reset);
-        ConsoleOutput::output("\n");
-        ConsoleOutput::output("%s🎚️  %sAudio Controls:%s", "\033[34m", color_green, color_reset);
-        ConsoleOutput::output("%sP%s     - Pause/Resume playback", "\033[34m", color_reset);
-        ConsoleOutput::output("%s↑/↓%s   - Volume up/down", "\033[34m", color_reset);
-        ConsoleOutput::output("%sTab%s   - Cycle through audio devices", "\033[34m", color_reset);
-        ConsoleOutput::output("\n");
-        ConsoleOutput::output("%s🌈 %sVisualizer Controls:%s", color_yellow, color_green, color_reset);
-        ConsoleOutput::output("%sH%s     - Toggle this help overlay", color_yellow, color_reset);
-        ConsoleOutput::output("%sF11%s   - Toggle fullscreen mode", color_yellow, color_reset);
-        ConsoleOutput::output("%sR%s     - Load random preset", color_yellow, color_reset);
-        ConsoleOutput::output("%s[ / ]%s  - Previous/Next preset", color_yellow, color_reset);
-        ConsoleOutput::output("%sB / J%s  - Increase/Decrease beat sensitivity", color_yellow, color_reset);
-        ConsoleOutput::output("%sMouse Wheel%s - Next/Prev preset", color_yellow, color_reset);
-        ConsoleOutput::output("\n");
-        ConsoleOutput::output("%s⚙️  %sApplication:%s", "\033[31m", color_green, color_reset);
-        ConsoleOutput::output("%sCtrl+Q%s - Quit application", "\033[31m", color_reset);
-        ConsoleOutput::output("\n");
+        // Console help output removed - help overlay provides better UI
         helpShown = true;
     }
 }
@@ -1008,7 +944,7 @@ void AutoVibezApp::initMixManager()
     std::string cache_dir = getCacheDirectory() + "/mix_cache";
     
     _mixManager = std::make_unique<MixManager>(db_path, cache_dir);
-    _mixUI = std::make_unique<MixDisplay>();
+    
     
     if (!_mixManager->initialize()) {
         ConsoleOutput::output("❌ Failed to initialize mix manager: %s", _mixManager->getLastError().c_str());
@@ -1103,8 +1039,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                     if (last_slash != std::string::npos) {
                         preset_name = preset_name.substr(last_slash + 1);
                     }
-                    ConsoleOutput::output("🎨 Loaded random preset: %s", preset_name.c_str());
-                    ConsoleOutput::output("🎨 Loaded random preset: %s", preset_name.c_str());
+                    // Preset change notification removed - help overlay shows current preset
                 }
             }
             return;
@@ -1157,7 +1092,6 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             // F: Toggle favorite
             if (!_currentMix.id.empty()) {
                 _mixManager->toggleFavorite(_currentMix.id);
-                            ConsoleOutput::output("❤️  Toggled favorite for %s", _currentMix.title.c_str());
             }
             return;
             
@@ -1169,16 +1103,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             } else {
                 // L: List downloaded mixes (console output)
                 auto downloadedMixes = _mixManager->getDownloadedMixes();
-                const char* color_cyan = "\033[36m";
-                const char* color_yellow = "\033[33m";
-                const char* color_green = "\033[32m";
-                const char* color_magenta = "\033[35m";
-                const char* color_reset = "\033[0m";
-                
-                ConsoleOutput::output("📋 Downloaded mixes (%zu):", downloadedMixes.size());
-                for (const auto& mix : downloadedMixes) {
-                    ConsoleOutput::output("  - %s: %s", mix.artist.c_str(), mix.title.c_str());
-                }
+                // Mix list notification removed - help overlay provides better mix information
             }
             return;
             
@@ -1186,36 +1111,15 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             // V: List favorite mixes
             {
                 auto favoriteMixes = _mixManager->getFavoriteMixes();
-                const char* color_cyan = "\033[36m";
-                const char* color_yellow = "\033[33m";
-                const char* color_green = "\033[32m";
-                const char* color_magenta = "\033[35m";
-                const char* color_red = "\033[31m";
-                const char* color_reset = "\033[0m";
-                
-                ConsoleOutput::output("❤️  Favorite mixes (%zu):", favoriteMixes.size());
-                for (const auto& mix : favoriteMixes) {
-                    ConsoleOutput::output("  - %s: %s", mix.artist.c_str(), mix.title.c_str());
-                }
+                // Mix list notification removed - help overlay provides better mix information
             }
             return;
     }
 }
 
 void AutoVibezApp::displayMixStatus() {
-    if (!_showMixStatus || !_mixManagerInitialized) return;
-    
-    if (_mixStatusDisplayTime > 0) {
-        _mixStatusDisplayTime--;
-        
-        if (!_mixInfoDisplayed) {
-            _mixUI->displayMixInfo(_currentMix);
-            _mixInfoDisplayed = true;
-        }
-        
-    } else {
-        _showMixStatus = false;
-    }
+    // This method is now redundant - help overlay provides better mix status display
+    // Keeping the method signature to avoid breaking existing calls
 }
 
 void AutoVibezApp::autoPlayOrDownload()

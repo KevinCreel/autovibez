@@ -125,12 +125,10 @@ bool MixPlayer::togglePause() {
     
     if (Mix_PausedMusic()) {
         Mix_ResumeMusic();
-        ConsoleOutput::output("▶️  Resumed playback");
-        ConsoleOutput::output("");
+        // Playback resume notification removed - help overlay shows current state
     } else {
         Mix_PauseMusic();
-        ConsoleOutput::output("⏸️  Paused playback");
-        ConsoleOutput::output("");
+        // Playback pause notification removed - help overlay shows current state
     }
     
     return true;
@@ -148,8 +146,7 @@ bool MixPlayer::stop() {
     }
     playing = false;
     current_position = 0;
-            ConsoleOutput::output("⏹️  Stopped playback");
-        ConsoleOutput::output("");
+    // Playback stop notification removed - help overlay shows current state
     
     return true;
 }
@@ -165,11 +162,7 @@ bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
     volume = new_volume;
     Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / 100);
     
-    // Only show volume output if not suppressed
-    if (!suppress_output) {
-        ConsoleOutput::output("🔊 Volume: %d%%", volume);
-        ConsoleOutput::output("");
-    }
+    // Volume notification removed - help overlay shows current volume
     return true;
 }
 
@@ -193,8 +186,7 @@ bool MixPlayer::hasFinished() {
             Mix_FreeMusic(current_music);
             current_music = nullptr;
         }
-        ConsoleOutput::output("🎵 Mix finished");
-        ConsoleOutput::output("");
+        // Mix finished notification removed - help overlay shows current state
         return true;
     }
     return false;

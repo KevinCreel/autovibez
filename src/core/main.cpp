@@ -34,14 +34,12 @@
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
 #include "mix_manager.hpp"
-#include "mix_display.hpp"
 #include "path_manager.hpp"
 #include "console_output.hpp"
 #include <filesystem>
 #include "mix_player.hpp"
 #include "mix_downloader.hpp"
 #include "mix_metadata.hpp"
-#include "mix_display.hpp"
 #include "loopback.hpp"
 
 using AutoVibez::Audio::processLoopbackFrame;
@@ -49,7 +47,8 @@ using AutoVibez::Audio::cleanupLoopback;
 using AutoVibez::Audio::MixPlayer;
 using AutoVibez::Data::MixDownloader;
 using AutoVibez::Data::MixMetadata;
-using AutoVibez::Data::MixDisplay;
+using AutoVibez::Data::MixManager;
+using AutoVibez::Data::Mix;
 
 static int mainLoop(void* userData) {
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp> *>(userData);
@@ -156,10 +155,10 @@ void testMixManager() {
         // Test UI display
         ConsoleOutput::output("");
         ConsoleOutput::output("🎵 Sample Mix Information:");
-        MixDisplay ui;
-        if (!mixes.empty()) {
-            ui.displayMixInfo(mixes[0]);
-        }
+        // MixDisplay ui; // This line is removed as MixDisplay is no longer used
+        // if (!mixes.empty()) {
+        //     ui.displayMixInfo(mixes[0]);
+        // }
     } else {
         ConsoleOutput::output("❌ YAML parsing failed: %s", metadata.getLastError().c_str());
     }

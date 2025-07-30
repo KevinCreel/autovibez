@@ -34,7 +34,7 @@ void AudioManager::cycleDevice() {
     
     const char* deviceName = SDL_GetAudioDeviceName(_currentDevice, SDL_TRUE);
     if (openDevice(deviceName)) {
-        ConsoleOutput::output("🎤 Switched to audio device: %s", getCurrentDeviceName().c_str());
+        // Audio device notification removed - help overlay shows current device
     }
 }
 
@@ -93,10 +93,10 @@ bool AudioManager::isCapturing() const {
 void AudioManager::toggleInput() {
     if (_isCapturing) {
         stopCapture();
-        ConsoleOutput::output("🔇 Audio input stopped");
+        // Audio stop notification removed - help overlay shows current state
     } else {
         startCapture();
-        ConsoleOutput::output("🔊 Audio input started");
+        // Audio start notification removed - help overlay shows current state
     }
 }
 
