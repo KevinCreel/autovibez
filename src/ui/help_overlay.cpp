@@ -532,6 +532,16 @@ void HelpOverlay::render() {
         
         // Sort the data: favorites first, then by artist
         std::vector<AutoVibez::Data::Mix> sortedMixes = _mixTableData;
+        
+        // Apply filter if showing favorites only
+        if (_showFavoritesOnly) {
+            sortedMixes.erase(
+                std::remove_if(sortedMixes.begin(), sortedMixes.end(),
+                    [](const AutoVibez::Data::Mix& mix) { return !mix.is_favorite; }),
+                sortedMixes.end()
+            );
+        }
+        
         std::sort(sortedMixes.begin(), sortedMixes.end(), 
             [](const AutoVibez::Data::Mix& a, const AutoVibez::Data::Mix& b) {
                 // First sort by favorite (favorites first)
@@ -816,6 +826,10 @@ void HelpOverlay::setBeatSensitivity(float sensitivity) {
 // Mix table methods
 void HelpOverlay::setMixTableData(const std::vector<AutoVibez::Data::Mix>& mixes) {
     _mixTableData = mixes;
+}
+
+void HelpOverlay::toggleMixTableFilter() {
+    _showFavoritesOnly = !_showFavoritesOnly;
 }
 
 } // namespace UI

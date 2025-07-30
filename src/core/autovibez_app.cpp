@@ -1162,8 +1162,12 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             return;
             
         case SDLK_l:
-            // L: List downloaded mixes
-            {
+            // L: Toggle mix table filter when help overlay is visible, otherwise list downloaded mixes
+            if (_helpOverlay && _helpOverlay->isVisible()) {
+                // Toggle mix table filter in help overlay
+                _helpOverlay->toggleMixTableFilter();
+            } else {
+                // L: List downloaded mixes (console output)
                 auto downloadedMixes = _mixManager->getDownloadedMixes();
                 const char* color_cyan = "\033[36m";
                 const char* color_yellow = "\033[33m";

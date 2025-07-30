@@ -37,6 +37,7 @@ public:
     
     // Mix table methods
     void setMixTableData(const std::vector<AutoVibez::Data::Mix>& mixes);
+    void toggleMixTableFilter();
 
 private:
     SDL_Window* _window = nullptr;
@@ -62,6 +63,7 @@ private:
     
     // Mix table data
     std::vector<AutoVibez::Data::Mix> _mixTableData;
+    bool _showFavoritesOnly = false; // Add filter state
     
     // Alternative rendering
     TTF_Font* _font = nullptr;
