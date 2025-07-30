@@ -376,9 +376,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 if (!randomMix.id.empty()) {
                     _mixManager->downloadAndPlayMix(randomMix);
                     _currentMix = randomMix;
-                    _showMixStatus = true;
-                    _mixStatusDisplayTime = 300; // Show for 5 seconds
-                    _mixInfoDisplayed = false;
                 }
             }
             break;
@@ -420,9 +417,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     if (!genreMix.id.empty()) {
                         _mixManager->downloadAndPlayMix(genreMix);
                         _currentMix = genreMix;
-                        _showMixStatus = true;
-                        _mixStatusDisplayTime = 300;
-                        _mixInfoDisplayed = false;
                     } else {
                         // Genre switch notification removed - too verbose for normal operation
                     }
@@ -437,9 +431,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                         if (!genreMix.id.empty()) {
                             _mixManager->downloadAndPlayMix(genreMix);
                             _currentMix = genreMix;
-                            _showMixStatus = true;
-                            _mixStatusDisplayTime = 300;
-                            _mixInfoDisplayed = false;
                         } else {
                             // Genre switch notification removed - too verbose for normal operation
                         }
@@ -1030,9 +1021,6 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 if (!nextMix.id.empty()) {
                     _mixManager->downloadAndPlayMix(nextMix);
                     _currentMix = nextMix;
-                    _showMixStatus = true;
-                    _mixStatusDisplayTime = 300;
-                    _mixInfoDisplayed = false;
                 }
             }
             return;
@@ -1110,9 +1098,6 @@ void AutoVibezApp::autoPlayOrDownload()
         if (!randomMix.id.empty()) {
             if (_mixManager->playMix(randomMix)) {
                 _currentMix = randomMix;
-                _showMixStatus = true;
-                _mixStatusDisplayTime = 300;
-                _mixInfoDisplayed = false;
             } else {
                 // Play failed notification removed - too verbose for normal operation
             }
@@ -1146,9 +1131,6 @@ void AutoVibezApp::autoPlayOrDownload()
             // Now play the analyzed mix
             if (_mixManager->playMix(updatedMix)) {
                 _currentMix = updatedMix;
-                _showMixStatus = true;
-                _mixStatusDisplayTime = 300;
-                _mixInfoDisplayed = false;
             } else {
                 // Play failed notification removed - too verbose for normal operation
             }
@@ -1203,9 +1185,6 @@ void AutoVibezApp::autoDownloadRandomMix()
             // Now play the analyzed mix
             if (_mixManager->playMix(updatedMix)) {
                 _currentMix = updatedMix; // Use the updated mix with metadata
-                _showMixStatus = true;
-                _mixStatusDisplayTime = 300;
-                _mixInfoDisplayed = false;
                 // Auto-play success notification removed - too verbose for normal operation
             } else {
                 // Auto-play failed notification removed - too verbose for normal operation
@@ -1294,9 +1273,6 @@ void AutoVibezApp::checkAndAutoPlayNext() {
             // Auto-play next mix notification removed - too verbose for normal operation
             if (_mixManager->downloadAndPlayMix(nextMix)) {
                 _currentMix = nextMix;
-                _showMixStatus = true;
-                _mixStatusDisplayTime = 300;
-                _mixInfoDisplayed = false;
             } else {
                 // Auto-play failed notification removed - too verbose for normal operation
             }

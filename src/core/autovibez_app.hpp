@@ -149,7 +149,6 @@ public:
     // Help and UI
     void toggleHelp();
     void cycleAudioDevice();
-    void printHelpMenu();
     void renderFpsCounter();
     
     // Mix management
@@ -239,9 +238,6 @@ private:
 
     AutoVibez::Data::Mix _currentMix;
     bool _mixManagerInitialized{false};
-    bool _showMixStatus{false};
-    int _mixStatusDisplayTime{0};
-    bool _mixInfoDisplayed{false};
     bool _volumeKeyPressed{false}; // Track if volume key is being held
     bool _manualPresetChange{false}; // Track if preset change was manual
     

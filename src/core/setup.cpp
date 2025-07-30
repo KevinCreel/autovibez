@@ -404,12 +404,7 @@ AutoVibezApp *setupSDLApp() {
     app->resizeWindow(finalWidth, finalHeight);
 
     // Create a help menu specific to SDL
-    // Note: modKey is currently unused but kept for future help menu implementation
-    std::string modKey = "CTRL";
-
-#if __APPLE__
-    modKey = "CMD";
-#endif
+    // Note: modKey removed - not needed for current implementation
 
     app->initialize(win);
     
@@ -443,7 +438,6 @@ AutoVibezApp *setupSDLApp() {
 int64_t startUnlockedFPSCounter() {
 	using namespace std::chrono;
 	auto currentTime = steady_clock::now();
-	// auto currentTimeMs = time_point_cast<milliseconds>(currentTime); // Unused variable
 	auto elapsedMs = currentTime.time_since_epoch();
 
 	return elapsedMs.count();
