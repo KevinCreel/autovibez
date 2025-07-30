@@ -631,3 +631,37 @@ preferred_genre = Electronic
         // This is expected behavior for testing
     }
 } 
+
+TEST_F(MixManagerIntegrationTest, DownloadMissingMixesBackground) {
+    // Create a test directory for this test
+    std::string test_dir = TestFixtures::createTempTestDir();
+    std::string db_path = test_dir + "/test_mixes.db";
+    
+    // Create MixManager with test directory
+    MixManager manager(db_path, test_dir);
+    ASSERT_TRUE(manager.initialize());
+    
+    // Create some test mixes
+    std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
+    
+    // Add mixes to database (without downloading files)
+    for (const auto& mix : test_mixes) {
+        ASSERT_TRUE(manager.getDatabase()->addMix(mix));
+    }
+    
+    // Verify mixes are in database but not downloaded
+    auto all_mixes = manager.getAllMixes();
+    EXPECT_EQ(all_mixes.size(), 3);
+    
+    // Check that files don't exist locally
+    for (const auto& mix : all_mixes) {
+        EXPECT_FALSE(manager.getDownloader()->isMixDownloaded(mix.id));
+    }
+    
+    // Trigger background downloads for missing mixes
+    bool result = manager.downloadMissingMixesBackground();
+    EXPECT_TRUE(result);
+    
+    // Clean up
+    TestFixtures::cleanupTestFiles({test_dir});
+} 

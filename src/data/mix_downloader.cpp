@@ -118,7 +118,7 @@ bool MixDownloader::isMixDownloaded(const std::string& mix_id) {
     }
     
     // Check if there's a mapping file that tracks renamed files
-    std::string mapping_file = mixes_dir + "/file_mappings.txt";
+    std::string mapping_file = PathManager::getFileMappingsPath();
     if (std::filesystem::exists(mapping_file)) {
         std::ifstream file(mapping_file);
         std::string line;
@@ -142,7 +142,7 @@ bool MixDownloader::isMixDownloaded(const std::string& mix_id) {
 
 std::string MixDownloader::getLocalPath(const std::string& mix_id) {
     // First check if there's a mapping for this mix ID
-    std::string mapping_file = mixes_dir + "/file_mappings.txt";
+    std::string mapping_file = PathManager::getFileMappingsPath();
     if (std::filesystem::exists(mapping_file)) {
         std::ifstream file(mapping_file);
         std::string line;
@@ -262,7 +262,7 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
         final_path = mixes_dir + "/" + safe_title + ".mp3";
         
         // Save the mapping for future reference
-        std::string mapping_file = mixes_dir + "/file_mappings.txt";
+        std::string mapping_file = PathManager::getFileMappingsPath();
         std::ofstream mapping(mapping_file, std::ios::app);
         if (mapping.is_open()) {
             mapping << mix.id << ":" << safe_title << ".mp3" << std::endl;

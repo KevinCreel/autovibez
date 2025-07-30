@@ -223,6 +223,10 @@ std::string PathManager::getMixesDirectory() {
     return getDataDirectory() + "/mixes";
 }
 
+std::string PathManager::getFileMappingsPath() {
+    return getStateDirectory() + "/file_mappings.txt";
+}
+
 std::string PathManager::getPresetsDirectory() {
     return getAssetsDirectory() + "/presets";
 }

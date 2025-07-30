@@ -1215,61 +1215,8 @@ void AutoVibezApp::startBackgroundDownloads()
         return;
     }
     
-    // Get all available mixes that haven't been downloaded yet
-    auto availableMixes = _mixManager->getAvailableMixes();
-    
-    // Count mixes that need to be downloaded by checking cache directly
-    int pendingDownloads = 0;
-    int pendingAnalysis = 0;
-    std::vector<Mix> mixesToDownload;
-    std::vector<Mix> mixesToAnalyze;
-    
-    for (const auto& mix : availableMixes) {
-        // Check if the mix file actually exists in mixes directory
-        std::string mix_file = PathManager::getMixesDirectory() + "/" + mix.id + ".mp3";
-        if (!std::filesystem::exists(mix_file)) {
-            pendingDownloads++;
-            mixesToDownload.push_back(mix);
-        } else {
-            // Check if mix is in database
-            Mix dbMix = _mixManager->getMixById(mix.id);
-            if (dbMix.id.empty()) {
-                pendingAnalysis++;
-                mixesToAnalyze.push_back(mix);
-            }
-        }
-    }
-    
-    if (pendingDownloads > 0) {
-        // Background download notification removed - too verbose for normal operation
-        
-        // Download mixes in background (synchronously for now)
-        for (const auto& mix : mixesToDownload) {
-            // Download the mix (without analysis for now)
-            if (_mixManager->downloadMixBackground(mix)) {
-                // Silent success
-            } else {
-                // Download failed notification removed - too verbose for normal operation
-            }
-        }
-        
-        // Background download completion notification removed - too verbose for normal operation
-    }
-    
-    if (pendingAnalysis > 0) {
-        // Analysis notification removed - too verbose for normal operation
-        
-        // Analyze existing mixes and add to database
-        for (const auto& mix : mixesToAnalyze) {
-            if (_mixManager->downloadMixBackground(mix)) {
-                // Silent success
-            } else {
-                // Analysis failed notification removed - too verbose for normal operation
-            }
-        }
-        
-        // Analysis completion notification removed - too verbose for normal operation
-    }
+    // Download missing mixes in the background
+    _mixManager->downloadMissingMixesBackground();
 }
 
 void AutoVibezApp::checkAndAutoPlayNext() {

@@ -93,6 +93,7 @@ static int mainLoop(void* userData) {
                 if (!app->getMixManager()->isPlaying() && !app->getMixManager()->isPaused()) {
                     app->checkAndAutoPlayNext();
                 }
+                
                 last_check = current_time;
             }
         }

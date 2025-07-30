@@ -138,15 +138,17 @@ public:
     bool clearMixFiles();
     size_t getMixFilesSize() const;
     bool cleanupCorruptedMixFiles();
+    bool cleanupMissingFiles(); // New method to remove database entries for missing files
     
     // Background downloads
     bool downloadMixBackground(const Mix& mix);
     void cleanupCompletedDownloads();
     bool cleanupInconsistentIds();
+    bool downloadMissingMixesBackground(); // New method to download missing mixes
     
     /**
      * @brief Get the last error message
-     * @return Error message string
+     * @return Last error message
      */
     std::string getLastError() const { return last_error; }
     
@@ -155,6 +157,10 @@ public:
      * @return True if successful, false otherwise
      */
     bool isSuccess() const { return success; }
+    
+    // Test access methods
+    AutoVibez::Data::MixDatabase* getDatabase() { return database.get(); }
+    AutoVibez::Data::MixDownloader* getDownloader() { return downloader.get(); }
 
     // Mix retrieval by genre
     std::vector<std::string> getAvailableGenres();

@@ -161,3 +161,22 @@ TEST_F(PathManagerTest, FindConfigFile) {
     // We just test that the method doesn't throw
     EXPECT_NO_THROW(PathManager::findConfigFile());
 } 
+
+TEST_F(PathManagerTest, GetFileMappingsPath) {
+    std::string file_mappings_path = PathManager::getFileMappingsPath();
+    
+    // Should be in state directory
+    EXPECT_TRUE(file_mappings_path.find("state") != std::string::npos);
+    EXPECT_TRUE(file_mappings_path.find("autovibez") != std::string::npos);
+    EXPECT_TRUE(file_mappings_path.find("file_mappings.txt") != std::string::npos);
+    
+    // Should end with file_mappings.txt
+    std::string expected_suffix = "file_mappings.txt";
+    EXPECT_EQ(file_mappings_path.substr(file_mappings_path.length() - expected_suffix.length()), 
+              expected_suffix);
+    
+    // Should be different from data directory
+    std::string data_dir = PathManager::getDataDirectory();
+    EXPECT_NE(file_mappings_path.substr(0, file_mappings_path.find_last_of('/')), 
+              data_dir);
+} 

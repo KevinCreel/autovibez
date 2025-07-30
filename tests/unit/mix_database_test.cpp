@@ -252,6 +252,11 @@ TEST_F(MixDatabaseTest, GetSmartRandomMixWithExclusion) {
     
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     
+    // Set local_path for all test mixes so they pass the downloaded filter
+    for (auto& mix : test_mixes) {
+        mix.local_path = "/tmp/test_" + mix.id + ".mp3";
+    }
+    
     for (const auto& mix : test_mixes) {
         ASSERT_TRUE(db.addMix(mix));
     }

@@ -105,6 +105,12 @@ bool MixManager::initialize() {
     // Clean up any inconsistent IDs from previous versions
     cleanupInconsistentIds();
     
+    // Clean up any missing files from the database
+    cleanupMissingFiles();
+    
+    // Start downloading missing mixes in the background
+    downloadMissingMixesBackground();
+    
     return true;
 }
 
@@ -846,6 +852,65 @@ bool MixManager::cleanupInconsistentIds() {
     
     return true;
 } 
+
+bool MixManager::cleanupMissingFiles() {
+    if (!database) {
+        last_error = "Database not initialized";
+        return false;
+    }
+    
+    std::vector<Mix> all_mixes = database->getAllMixes();
+    int removed_count = 0;
+    
+    for (const auto& mix : all_mixes) {
+        if (!mix.local_path.empty()) {
+            // Check if the file actually exists
+            if (!downloader->isMixDownloaded(mix.id)) {
+                // File is missing, remove from database
+                if (database->deleteMix(mix.id)) {
+                    removed_count++;
+                }
+            }
+        }
+    }
+    
+    if (removed_count > 0) {
+        // Missing files cleanup notification removed - too verbose for normal operation
+    }
+    
+    return true;
+} 
+
+bool MixManager::downloadMissingMixesBackground() {
+    if (!database || !downloader) {
+        last_error = "Database or downloader not initialized";
+        return false;
+    }
+    
+    std::vector<Mix> all_mixes = database->getAllMixes();
+    int download_count = 0;
+    
+    for (const auto& mix : all_mixes) {
+        // Skip mixes that don't have a URL (can't download them)
+        if (mix.url.empty()) {
+            continue;
+        }
+        
+        // Check if the mix is missing locally
+        if (!downloader->isMixDownloaded(mix.id)) {
+            // Start background download
+            if (downloadMixBackground(mix)) {
+                download_count++;
+            }
+        }
+    }
+    
+    if (download_count > 0) {
+        // Missing mixes download notification removed - too verbose for normal operation
+    }
+    
+    return true;
+}
 
 } // namespace Data
 } // namespace AutoVibez 

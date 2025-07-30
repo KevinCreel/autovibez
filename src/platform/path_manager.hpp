@@ -55,6 +55,11 @@ public:
     static std::string getMixesDirectory();
     
     /**
+     * Get the file mappings path (maps hash IDs to title-based filenames)
+     */
+    static std::string getFileMappingsPath();
+    
+    /**
      * Get the presets directory path
      */
     static std::string getPresetsDirectory();
