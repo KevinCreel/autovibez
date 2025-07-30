@@ -1,0 +1,87 @@
+name: Create Release Assets
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create-assets:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+        
+    - name: Create release assets
+      run: |
+        python scripts/package_release.py
+        
+    - name: Upload preset assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/autovibez-presets-cream-of-the-crop.zip
+        asset_name: autovibez-presets-cream-of-the-crop.zip
+        asset_content_type: application/zip
+        
+    - name: Upload preset assets (milkdrop)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/autovibez-presets-milkdrop-original.zip
+        asset_name: autovibez-presets-milkdrop-original.zip
+        asset_content_type: application/zip
+        
+    - name: Upload preset assets (complete)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/autovibez-presets-complete.zip
+        asset_name: autovibez-presets-complete.zip
+        asset_content_type: application/zip
+        
+    - name: Upload texture assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/autovibez-textures-milkdrop-textures.zip
+        asset_name: autovibez-textures-milkdrop-textures.zip
+        asset_content_type: application/zip
+        
+    - name: Upload texture assets (complete)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/autovibez-textures-complete.zip
+        asset_name: autovibez-textures-complete.zip
+        asset_content_type: application/zip
+        
+    - name: Upload installation guide
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/INSTALL_ASSETS.md
+        asset_name: INSTALL_ASSETS.md
+        asset_content_type: text/markdown 
