@@ -157,7 +157,7 @@ void HelpOverlay::render() {
     
     // Current Status Section
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.8f, 1.0f));
-    ImGui::TextUnformatted("📊 CURRENT STATUS");
+    ImGui::TextUnformatted("CURRENT STATUS");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
@@ -165,7 +165,7 @@ void HelpOverlay::render() {
     
     // Current preset
     if (!_currentPreset.empty()) {
-        ImGui::TextUnformatted("  🎨 Preset: ");
+        ImGui::TextUnformatted("  Preset:           ");
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
         ImGui::TextUnformatted(_currentPreset.c_str());
@@ -174,7 +174,7 @@ void HelpOverlay::render() {
     
     // Current mix
     if (!_currentArtist.empty() && !_currentTitle.empty()) {
-        ImGui::TextUnformatted("  🎵 Now playing: ");
+        ImGui::TextUnformatted("  Now playing:      ");
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
         ImGui::TextUnformatted(_currentArtist.c_str());
@@ -189,7 +189,7 @@ void HelpOverlay::render() {
     
     // Current genre
     if (!_currentGenre.empty()) {
-        ImGui::TextUnformatted("  🎼 Genre: ");
+        ImGui::TextUnformatted("  Genre:            ");
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
         ImGui::TextUnformatted(_currentGenre.c_str());
@@ -198,7 +198,7 @@ void HelpOverlay::render() {
     
     // Volume level
     if (_volumeLevel >= 0) {
-        ImGui::TextUnformatted("  🔊 Volume: ");
+        ImGui::TextUnformatted("  Volume:           ");
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
         ImGui::TextUnformatted((std::to_string(_volumeLevel) + "%").c_str());
@@ -207,7 +207,7 @@ void HelpOverlay::render() {
     
     // Audio device
     if (!_audioDevice.empty()) {
-        ImGui::TextUnformatted("  🎚️  Device: ");
+        ImGui::TextUnformatted("  Device:           ");
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
         ImGui::TextUnformatted(_audioDevice.c_str());
@@ -215,7 +215,7 @@ void HelpOverlay::render() {
     }
     
     // Beat sensitivity
-    ImGui::TextUnformatted("  🎯 Beat Sensitivity: ");
+    ImGui::TextUnformatted("  Beat Sensitivity: ");
     ImGui::SameLine();
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
     ImGui::TextUnformatted((std::to_string(_beatSensitivity).substr(0, 4)).c_str());
@@ -236,19 +236,19 @@ void HelpOverlay::render() {
     
     // Mix Management Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
-    ImGui::TextUnformatted("🎧 MIX MANAGEMENT");
+    ImGui::TextUnformatted("MIX MANAGEMENT");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  N     - Play next mix");
-    ImGui::TextUnformatted("  F     - Toggle favorite");
-    ImGui::TextUnformatted("  V     - List favorite mixes");
-    ImGui::TextUnformatted("  L     - List available mixes");
-    ImGui::TextUnformatted("  G     - Play random mix in current genre");
-    ImGui::TextUnformatted("  Shift+G - Switch to random genre");
-    ImGui::TextUnformatted("  Ctrl+G  - Show available genres");
-    ImGui::TextUnformatted("  SPACE  - Load random mix");
+    ImGui::TextUnformatted("  N           - Play next mix");
+    ImGui::TextUnformatted("  F           - Toggle favorite");
+    ImGui::TextUnformatted("  V           - List favorite mixes");
+    ImGui::TextUnformatted("  L           - List available mixes");
+    ImGui::TextUnformatted("  G           - Play random mix in current genre");
+    ImGui::TextUnformatted("  Shift+G     - Switch to random genre");
+    ImGui::TextUnformatted("  Ctrl+G      - Show available genres");
+    ImGui::TextUnformatted("  SPACE       - Load random mix");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
@@ -264,14 +264,14 @@ void HelpOverlay::render() {
     
     // Audio Controls Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
-    ImGui::TextUnformatted("🎚️  AUDIO CONTROLS");
+    ImGui::TextUnformatted("AUDIO CONTROLS");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  P     - Pause/Resume playback");
-    ImGui::TextUnformatted("  ↑/↓   - Volume up/down");
-    ImGui::TextUnformatted("  Tab   - Cycle through audio devices");
+    ImGui::TextUnformatted("  P           - Pause/Resume playback");
+    ImGui::TextUnformatted("  Up/Down     - Volume up/down");
+    ImGui::TextUnformatted("  Tab         - Cycle through audio devices");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
@@ -287,16 +287,16 @@ void HelpOverlay::render() {
     
     // Visualizer Controls Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
-    ImGui::TextUnformatted("🌈 VISUALIZER CONTROLS");
+    ImGui::TextUnformatted("VISUALIZER CONTROLS");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  H     - Toggle this help overlay");
-    ImGui::TextUnformatted("  F11   - Toggle fullscreen mode");
-    ImGui::TextUnformatted("  R     - Load random preset");
-    ImGui::TextUnformatted("  [ / ]  - Previous/Next preset");
-    ImGui::TextUnformatted("  B / J  - Increase/Decrease beat sensitivity");
+    ImGui::TextUnformatted("  H           - Toggle this help overlay");
+    ImGui::TextUnformatted("  F11         - Toggle fullscreen mode");
+    ImGui::TextUnformatted("  R           - Load random preset");
+    ImGui::TextUnformatted("  [ / ]       - Previous/Next preset");
+    ImGui::TextUnformatted("  B / J       - Increase/Decrease beat sensitivity");
     ImGui::TextUnformatted("  Mouse Wheel - Next/Prev preset");
     ImGui::PopStyleColor();
     
@@ -313,12 +313,12 @@ void HelpOverlay::render() {
     
     // Application Section with improved styling
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-    ImGui::TextUnformatted("⚙️  APPLICATION");
+    ImGui::TextUnformatted("APPLICATION");
     ImGui::PopStyleColor();
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    ImGui::TextUnformatted("  Ctrl+Q - Quit application");
+    ImGui::TextUnformatted("  Ctrl+Q      - Quit application");
     ImGui::PopStyleColor();
     
     ImGui::End();
