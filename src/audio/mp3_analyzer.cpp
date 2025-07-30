@@ -68,6 +68,37 @@ std::string MP3Analyzer::generateIdFromFilename(const std::string& file_path) {
     return ss.str();
 }
 
+std::string MP3Analyzer::generateIdFromUrl(const std::string& url) {
+    // Generate a deterministic UUID v5 based on URL hash (consistent with MixMetadata)
+    std::hash<std::string> hasher;
+    size_t hash = hasher(url);
+    
+    // Use the hash to generate a deterministic UUID v5 (name-based)
+    unsigned char uuid_bytes[16];
+    
+    // Use first 16 bytes of hash (or repeat if shorter)
+    for (int i = 0; i < 16; i++) {
+        uuid_bytes[i] = (hash >> (i % 8 * 8)) & 0xFF;
+    }
+    
+    // Set version (5) and variant bits for deterministic UUID
+    uuid_bytes[6] = (uuid_bytes[6] & 0x0F) | 0x50;  // Version 5
+    uuid_bytes[8] = (uuid_bytes[8] & 0x3F) | 0x80;  // Variant 1
+    
+    // Convert to UUID string format
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    
+    for (int i = 0; i < 16; i++) {
+        if (i == 4 || i == 6 || i == 8 || i == 10) {
+            ss << "-";
+        }
+        ss << std::setw(2) << static_cast<int>(uuid_bytes[i]);
+    }
+    
+    return ss.str();
+}
+
 std::string MP3Analyzer::getCurrentDateTime() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
@@ -80,7 +111,7 @@ std::string MP3Analyzer::getCurrentDateTime() {
 
 MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     MP3Metadata metadata;
-    metadata.id = generateIdFromFilename(file_path);
+    // Note: ID should be set by caller based on URL, not generated from file path
     
     // Suppress TagLib warnings for this analysis
     // The "Xing stream size off" warning is common and doesn't affect functionality

@@ -4,6 +4,7 @@
 #include "string_utils.hpp"
 #include "constants.hpp"
 #include "config_defaults.hpp"
+#include "logger.hpp"
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl2.h>

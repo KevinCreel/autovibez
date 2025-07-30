@@ -90,6 +90,9 @@ bool MixManager::initialize() {
     
     player = std::make_unique<MixPlayer>();
     
+    // Clean up any inconsistent IDs from previous versions
+    cleanupInconsistentIds();
+    
     return true;
 }
 
@@ -793,6 +796,44 @@ std::string MixManager::findGenreCaseInsensitive(const std::string& target_genre
     }
     
     return ""; // Not found
+} 
+
+bool MixManager::cleanupInconsistentIds() {
+    if (!database) {
+        last_error = "Database not initialized";
+        return false;
+    }
+    
+    // Get all mixes from database
+    auto all_mixes = database->getAllMixes();
+    int cleaned_count = 0;
+    
+    for (const auto& mix : all_mixes) {
+        // Check if this mix has a URL (should always have one)
+        if (!mix.url.empty()) {
+            // Generate the correct ID from URL
+            std::string correct_id = mp3_analyzer->generateIdFromUrl(mix.url);
+            
+            // If the current ID doesn't match the correct one, update it
+            if (mix.id != correct_id) {
+                // Create updated mix with correct ID
+                Mix updated_mix = mix;
+                updated_mix.id = correct_id;
+                
+                // Remove old entry and add new one
+                if (database->deleteMix(mix.id) && database->addMix(updated_mix)) {
+                    cleaned_count++;
+                }
+            }
+        }
+    }
+    
+    if (cleaned_count > 0) {
+        // LOG_INFO_CONTEXT("MixManager", "cleanupInconsistentIds", 
+        //                 "Cleaned up " + std::to_string(cleaned_count) + " inconsistent IDs");
+    }
+    
+    return true;
 } 
 
 } // namespace Data

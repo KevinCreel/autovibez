@@ -36,6 +36,7 @@ public:
     
     MP3Metadata analyzeFile(const std::string& file_path);
     std::string generateIdFromFilename(const std::string& file_path);
+    std::string generateIdFromUrl(const std::string& url);
     std::string getCurrentDateTime();
     std::string getLastError() const { return last_error; }
     void setVerbose(bool verbose) { _verbose = verbose; }

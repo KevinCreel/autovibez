@@ -231,6 +231,44 @@ bool MixDatabase::updateMix(const Mix& mix) {
     return true;
 }
 
+bool MixDatabase::deleteMix(const std::string& id) {
+    if (!db) {
+        last_error = "Database not initialized";
+        return false;
+    }
+    
+    const char* sql = "DELETE FROM mixes WHERE id = ?";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return false;
+    }
+    
+    sqlite3_bind_text(stmt, 1, id.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    if (rc != SQLITE_DONE) {
+        last_error = "Failed to delete mix: " + std::string(sqlite3_errmsg(db));
+        success = false;
+        return false;
+    }
+    
+    // Check if any rows were actually deleted
+    int rows_affected = sqlite3_changes(db);
+    if (rows_affected == 0) {
+        last_error = "No mix found with id: " + id;
+        success = false;
+        return false;
+    }
+    
+    success = true;
+    return true;
+}
+
 Mix MixDatabase::getMixById(const std::string& id) {
     const char* sql = "SELECT * FROM mixes WHERE id = ?";
     

@@ -38,6 +38,13 @@ public:
     bool updateMix(const Mix& mix);
     
     /**
+     * @brief Delete a mix from the database
+     * @param id Mix ID to delete
+     * @return True if successful, false otherwise
+     */
+    bool deleteMix(const std::string& id);
+    
+    /**
      * @brief Get a mix by ID
      * @param id Mix ID
      * @return Mix object, or empty mix if not found

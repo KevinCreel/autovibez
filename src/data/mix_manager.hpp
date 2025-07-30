@@ -136,6 +136,7 @@ public:
     // Background downloads
     bool downloadMixBackground(const Mix& mix);
     void cleanupCompletedDownloads();
+    bool cleanupInconsistentIds();
     
     /**
      * @brief Get the last error message
