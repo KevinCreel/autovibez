@@ -139,6 +139,7 @@ public:
     size_t getMixFilesSize() const;
     bool cleanupCorruptedMixFiles();
     bool cleanupMissingFiles(); // New method to remove database entries for missing files
+    bool validateDatabaseFileConsistency(); // New method to check database-file consistency
     
     // Background downloads
     bool downloadMixBackground(const Mix& mix);

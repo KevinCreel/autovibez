@@ -380,6 +380,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/audio_capture_test.cpp
     tests/unit/audio_manager_test.cpp
     tests/unit/mix_downloader_test.cpp
+    tests/unit/mix_manager_test.cpp
     tests/unit/string_utils_test.cpp
     tests/unit/constants_test.cpp
     tests/unit/input_handler_test.cpp

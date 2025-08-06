@@ -864,8 +864,8 @@ bool MixManager::cleanupMissingFiles() {
     
     for (const auto& mix : all_mixes) {
         if (!mix.local_path.empty()) {
-            // Check if the file actually exists
-            if (!downloader->isMixDownloaded(mix.id)) {
+            // Check if the file actually exists at the stored path
+            if (!std::filesystem::exists(mix.local_path)) {
                 // File is missing, remove from database
                 if (database->deleteMix(mix.id)) {
                     removed_count++;
@@ -880,6 +880,46 @@ bool MixManager::cleanupMissingFiles() {
     
     return true;
 } 
+
+bool MixManager::validateDatabaseFileConsistency() {
+    if (!database) {
+        last_error = "Database not initialized";
+        return false;
+    }
+    
+    std::vector<Mix> all_mixes = database->getAllMixes();
+    int total_mixes = 0;
+    int existing_files = 0;
+    int missing_files = 0;
+    std::vector<std::string> missing_mix_ids;
+    
+    for (const auto& mix : all_mixes) {
+        if (!mix.local_path.empty()) {
+            total_mixes++;
+            
+            // Check if the file actually exists at the stored path
+            if (std::filesystem::exists(mix.local_path)) {
+                existing_files++;
+            } else {
+                missing_files++;
+                missing_mix_ids.push_back(mix.id);
+            }
+        }
+    }
+    
+    // Log the validation results
+    if (total_mixes > 0) {
+        // Validation results notification removed - too verbose for normal operation
+        // But we can still return false if there are missing files
+        if (missing_files > 0) {
+            last_error = "Found " + std::to_string(missing_files) + " missing files out of " + 
+                        std::to_string(total_mixes) + " total mixes";
+            return false;
+        }
+    }
+    
+    return true;
+}
 
 bool MixManager::downloadMissingMixesBackground() {
     if (!database || !downloader) {
