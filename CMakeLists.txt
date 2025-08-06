@@ -358,6 +358,7 @@ set(AUTOVIBEZ_TEST_SOURCES
 
     tests/unit/constants_test.cpp
     tests/unit/help_overlay_test.cpp
+    tests/unit/preset_manager_test.cpp
     
     # Integration tests
     tests/integration/mix_manager_test.cpp

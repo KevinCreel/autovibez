@@ -2,6 +2,7 @@
 
 #include <projectM-4/playlist.h>
 #include <string>
+#include <random>
 
 class PresetManager {
 public:
@@ -16,5 +17,5 @@ public:
     
 private:
     projectm_playlist_handle _playlist;
-
+    std::mt19937 _randomGenerator; // Persistent random generator for better randomness
 }; 

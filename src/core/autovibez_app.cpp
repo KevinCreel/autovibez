@@ -796,21 +796,8 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
     switch (keycode) {
         case SDLK_r:
             // R: Random preset
-            {
-                uint32_t preset_count = projectm_playlist_size(_playlist);
-                if (preset_count > 0) {
-                    std::random_device rd;
-                    std::mt19937 gen(rd());
-                    std::uniform_int_distribution<uint32_t> dis(0, preset_count - 1);
-                    uint32_t random_index = dis(gen);
-                    projectm_playlist_set_position(_playlist, random_index, true);
-                    std::string preset_name = getActivePresetName();
-                    size_t last_slash = preset_name.find_last_of('/');
-                    if (last_slash != std::string::npos) {
-                        preset_name = preset_name.substr(last_slash + 1);
-                    }
-                    // Preset change notification removed - help overlay shows current preset
-                }
+            if (_presetManager) {
+                _presetManager->randomPreset();
             }
             return;
             
