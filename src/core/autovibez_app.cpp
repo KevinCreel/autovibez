@@ -394,7 +394,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     // Genre change notification removed - help overlay shows current genre
                     
                     // Play a random mix in the new genre
-                    Mix genreMix = _mixManager->getRandomMixByGenre(newGenre);
+                    Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
                     if (!genreMix.id.empty()) {
                         _mixManager->downloadAndPlayMix(genreMix);
                         _currentMix = genreMix;
@@ -408,7 +408,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 } else {
                     // G: Random mix in current mix's genre
                     if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
-                        Mix genreMix = _mixManager->getRandomMixByGenre(_currentMix.genre);
+                        Mix genreMix = _mixManager->getRandomMixByGenre(_currentMix.genre, _currentMix.id);
                         if (!genreMix.id.empty()) {
                             _mixManager->downloadAndPlayMix(genreMix);
                             _currentMix = genreMix;
@@ -1066,14 +1066,14 @@ void AutoVibezApp::autoPlayOrDownload()
     auto downloadedMixes = _mixManager->getDownloadedMixes();
     if (!downloadedMixes.empty()) {
         // First try to play a mix from preferred genre
-        Mix randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+        Mix randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre(), _currentMix.id);
         if (randomMix.id.empty()) {
             // If no mixes in preferred genre, try a favorite mix
-            randomMix = _mixManager->getRandomFavoriteMix();
+            randomMix = _mixManager->getRandomFavoriteMix(_currentMix.id);
         }
         if (randomMix.id.empty()) {
             // If no favorites, fall back to any random mix
-            randomMix = _mixManager->getRandomMix();
+            randomMix = _mixManager->getRandomMix(_currentMix.id);
         }
         if (!randomMix.id.empty()) {
             if (_mixManager->playMix(randomMix)) {
@@ -1131,22 +1131,22 @@ void AutoVibezApp::autoDownloadRandomMix()
     }
     
     // First try to get a random mix from available (not yet downloaded) mixes in preferred genre
-    Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre());
+    Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre(), _currentMix.id);
     if (randomMix.id.empty()) {
         // If no available mixes in preferred genre, try any available mix
-        randomMix = _mixManager->getRandomAvailableMix();
+        randomMix = _mixManager->getRandomAvailableMix(_currentMix.id);
     }
     if (randomMix.id.empty()) {
         // If no available mixes, try database (already downloaded) - prioritize favorites
-        randomMix = _mixManager->getRandomFavoriteMix();
+        randomMix = _mixManager->getRandomFavoriteMix(_currentMix.id);
     }
     if (randomMix.id.empty()) {
         // If no favorites, try database (already downloaded) in preferred genre
-        randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre());
+        randomMix = _mixManager->getRandomMixByGenre(_mixManager->getCurrentGenre(), _currentMix.id);
     }
     if (randomMix.id.empty()) {
         // If no mixes in preferred genre, try any random mix from database
-        randomMix = _mixManager->getRandomMix();
+        randomMix = _mixManager->getRandomMix(_currentMix.id);
     }
     if (randomMix.id.empty()) {
         // No mixes available for auto-download notification removed - too verbose for normal operation
@@ -1211,7 +1211,7 @@ void AutoVibezApp::checkAndAutoPlayNext() {
             }
         } else {
             // No more mixes available, try to get any mix
-            nextMix = _mixManager->getRandomMix();
+            nextMix = _mixManager->getRandomMix(_currentMix.id);
             if (!nextMix.id.empty()) {
                 if (_mixManager->downloadAndPlayMix(nextMix)) {
                     _currentMix = nextMix;
@@ -1246,7 +1246,7 @@ void AutoVibezApp::autoPlayFromLocalDatabase()
         }
     } else {
         // No mixes with preferred genre, try any mix
-        randomMix = _mixManager->getRandomMix();
+        randomMix = _mixManager->getRandomMix(_currentMix.id);
         if (!randomMix.id.empty()) {
             if (_mixManager->playMix(randomMix)) {
                 _currentMix = randomMix;

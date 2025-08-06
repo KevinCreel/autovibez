@@ -37,12 +37,7 @@ public:
     
     // Mix retrieval
     Mix getRandomMix();
-    
-    /**
-     * @brief Get a smart random mix with prioritization
-     * Prioritizes: 1) Favorites, 2) Least recently played, 3) Fewest plays
-     * @return Smart random mix, or empty mix if none available
-     */
+    Mix getRandomMix(const std::string& exclude_mix_id);
     Mix getSmartRandomMix();
     Mix getSmartRandomMix(const std::string& exclude_mix_id);
     Mix getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre);
@@ -60,8 +55,11 @@ public:
      * @return Random mix in the genre, or empty mix if none available
      */
     Mix getRandomMixByGenre(const std::string& genre);
+    Mix getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
     Mix getRandomMixByArtist(const std::string& artist);
+    Mix getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id);
     Mix getRandomFavoriteMix();
+    Mix getRandomFavoriteMix(const std::string& exclude_mix_id);
     Mix getMixById(const std::string& id);
     std::vector<Mix> getAllMixes();
     std::vector<Mix> getMixesByGenre(const std::string& genre);
@@ -71,7 +69,9 @@ public:
     
     // Available mixes (not yet downloaded)
     Mix getRandomAvailableMix();
+    Mix getRandomAvailableMix(const std::string& exclude_mix_id);
     Mix getRandomAvailableMixByGenre(const std::string& genre);
+    Mix getRandomAvailableMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
     std::vector<Mix> getAvailableMixes();
     
     // User data updates

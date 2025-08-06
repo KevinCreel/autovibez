@@ -530,6 +530,10 @@ Mix MixManager::getRandomMix() {
     return database ? database->getRandomMix() : Mix();
 }
 
+Mix MixManager::getRandomMix(const std::string& exclude_mix_id) {
+    return database ? database->getRandomMix(exclude_mix_id) : Mix();
+}
+
 Mix MixManager::getSmartRandomMix() {
     return database ? database->getSmartRandomMix() : Mix();
 }
@@ -557,6 +561,31 @@ Mix MixManager::getRandomAvailableMix() {
     std::uniform_int_distribution<> dis(0, available_mixes.size() - 1);
     
     return available_mixes[dis(gen)];
+}
+
+Mix MixManager::getRandomAvailableMix(const std::string& exclude_mix_id) {
+    if (available_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Filter out the excluded mix
+    std::vector<Mix> filtered_mixes;
+    for (const auto& mix : available_mixes) {
+        if (mix.id != exclude_mix_id) {
+            filtered_mixes.push_back(mix);
+        }
+    }
+    
+    if (filtered_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Use a simple random selection
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, filtered_mixes.size() - 1);
+    
+    return filtered_mixes[dis(gen)];
 }
 
 Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre) {
@@ -591,6 +620,38 @@ Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre) {
     return genre_mixes[dis(gen)];
 }
 
+Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre, const std::string& exclude_mix_id) {
+    if (available_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Filter available mixes by genre (case-insensitive) and exclude the specified mix
+    std::vector<Mix> genre_mixes;
+    std::string genre_lower = genre;
+    std::transform(genre_lower.begin(), genre_lower.end(), genre_lower.begin(), ::tolower);
+    
+    for (const auto& mix : available_mixes) {
+        if (!mix.genre.empty() && mix.id != exclude_mix_id) {
+            std::string mix_genre_lower = mix.genre;
+            std::transform(mix_genre_lower.begin(), mix_genre_lower.end(), mix_genre_lower.begin(), ::tolower);
+            if (mix_genre_lower == genre_lower) {
+                genre_mixes.push_back(mix);
+            }
+        }
+    }
+    
+    if (genre_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Use a simple random selection from genre mixes
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, genre_mixes.size() - 1);
+    
+    return genre_mixes[dis(gen)];
+}
+
 std::vector<Mix> MixManager::getAvailableMixes() {
     return available_mixes;
 }
@@ -604,12 +665,29 @@ Mix MixManager::getRandomMixByGenre(const std::string& genre) {
     return database->getRandomMixByGenre(genre);
 }
 
+Mix MixManager::getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id) {
+    if (!database) {
+        last_error = "Database not initialized";
+        return Mix();
+    }
+    
+    return database->getRandomMixByGenre(genre, exclude_mix_id);
+}
+
 Mix MixManager::getRandomMixByArtist(const std::string& artist) {
     if (!database) {
         last_error = "Database not initialized";
         return Mix();
     }
     return database->getRandomMixByArtist(artist);
+}
+
+Mix MixManager::getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id) {
+    if (!database) {
+        last_error = "Database not initialized";
+        return Mix();
+    }
+    return database->getRandomMixByArtist(artist, exclude_mix_id);
 }
 
 Mix MixManager::getMixById(const std::string& id) {
@@ -656,6 +734,33 @@ Mix MixManager::getRandomFavoriteMix() {
     return favorite_mixes[dis(gen)];
 }
 
+Mix MixManager::getRandomFavoriteMix(const std::string& exclude_mix_id) {
+    if (!database) {
+        return Mix();
+    }
+    
+    std::vector<Mix> favorite_mixes = database->getFavoriteMixes();
+    if (favorite_mixes.empty()) {
+        return Mix();
+    }
+    
+    // Filter out the excluded mix
+    std::vector<Mix> filtered_mixes;
+    for (const auto& mix : favorite_mixes) {
+        if (mix.id != exclude_mix_id) {
+            filtered_mixes.push_back(mix);
+        }
+    }
+    
+    if (filtered_mixes.empty()) {
+        return Mix();
+    }
+    
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, filtered_mixes.size() - 1);
+    return filtered_mixes[dis(gen)];
+}
 
 
 bool MixManager::toggleFavorite(const std::string& mix_id) {
@@ -774,12 +879,31 @@ std::string MixManager::getRandomGenre() {
         return "techno"; // fallback
     }
     
-    // Pick random genre
+    // If there's only one genre, return it
+    if (_available_genres.size() == 1) {
+        _current_genre = _available_genres[0];
+        return _current_genre;
+    }
+    
+    // Create a list of genres excluding the current one
+    std::vector<std::string> other_genres;
+    for (const auto& genre : _available_genres) {
+        if (genre != _current_genre) {
+            other_genres.push_back(genre);
+        }
+    }
+    
+    // If all genres are the same as current, just pick any random one
+    if (other_genres.empty()) {
+        other_genres = _available_genres;
+    }
+    
+    // Pick random genre from the filtered list
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, _available_genres.size() - 1);
+    std::uniform_int_distribution<> dis(0, other_genres.size() - 1);
     
-    _current_genre = _available_genres[dis(gen)];
+    _current_genre = other_genres[dis(gen)];
     return _current_genre;
 }
 

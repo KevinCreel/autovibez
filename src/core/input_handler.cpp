@@ -243,12 +243,12 @@ void InputHandler::handleGenreControls(SDL_Keymod mod) {
     if (!_app->isMixManagerInitialized()) return;
     
     if (mod & KMOD_LSHIFT || mod & KMOD_RSHIFT) {
-        // Shift+G: Switch to random genre
+        // Shift+G: Switch to random genre different from current
         std::string newGenre = _app->getMixManager()->getRandomGenre();
         // Genre change notification removed - help overlay shows current genre
         
         // Play a random mix in the new genre
-        AutoVibez::Data::Mix genreMix = _app->getMixManager()->getRandomMixByGenre(newGenre);
+        AutoVibez::Data::Mix genreMix = _app->getMixManager()->getRandomMixByGenre(newGenre, _app->getCurrentMix().id);
         if (!genreMix.id.empty()) {
             _app->getMixManager()->downloadAndPlayMix(genreMix);
             // Current mix is updated automatically by the mix manager

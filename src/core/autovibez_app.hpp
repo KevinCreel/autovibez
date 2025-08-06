@@ -187,6 +187,7 @@ public:
     
     // Beat sensitivity
     void setBeatSensitivity(float sensitivity);
+    AutoVibez::Data::Mix getCurrentMix() const { return _currentMix; }
 
     bool done{false};
     bool mouseDown{false};
