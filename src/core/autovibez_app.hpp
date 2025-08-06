@@ -126,21 +126,16 @@ public:
     void toggleFullScreen();
     void syncFullscreenState(); // Synchronize _isFullScreen with actual SDL state
     void resizeWindow(unsigned int width, unsigned int height);
-    void handleTouch(float x, float y, int pressure, int touchtype = 0);
-    void handleTouchDrag(float x, float y, int pressure);
-    void destroyTouch(float x, float y);
-    void destroyAllTouches();
+
     void renderFrame();
     void pollEvents();
     bool keymod = false;
     std::string getActivePresetName();
-    void addFakePCM();
     projectm_handle projectM();
     float getBeatSensitivity() const;
 
     // Help and UI
     void cycleAudioDevice();
-    void renderFpsCounter();
     
     // Mix management
 
@@ -167,7 +162,6 @@ public:
     
     // Beat sensitivity
     void setBeatSensitivity(float sensitivity);
-    AutoVibez::Data::Mix getCurrentMix() const { return _currentMix; }
 
     bool done{false};
     bool mouseDown{false};
@@ -202,7 +196,6 @@ private:
     bool _isFullScreen{false};
     size_t _width{0};
     size_t _height{0};
-    size_t _fps{60};
 
     unsigned short _audioChannelsCount{0};
     unsigned int _numAudioDevices{0};
@@ -210,7 +203,6 @@ private:
 
     std::string _presetName; //!< Current preset name
 
-    bool _showFps{false};            //!< Show FPS counter
     int _selectedAudioDeviceIndex{0}; //!< Selected audio device index
 
     // Mix management

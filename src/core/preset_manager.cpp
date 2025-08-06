@@ -8,18 +8,6 @@ PresetManager::PresetManager(projectm_playlist_handle playlist)
     : _playlist(playlist) {
 }
 
-void PresetManager::nextPreset() {
-    if (_playlist) {
-        projectm_playlist_play_next(_playlist, true);
-    }
-}
-
-void PresetManager::previousPreset() {
-    if (_playlist) {
-        projectm_playlist_play_previous(_playlist, true);
-    }
-}
-
 void PresetManager::randomPreset() {
     if (_playlist) {
         // Use a different approach for random preset since projectm_playlist_play_random doesn't exist

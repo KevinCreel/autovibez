@@ -73,9 +73,7 @@ static int mainLoop(void* userData) {
         // render
         app->renderFrame();
         
-        if (app->fakeAudio) {
-            app->addFakePCM();
-        }
+
         processLoopbackFrame(app);
         
         if (app->isMixManagerInitialized()) {

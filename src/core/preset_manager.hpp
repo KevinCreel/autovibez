@@ -8,16 +8,6 @@ public:
     explicit PresetManager(projectm_playlist_handle playlist);
     
     /**
-     * Navigate to next preset
-     */
-    void nextPreset();
-    
-    /**
-     * Navigate to previous preset
-     */
-    void previousPreset();
-    
-    /**
      * Jump to random preset
      */
     void randomPreset();
