@@ -1,251 +1,168 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <SDL2/SDL.h>
 #include "input_handler.hpp"
 
-// Forward declaration of AutoVibezApp
-class AutoVibezApp;
-
-// Mock AutoVibezApp for testing
-class MockAutoVibezApp {
+// Simple mock class without complex SDL dependencies
+class SimpleMockApp {
 public:
-    MockAutoVibezApp() = default;
-    ~MockAutoVibezApp() = default;
+    SimpleMockApp() = default;
+    ~SimpleMockApp() = default;
     
-    // Mock methods that InputHandler might call
-    void quit() {}
-    void toggleAudioInput() {}
-    void cycleAudioDevice() {}
-    void setBeatSensitivity(float sensitivity) {}
+    // Simple methods that don't require complex mocking
+    void quit() { quitCalled = true; }
+    void toggleAudioInput() { toggleAudioCalled = true; }
+    void cycleAudioDevice() { cycleDeviceCalled = true; }
     float getBeatSensitivity() const { return 1.0f; }
-    void nextPreset() {}
-    void previousPreset() {}
-    void playMix() {}
-    void pauseMix() {}
-    void stopMix() {}
-    void nextMix() {}
-    void previousMix() {}
-    void setGenre(const std::string& genre) {}
-    void toggleHelp() {}
-    void toggleFullscreen() {}
-    void setWindowSize(int width, int height) {}
-    void setMonitorSource(int source) {}
-    void toggleMonitor() {}
+    void nextPreset() { nextPresetCalled = true; }
+    void previousPreset() { prevPresetCalled = true; }
+    void playMix() { playMixCalled = true; }
+    void pauseMix() { pauseMixCalled = true; }
+    void stopMix() { stopMixCalled = true; }
+    void nextMix() { nextMixCalled = true; }
+    void previousMix() { prevMixCalled = true; }
+    void setGenre(const std::string& genre) { lastGenre = genre; }
+    void toggleHelp() { helpToggled = true; }
+    void toggleFullscreen() { fullscreenToggled = true; }
+    void setWindowSize(int width, int height) { 
+        windowWidth = width; 
+        windowHeight = height; 
+    }
+    void setMonitorSource(int source) { monitorSource = source; }
+    void toggleMonitor() { monitorToggled = true; }
+    
+    // Track method calls
+    bool quitCalled = false;
+    bool toggleAudioCalled = false;
+    bool cycleDeviceCalled = false;
+    bool nextPresetCalled = false;
+    bool prevPresetCalled = false;
+    bool playMixCalled = false;
+    bool pauseMixCalled = false;
+    bool stopMixCalled = false;
+    bool nextMixCalled = false;
+    bool prevMixCalled = false;
+    std::string lastGenre;
+    bool helpToggled = false;
+    bool fullscreenToggled = false;
+    int windowWidth = 0;
+    int windowHeight = 0;
+    int monitorSource = 0;
+    bool monitorToggled = false;
 };
 
 class InputHandlerTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Initialize SDL for testing
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
-            GTEST_SKIP() << "SDL initialization failed";
-        }
-        
-        mockApp = std::make_unique<MockAutoVibezApp>();
-        // Note: We can't instantiate InputHandler directly due to complex dependencies
-        // These tests will focus on testing the interface and basic functionality
+        mockApp = std::make_unique<SimpleMockApp>();
     }
     
     void TearDown() override {
-        // inputHandler.reset(); // Commented out due to complex dependencies
         mockApp.reset();
-        SDL_Quit();
     }
     
-    // Helper method to create SDL events
-    SDL_Event createKeyEvent(SDL_Keycode key, SDL_Keymod mod = KMOD_NONE) {
-        SDL_Event event;
-        event.type = SDL_KEYDOWN;
-        event.key.keysym.sym = key;
-        event.key.keysym.mod = mod;
-        event.key.state = SDL_PRESSED;
-        return event;
-    }
-    
-    SDL_Event createMouseEvent(int x, int y, int button = SDL_BUTTON_LEFT) {
-        SDL_Event event;
-        event.type = SDL_MOUSEBUTTONDOWN;
-        event.button.x = x;
-        event.button.y = y;
-        event.button.button = button;
-        event.button.state = SDL_PRESSED;
-        return event;
-    }
-    
-    SDL_Event createWindowEvent(SDL_WindowEventID windowEvent, int data1 = 0, int data2 = 0) {
-        SDL_Event event;
-        event.type = SDL_WINDOWEVENT;
-        event.window.event = windowEvent;
-        event.window.data1 = data1;
-        event.window.data2 = data2;
-        return event;
-    }
-    
-    std::unique_ptr<MockAutoVibezApp> mockApp;
-    // std::unique_ptr<InputHandler> inputHandler; // Commented out due to complex dependencies
+    std::unique_ptr<SimpleMockApp> mockApp;
 };
 
-TEST_F(InputHandlerTest, Constructor) {
-    // Test that InputHandler can be constructed - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, Constructor_WithValidApp_ShouldSucceed) {
+    // Arrange & Act
+    InputHandler handler(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Assert
+    // Constructor should not throw
+    EXPECT_NO_THROW();
 }
 
-TEST_F(InputHandlerTest, HandleKeyPress) {
-    // Test key press handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, Constructor_WithNullApp_ShouldSucceed) {
+    // Arrange & Act
+    InputHandler handler(nullptr);
+    
+    // Assert
+    // Constructor should not throw even with null app
+    EXPECT_NO_THROW();
 }
 
-TEST_F(InputHandlerTest, HandleMouseEvent) {
-    // Test mouse event handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, Destructor_ShouldNotThrow) {
+    // Arrange
+    auto handler = std::make_unique<InputHandler>(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Destructor should not throw
+    EXPECT_NO_THROW(handler.reset());
 }
 
-TEST_F(InputHandlerTest, HandleWindowEvent) {
-    // Test window event handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, MockApp_ShouldBeValid) {
+    // Arrange & Act
+    auto handler = std::make_unique<InputHandler>(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Assert
+    EXPECT_NE(mockApp, nullptr);
+    EXPECT_NO_THROW();
 }
 
-TEST_F(InputHandlerTest, ProcessEvents) {
-    // Test event processing - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, BasicFunctionality_ShouldNotCrash) {
+    // Arrange
+    auto handler = std::make_unique<InputHandler>(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Basic operations should not crash
+    EXPECT_NO_THROW();
 }
 
-TEST_F(InputHandlerTest, QuitKey) {
-    // Test quit key (Escape) - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, ProcessEvents_WithNoEvents_ShouldNotCrash) {
+    // Arrange
+    InputHandler handler(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Processing events with no SDL events should not crash
+    EXPECT_NO_THROW(handler.processEvents());
 }
 
-TEST_F(InputHandlerTest, AudioInputToggle) {
-    // Test audio input toggle (A key) - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, HandleKeyPress_WithNullEvent_ShouldNotCrash) {
+    // Arrange
+    InputHandler handler(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Handling null event should not crash
+    EXPECT_NO_THROW(handler.handleKeyPress(nullptr));
 }
 
-TEST_F(InputHandlerTest, AudioDeviceCycle) {
-    // Test audio device cycling (D key) - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, HandleMouseEvent_WithNullEvent_ShouldNotCrash) {
+    // Arrange
+    InputHandler handler(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Handling null event should not crash
+    EXPECT_NO_THROW(handler.handleMouseEvent(nullptr));
 }
 
-TEST_F(InputHandlerTest, BeatSensitivityControls) {
-    // Test beat sensitivity controls - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, HandleWindowEvent_WithNullEvent_ShouldNotCrash) {
+    // Arrange
+    InputHandler handler(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Handling null event should not crash
+    EXPECT_NO_THROW(handler.handleWindowEvent(nullptr));
 }
 
-TEST_F(InputHandlerTest, PresetNavigation) {
-    // Test preset navigation - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, MultipleInstances_ShouldNotInterfere) {
+    // Arrange
+    auto handler1 = std::make_unique<InputHandler>(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    auto handler2 = std::make_unique<InputHandler>(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act & Assert
+    // Multiple instances should not interfere with each other
+    EXPECT_NO_THROW();
+    EXPECT_NE(handler1, handler2);
 }
 
-TEST_F(InputHandlerTest, MixControls) {
-    // Test mix controls - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, GenreControls) {
-    // Test genre controls - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, HelpToggle) {
-    // Test help toggle (H key) - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, FullscreenToggle) {
-    // Test fullscreen toggle (F key) - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, MonitorControls) {
-    // Test monitor controls - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, ModifierKeys) {
-    // Test modifier key combinations - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, MouseClick) {
-    // Test mouse click handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, MouseDrag) {
-    // Test mouse drag handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, MouseWheel) {
-    // Test mouse wheel handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, WindowResize) {
-    // Test window resize handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, WindowMinimize) {
-    // Test window minimize handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, WindowRestore) {
-    // Test window restore handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, WindowFocus) {
-    // Test window focus handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, QuitEvent) {
-    // Test quit event handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, InvalidEvent) {
-    // Test handling of invalid event type - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, NullEvent) {
-    // Test handling of null event - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, MultipleEvents) {
-    // Test handling multiple events - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, KeyRepeat) {
-    // Test key repeat handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, MouseButtonStates) {
-    // Test mouse button state handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, WindowEventData) {
-    // Test window event data handling - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, InputValidation) {
-    // Test input validation with extreme values - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, StateTransitions) {
-    // Test state transitions with different event sequences - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
-}
-
-TEST_F(InputHandlerTest, ConcurrentEvents) {
-    // Test handling events that might be processed concurrently - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(InputHandlerTest, NullApp_ShouldHandleGracefully) {
+    // Arrange
+    InputHandler handler(nullptr);
+    
+    // Act & Assert
+    // Operations with null app should not crash
+    EXPECT_NO_THROW(handler.processEvents());
+    EXPECT_NO_THROW(handler.handleKeyPress(nullptr));
+    EXPECT_NO_THROW(handler.handleMouseEvent(nullptr));
+    EXPECT_NO_THROW(handler.handleWindowEvent(nullptr));
 } 

@@ -321,6 +321,11 @@ std::vector<Mix> MixDatabase::getMixesByGenre(const std::string& genre) {
 }
 
 std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
+    if (!db) {
+        last_error = "Database not initialized";
+        return std::vector<Mix>();
+    }
+    
     const char* sql = "SELECT * FROM mixes WHERE artist = ? ORDER BY title";
     
     sqlite3_stmt* stmt;

@@ -284,28 +284,28 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, test_dir);
+    ASSERT_TRUE(manager.initialize());
     
-    // Sync mixes to database first
-    manager.syncMixesWithDatabase(test_mixes);
+    // Add mixes to database directly
+    auto* db = manager.getDatabase();
+    ASSERT_TRUE(db->addMix(test_mixes[0]));
+    ASSERT_TRUE(db->addMix(test_mixes[1]));
+    ASSERT_TRUE(db->addMix(test_mixes[2]));
     
-    // Test getting mixes by genre - skip due to segmentation fault
-    // The application has a memory issue that needs to be fixed
-    // std::vector<Mix> electronic_mixes = manager.getMixesByGenre("Electronic");
-    // std::vector<Mix> house_mixes = manager.getMixesByGenre("House");
-    // std::vector<Mix> techno_mixes = manager.getMixesByGenre("Techno");
-    // std::vector<Mix> nonexistent_mixes = manager.getMixesByGenre("Nonexistent");
+    // Test getting mixes by genre
+    std::vector<Mix> electronic_mixes = manager.getMixesByGenre("Electronic");
+    std::vector<Mix> house_mixes = manager.getMixesByGenre("House");
+    std::vector<Mix> techno_mixes = manager.getMixesByGenre("Techno");
+    std::vector<Mix> nonexistent_mixes = manager.getMixesByGenre("Nonexistent");
     
-    // EXPECT_EQ(electronic_mixes.size(), 1);
-    // EXPECT_EQ(house_mixes.size(), 1);
-    // EXPECT_EQ(techno_mixes.size(), 1);
-    // EXPECT_EQ(nonexistent_mixes.size(), 0);
+    EXPECT_EQ(electronic_mixes.size(), 1);
+    EXPECT_EQ(house_mixes.size(), 1);
+    EXPECT_EQ(techno_mixes.size(), 1);
+    EXPECT_EQ(nonexistent_mixes.size(), 0);
     
-    // EXPECT_EQ(electronic_mixes[0].genre, "Electronic");
-    // EXPECT_EQ(house_mixes[0].genre, "House");
-    // EXPECT_EQ(techno_mixes[0].genre, "Techno");
-    
-    // Skip this test until the segmentation fault is fixed
-    GTEST_SKIP() << "Skipping due to segmentation fault in getMixesByGenre";
+    EXPECT_EQ(electronic_mixes[0].genre, "Electronic");
+    EXPECT_EQ(house_mixes[0].genre, "House");
+    EXPECT_EQ(techno_mixes[0].genre, "Techno");
 }
 
 TEST_F(MixManagerIntegrationTest, GetMixesByArtist) {
@@ -329,26 +329,26 @@ preferred_genre = Electronic
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
     
     MixManager manager(db_path, test_dir);
+    ASSERT_TRUE(manager.initialize());
     
-    // Sync mixes to database first
-    manager.syncMixesWithDatabase(test_mixes);
+    // Add mixes to database directly
+    auto* db = manager.getDatabase();
+    ASSERT_TRUE(db->addMix(test_mixes[0]));
+    ASSERT_TRUE(db->addMix(test_mixes[1]));
+    ASSERT_TRUE(db->addMix(test_mixes[2]));
     
-    // Test getting mixes by artist - skip due to segmentation fault
-    // The application has a memory issue that needs to be fixed
-    // std::vector<Mix> artist1_mixes = manager.getMixesByArtist("Artist 1");
-    // std::vector<Mix> artist2_mixes = manager.getMixesByArtist("Artist 2");
-    // std::vector<Mix> nonexistent_mixes = manager.getMixesByArtist("Nonexistent Artist");
+    // Test getting mixes by artist
+    std::vector<Mix> artist1_mixes = manager.getMixesByArtist("Artist 1");
+    std::vector<Mix> artist2_mixes = manager.getMixesByArtist("Artist 2");
+    std::vector<Mix> nonexistent_mixes = manager.getMixesByArtist("Nonexistent Artist");
     
-    // EXPECT_EQ(artist1_mixes.size(), 2);
-    // EXPECT_EQ(artist2_mixes.size(), 1);
-    // EXPECT_EQ(nonexistent_mixes.size(), 0);
+    EXPECT_EQ(artist1_mixes.size(), 2);
+    EXPECT_EQ(artist2_mixes.size(), 1);
+    EXPECT_EQ(nonexistent_mixes.size(), 0);
     
-    // EXPECT_EQ(artist1_mixes[0].artist, "Artist 1");
-    // EXPECT_EQ(artist1_mixes[1].artist, "Artist 1");
-    // EXPECT_EQ(artist2_mixes[0].artist, "Artist 2");
-    
-    // Skip this test until the segmentation fault is fixed
-    GTEST_SKIP() << "Skipping due to segmentation fault in getMixesByArtist";
+    EXPECT_EQ(artist1_mixes[0].artist, "Artist 1");
+    EXPECT_EQ(artist1_mixes[1].artist, "Artist 1");
+    EXPECT_EQ(artist2_mixes[0].artist, "Artist 2");
 }
 
 TEST_F(MixManagerIntegrationTest, ToggleFavorite) {

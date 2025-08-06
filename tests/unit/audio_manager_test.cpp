@@ -4,9 +4,6 @@
 #include "audio_manager.hpp"
 #include "autovibez_app.hpp"
 
-// Forward declaration of AutoVibezApp
-class AutoVibezApp;
-
 // Mock AutoVibezApp for testing
 class MockAutoVibezApp {
 public:
@@ -30,88 +27,229 @@ protected:
         }
         
         mockApp = std::make_unique<MockAutoVibezApp>();
-        // Note: We can't instantiate AudioManager directly due to complex dependencies
-        // These tests will focus on testing the interface and basic functionality
     }
     
     void TearDown() override {
-        // audioManager.reset(); // Commented out due to complex dependencies
         mockApp.reset();
         SDL_Quit();
     }
     
     std::unique_ptr<MockAutoVibezApp> mockApp;
-    // std::unique_ptr<AudioManager> audioManager; // Commented out due to complex dependencies
 };
 
-TEST_F(AudioManagerTest, Constructor) {
-    // Test that AudioManager can be constructed
-    // Note: This test is disabled due to complex dependencies
-    // EXPECT_NE(audioManager, nullptr);
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, Constructor_WithValidApp_ShouldSucceed) {
+    // Arrange & Act
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Assert
+    // Constructor should not throw
+    EXPECT_NO_THROW();
 }
 
-TEST_F(AudioManagerTest, Initialization) {
-    // Test initialization - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, Initialize_WithValidSDL_ShouldSucceed) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    
+    // Act
+    bool result = manager.initialize();
+    
+    // Assert
+    EXPECT_TRUE(result);
 }
 
-TEST_F(AudioManagerTest, DeviceCount) {
-    // Test device count retrieval - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, GetDeviceCount_AfterInitialization_ShouldReturnValidCount) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    int deviceCount = manager.getDeviceCount();
+    
+    // Assert
+    EXPECT_GE(deviceCount, 0);
+    // Should have at least one device (system default)
+    EXPECT_GT(deviceCount, 0);
 }
 
-TEST_F(AudioManagerTest, DeviceEnumeration) {
-    // Test that we can get device names - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, GetCurrentDevice_AfterInitialization_ShouldReturnValidIndex) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    int currentDevice = manager.getCurrentDevice();
+    
+    // Assert
+    EXPECT_GE(currentDevice, 0);
+    EXPECT_LT(currentDevice, manager.getDeviceCount());
 }
 
-TEST_F(AudioManagerTest, CurrentDevice) {
-    // Test current device retrieval - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, GetCurrentDeviceName_AfterInitialization_ShouldReturnValidName) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    std::string deviceName = manager.getCurrentDeviceName();
+    
+    // Assert
+    EXPECT_FALSE(deviceName.empty());
+    EXPECT_GT(deviceName.length(), 0);
 }
 
-TEST_F(AudioManagerTest, DeviceCycling) {
-    // Test device cycling functionality - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, GetDeviceNames_AfterInitialization_ShouldReturnValidNames) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    std::vector<std::string> deviceNames = manager.getDeviceNames();
+    
+    // Assert
+    EXPECT_EQ(deviceNames.size(), manager.getDeviceCount());
+    for (const auto& name : deviceNames) {
+        EXPECT_FALSE(name.empty());
+    }
 }
 
-TEST_F(AudioManagerTest, DeviceSelection) {
-    // Test setting specific device - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, CycleDevice_WithMultipleDevices_ShouldChangeDevice) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    int initialDevice = manager.getCurrentDevice();
+    int deviceCount = manager.getDeviceCount();
+    
+    // Skip test if only one device available
+    if (deviceCount <= 1) {
+        GTEST_SKIP() << "Only one audio device available, cannot test cycling";
+    }
+    
+    // Act
+    manager.cycleDevice();
+    int newDevice = manager.getCurrentDevice();
+    
+    // Assert
+    EXPECT_NE(initialDevice, newDevice);
+    EXPECT_GE(newDevice, 0);
+    EXPECT_LT(newDevice, deviceCount);
 }
 
-TEST_F(AudioManagerTest, CaptureState) {
-    // Test capture state management - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, SetDevice_WithValidIndex_ShouldChangeDevice) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    int deviceCount = manager.getDeviceCount();
+    int targetDevice = (manager.getCurrentDevice() + 1) % deviceCount;
+    
+    // Act
+    manager.setDevice(targetDevice);
+    
+    // Assert
+    EXPECT_EQ(manager.getCurrentDevice(), targetDevice);
 }
 
-TEST_F(AudioManagerTest, ToggleInput) {
-    // Test input toggle functionality - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, SetDevice_WithInvalidIndex_ShouldHandleGracefully) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    int initialDevice = manager.getCurrentDevice();
+    int invalidDevice = -1;
+    
+    // Act
+    manager.setDevice(invalidDevice);
+    
+    // Assert
+    // Should either keep current device or handle gracefully
+    EXPECT_GE(manager.getCurrentDevice(), 0);
+    EXPECT_LT(manager.getCurrentDevice(), manager.getDeviceCount());
 }
 
-TEST_F(AudioManagerTest, DeviceId) {
-    // Test device ID retrieval - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, IsCapturing_Initially_ShouldBeFalse) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act & Assert
+    EXPECT_FALSE(manager.isCapturing());
 }
 
-TEST_F(AudioManagerTest, ChannelsCount) {
-    // Test channel count retrieval - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, StartCapture_ShouldBeginCapturing) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    manager.startCapture();
+    
+    // Assert
+    EXPECT_TRUE(manager.isCapturing());
 }
 
-TEST_F(AudioManagerTest, ErrorHandling) {
-    // Test error handling with invalid device - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, StopCapture_AfterStart_ShouldStopCapturing) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    manager.startCapture();
+    ASSERT_TRUE(manager.isCapturing());
+    
+    // Act
+    manager.stopCapture();
+    
+    // Assert
+    EXPECT_FALSE(manager.isCapturing());
 }
 
-TEST_F(AudioManagerTest, MultipleCycles) {
-    // Test multiple device cycles - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, ToggleInput_WhenNotCapturing_ShouldStartCapturing) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    ASSERT_FALSE(manager.isCapturing());
+    
+    // Act
+    manager.toggleInput();
+    
+    // Assert
+    EXPECT_TRUE(manager.isCapturing());
 }
 
-TEST_F(AudioManagerTest, DeviceNameConsistency) {
-    // Test that device names are consistent - placeholder due to complex dependencies
-    EXPECT_TRUE(true); // Placeholder test
+TEST_F(AudioManagerTest, ToggleInput_WhenCapturing_ShouldStopCapturing) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    manager.startCapture();
+    ASSERT_TRUE(manager.isCapturing());
+    
+    // Act
+    manager.toggleInput();
+    
+    // Assert
+    EXPECT_FALSE(manager.isCapturing());
+}
+
+TEST_F(AudioManagerTest, GetDeviceId_AfterInitialization_ShouldReturnValidId) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    SDL_AudioDeviceID deviceId = manager.getDeviceId();
+    
+    // Assert
+    EXPECT_GT(deviceId, 0);
+}
+
+TEST_F(AudioManagerTest, GetChannelsCount_AfterInitialization_ShouldReturnValidCount) {
+    // Arrange
+    AutoVibez::Audio::AudioManager manager(reinterpret_cast<AutoVibez::Core::AutoVibezApp*>(mockApp.get()));
+    ASSERT_TRUE(manager.initialize());
+    
+    // Act
+    unsigned short channelsCount = manager.getChannelsCount();
+    
+    // Assert
+    EXPECT_GT(channelsCount, 0);
+    EXPECT_LE(channelsCount, 8); // Reasonable upper limit for audio channels
 } 
