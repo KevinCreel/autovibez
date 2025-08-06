@@ -51,72 +51,6 @@ TEST_F(ConstantsTest, BeatSensitivityRange) {
     EXPECT_EQ(steps, 50); // 5.0 / 0.1 = 50
 }
 
-TEST_F(ConstantsTest, UIDefaults) {
-    // Test UI-related constants
-    EXPECT_GT(DEFAULT_WINDOW_WIDTH, 0);
-    EXPECT_EQ(DEFAULT_WINDOW_WIDTH, 512);
-    
-    EXPECT_GT(DEFAULT_WINDOW_HEIGHT, 0);
-    EXPECT_EQ(DEFAULT_WINDOW_HEIGHT, 512);
-    
-    EXPECT_GT(MIX_STATUS_DISPLAY_TIME, 0);
-    EXPECT_EQ(MIX_STATUS_DISPLAY_TIME, 300);
-}
-
-TEST_F(ConstantsTest, WindowAspectRatio) {
-    // Test that window dimensions are reasonable
-    EXPECT_EQ(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT); // Square window
-    
-    float aspectRatio = static_cast<float>(DEFAULT_WINDOW_WIDTH) / DEFAULT_WINDOW_HEIGHT;
-    EXPECT_EQ(aspectRatio, 1.0f); // Square aspect ratio
-}
-
-TEST_F(ConstantsTest, PCMDefaults) {
-    // Test PCM-related constants
-    EXPECT_GT(PCM_BUFFER_SIZE, 0);
-    EXPECT_EQ(PCM_BUFFER_SIZE, 512);
-    
-    EXPECT_GT(PCM_MAX_VALUE, 0);
-    EXPECT_EQ(PCM_MAX_VALUE, 16384);
-    
-    // Test that PCM buffer size is reasonable
-    EXPECT_LE(PCM_BUFFER_SIZE, DEFAULT_SAMPLES);
-    EXPECT_EQ(PCM_BUFFER_SIZE, DEFAULT_SAMPLES);
-}
-
-TEST_F(ConstantsTest, PCMValueRange) {
-    // Test PCM value range
-    EXPECT_GT(PCM_MAX_VALUE, 0);
-    EXPECT_EQ(PCM_MAX_VALUE, 16384); // 2^14
-    
-    // Test that max value is a power of 2
-    int powerOfTwo = 1;
-    for (int i = 0; i < 14; ++i) {
-        powerOfTwo *= 2;
-    }
-    EXPECT_EQ(PCM_MAX_VALUE, powerOfTwo);
-}
-
-TEST_F(ConstantsTest, WindowDefaults) {
-    // Test window-related constants
-    EXPECT_GT(DEFAULT_FPS, 0);
-    EXPECT_EQ(DEFAULT_FPS, 60);
-    
-    EXPECT_GT(FRAME_DELAY_MS, 0);
-    EXPECT_EQ(FRAME_DELAY_MS, 1000 / DEFAULT_FPS);
-    EXPECT_EQ(FRAME_DELAY_MS, 16); // 1000 / 60 ≈ 16.67, truncated to 16
-}
-
-TEST_F(ConstantsTest, FrameDelayCalculation) {
-    // Test frame delay calculation
-    int calculatedDelay = 1000 / DEFAULT_FPS;
-    EXPECT_EQ(FRAME_DELAY_MS, calculatedDelay);
-    
-    // Test that frame delay is reasonable for 60 FPS
-    EXPECT_GE(FRAME_DELAY_MS, 16);
-    EXPECT_LE(FRAME_DELAY_MS, 17);
-}
-
 TEST_F(ConstantsTest, FilePathDefaults) {
     // Test file path constants
     EXPECT_NE(DEFAULT_CONFIG_FILE, nullptr);
@@ -139,19 +73,6 @@ TEST_F(ConstantsTest, FilePathValidation) {
     EXPECT_NE(configFile.find("config"), std::string::npos);
     EXPECT_NE(presetPath.find("presets"), std::string::npos);
     EXPECT_NE(texturePath.find("textures"), std::string::npos);
-}
-
-TEST_F(ConstantsTest, ApplicationDefaults) {
-    // Test application constants
-    EXPECT_NE(APP_NAME, nullptr);
-    EXPECT_NE(WINDOW_TITLE, nullptr);
-    
-    // Test that names are not empty
-    EXPECT_FALSE(std::string(APP_NAME).empty());
-    EXPECT_FALSE(std::string(WINDOW_TITLE).empty());
-    
-    // Test that app name and window title match
-    EXPECT_EQ(std::string(APP_NAME), std::string(WINDOW_TITLE));
 }
 
 TEST_F(ConstantsTest, AudioSampleRateValidation) {
@@ -184,59 +105,6 @@ TEST_F(ConstantsTest, AudioSamplesValidation) {
     EXPECT_EQ(samples, 1); // Should be a power of 2
 }
 
-TEST_F(ConstantsTest, PCMBufferSizeValidation) {
-    // Test that PCM buffer size is reasonable
-    EXPECT_EQ(PCM_BUFFER_SIZE, 512);
-    
-    // Test that buffer size is a power of 2
-    int bufferSize = PCM_BUFFER_SIZE;
-    while (bufferSize > 1 && bufferSize % 2 == 0) {
-        bufferSize /= 2;
-    }
-    EXPECT_EQ(bufferSize, 1); // Should be a power of 2
-}
-
-TEST_F(ConstantsTest, WindowDimensionsValidation) {
-    // Test that window dimensions are reasonable
-    EXPECT_EQ(DEFAULT_WINDOW_WIDTH, 512);
-    EXPECT_EQ(DEFAULT_WINDOW_HEIGHT, 512);
-    
-    // Test that dimensions are powers of 2 (good for graphics)
-    int width = DEFAULT_WINDOW_WIDTH;
-    int height = DEFAULT_WINDOW_HEIGHT;
-    
-    while (width > 1 && width % 2 == 0) {
-        width /= 2;
-    }
-    while (height > 1 && height % 2 == 0) {
-        height /= 2;
-    }
-    
-    EXPECT_EQ(width, 1);   // Should be a power of 2
-    EXPECT_EQ(height, 1);  // Should be a power of 2
-}
-
-TEST_F(ConstantsTest, DisplayTimeValidation) {
-    // Test that display time is reasonable
-    EXPECT_EQ(MIX_STATUS_DISPLAY_TIME, 300); // 5 seconds
-    
-    // Test that display time is positive
-    EXPECT_GT(MIX_STATUS_DISPLAY_TIME, 0);
-    
-    // Test that display time is reasonable (not too short, not too long)
-    EXPECT_GE(MIX_STATUS_DISPLAY_TIME, 100);  // At least 1 second
-    EXPECT_LE(MIX_STATUS_DISPLAY_TIME, 10000); // Not more than 10 seconds
-}
-
-TEST_F(ConstantsTest, FPSValidation) {
-    // Test that FPS is reasonable
-    EXPECT_EQ(DEFAULT_FPS, 60);
-    
-    // Test that FPS is in a reasonable range
-    EXPECT_GE(DEFAULT_FPS, 30);  // Minimum smooth FPS
-    EXPECT_LE(DEFAULT_FPS, 120); // Maximum reasonable FPS
-}
-
 TEST_F(ConstantsTest, BeatSensitivityStepValidation) {
     // Test that beat sensitivity step is reasonable
     EXPECT_EQ(BEAT_SENSITIVITY_STEP, 0.1f);
@@ -244,18 +112,6 @@ TEST_F(ConstantsTest, BeatSensitivityStepValidation) {
     // Test that step is positive and reasonable
     EXPECT_GT(BEAT_SENSITIVITY_STEP, 0.0f);
     EXPECT_LE(BEAT_SENSITIVITY_STEP, 1.0f); // Not too coarse
-}
-
-TEST_F(ConstantsTest, ConstantsConsistency) {
-    // Test that related constants are consistent
-    EXPECT_EQ(PCM_BUFFER_SIZE, DEFAULT_SAMPLES); // Should match
-    
-    // Test that frame delay calculation is consistent
-    int expectedFrameDelay = 1000 / DEFAULT_FPS;
-    EXPECT_EQ(FRAME_DELAY_MS, expectedFrameDelay);
-    
-    // Test that window dimensions are consistent
-    EXPECT_EQ(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT); // Square window
 }
 
 TEST_F(ConstantsTest, ConstantsTypeValidation) {
@@ -278,11 +134,4 @@ TEST_F(ConstantsTest, ConstantsRangeValidation) {
     EXPECT_GE(MIN_BEAT_SENSITIVITY, 0.0f);
     EXPECT_GT(MAX_BEAT_SENSITIVITY, MIN_BEAT_SENSITIVITY);
     EXPECT_GT(BEAT_SENSITIVITY_STEP, 0.0f);
-    EXPECT_GT(DEFAULT_WINDOW_WIDTH, 0);
-    EXPECT_GT(DEFAULT_WINDOW_HEIGHT, 0);
-    EXPECT_GT(MIX_STATUS_DISPLAY_TIME, 0);
-    EXPECT_GT(PCM_BUFFER_SIZE, 0);
-    EXPECT_GT(PCM_MAX_VALUE, 0);
-    EXPECT_GT(DEFAULT_FPS, 0);
-    EXPECT_GT(FRAME_DELAY_MS, 0);
 } 

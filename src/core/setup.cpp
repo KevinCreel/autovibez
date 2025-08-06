@@ -2,10 +2,7 @@
 #include "autovibez_app.hpp"
 #include "path_manager.hpp"
 #include "config_manager.hpp"
-#include "resource_guard.hpp"
-#include "string_utils.hpp"
 #include "constants.hpp"
-#include "config_defaults.hpp"
 using AutoVibez::Core::AutoVibezApp;
 #include <SDL2/SDL.h>
 #include <iostream>
@@ -236,9 +233,7 @@ AutoVibezApp *setupSDLApp() {
 			exit(1);
 		}
 
-#if UNLOCK_FPS
-    setenv("vblank_mode", "0", 1);
-#endif
+
 
 #ifdef SDL_HINT_AUDIO_INCLUDE_MONITORS
     SDL_SetHint(SDL_HINT_AUDIO_INCLUDE_MONITORS, "1");
@@ -360,7 +355,7 @@ AutoVibezApp *setupSDLApp() {
         projectm_set_aspect_correction(projectMHandle, config.read<bool>("Aspect Correction", true));
         projectm_set_fps(projectMHandle, config.read<int32_t>("FPS", 60));
 
-        app->setFps(config.read<uint32_t>("FPS", 60));
+
         
         // Handle fullscreen setting
         bool fullscreen = config.read<bool>("fullscreen", false);
@@ -412,29 +407,9 @@ AutoVibezApp *setupSDLApp() {
     #endif
 #endif
 
-#if TEST_ALL_PRESETS
-    testAllPresets(app);
-    return 0;
-#endif
+
 
     return app;
 }
 
-int64_t startUnlockedFPSCounter() {
-	using namespace std::chrono;
-	auto currentTime = steady_clock::now();
-	auto elapsedMs = currentTime.time_since_epoch();
 
-	return elapsedMs.count();
-}
-
-void advanceUnlockedFPSCounterFrame(int64_t startFrame) {
-    static int32_t frameCount = 0;
-
-    frameCount++;
-	auto currentElapsedMs = startUnlockedFPSCounter();
-	if (currentElapsedMs - startFrame > 5000)
-	{
-        exit(0);
-    }
-}

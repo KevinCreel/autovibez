@@ -34,9 +34,6 @@
 #define WASAPI_LOOPBACK 1
 #endif /** _WIN32 */
 #define FAKE_AUDIO 0
-// ----------------------------
-#define TEST_ALL_PRESETS 0
-#define STEREOSCOPIC_SBS 0
 
 // projectM
 #include <projectM-4/playlist.h>
@@ -55,15 +52,12 @@
 #include "config_manager.hpp"
 #include "help_overlay.hpp"
 
-// New modular components
+    // New modular components
 #include "constants.hpp"
-#include "config_defaults.hpp"
-#include "string_utils.hpp"
+
+
 #include "path_manager.hpp"
-#include "app_state.hpp"
 #include "preset_manager.hpp"
-#include "audio_manager.hpp"
-#include "input_handler.hpp"
 
 #if defined _MSC_VER
 #include <direct.h>
@@ -142,23 +136,14 @@ public:
     std::string getActivePresetName();
     void addFakePCM();
     projectm_handle projectM();
-    void setFps(size_t fps);
-    size_t fps() const;
     float getBeatSensitivity() const;
 
     // Help and UI
-    void toggleHelp();
     void cycleAudioDevice();
-    void StartRecording(projectm_handle projectMHandle, int audioDeviceIndex);
-    void StopRecording();
     void renderFpsCounter();
     
     // Mix management
-    std::string getDataDirectory();
-    std::string getConfigDirectory();
-    std::string getCacheDirectory();
-    std::string getStateDirectory();
-    std::string getAssetsDirectory();
+
     void initMixManager();
     void handleMixControls(SDL_Event* event);
     void autoDownloadRandomMix();
@@ -171,8 +156,6 @@ public:
     
     // Window management
     SDL_Window* getWindow() const { return _sdlWindow; }
-    int getWidth() const { return _width; }
-    int getHeight() const { return _height; }
     
     // Help Overlay
     void initHelpOverlay();
@@ -181,9 +164,6 @@ public:
     
     // New modular component accessors
     PresetManager* getPresetManager() { return _presetManager.get(); }
-    AutoVibez::Audio::AudioManager* getAudioManager() { return _audioManager.get(); }
-    InputHandler* getInputHandler() { return _inputHandler.get(); }
-    AppState* getAppState() { return &_appState; }
     
     // Beat sensitivity
     void setBeatSensitivity(float sensitivity);
@@ -224,16 +204,12 @@ private:
     size_t _height{0};
     size_t _fps{60};
 
-    unsigned int _numAudioDevices{0};
-    int _curAudioDevice{0}; // SDL's device indexes are 0-based, -1 means "system default"
     unsigned short _audioChannelsCount{0};
+    unsigned int _numAudioDevices{0};
     SDL_AudioDeviceID _audioDeviceId{0};
-    int _selectedAudioDevice{0};
 
     std::string _presetName; //!< Current preset name
-    std::string _texturePath;
 
-    bool _showHelp{false};           //!< Show help overlay
     bool _showFps{false};            //!< Show FPS counter
     int _selectedAudioDeviceIndex{0}; //!< Selected audio device index
 
@@ -251,13 +227,9 @@ private:
     
     // New modular components
     std::unique_ptr<PresetManager> _presetManager;
-    std::unique_ptr<AutoVibez::Audio::AudioManager> _audioManager;
-    std::unique_ptr<InputHandler> _inputHandler;
-    AppState _appState;
     
     // Thread safety members
     std::future<void> _backgroundTask;
-    std::mutex _mixManagerMutex;
     std::atomic<bool> _backgroundTaskRunning{false};
 
     void handleWindowEvent(const SDL_Event& evt);
@@ -268,9 +240,7 @@ private:
     void handleMouseButtonUpEvent(const SDL_Event& evt);
     void handleQuitEvent(const SDL_Event& evt);
     void handleMouseDragEvent();
-    void handleVolumeKey(SDL_Keycode key);
-    void handleMixKey(SDL_Keycode key, SDL_Event* evt);
-    void handleHelpKey();
+
 };
 
 } // namespace Core

@@ -1,7 +1,7 @@
 #include "audio_capture.hpp"
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
-using AutoVibez::Audio::AudioManager;
+
 
 namespace AutoVibez {
 namespace Audio {

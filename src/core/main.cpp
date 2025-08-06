@@ -53,12 +53,10 @@ static int mainLoop(void* userData) {
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp> *>(userData);
     AutoVibez::Core::AutoVibezApp *app = appRef->get();
     
-#if UNLOCK_FPS
-    auto start = startUnlockedFPSCounter();
-#endif
+
     
     // frame rate limiter
-    int fps = app->fps();
+    int fps = 60; // Default FPS since fps() method was removed
     if (fps <= 0) {
         fps = 60;
     }
@@ -104,16 +102,12 @@ static int mainLoop(void* userData) {
             app->getMixManager()->cleanupCompletedDownloads();
         }
         
-#if UNLOCK_FPS
-        advanceUnlockedFPSCounterFrame(start);
-#else
         app->pollEvents();
         Uint32 elapsed = SDL_GetTicks() - last_time;
         if (elapsed < frame_delay) {
             SDL_Delay(frame_delay - elapsed);
         }
         last_time = SDL_GetTicks();
-#endif
     }
     
     return 0;

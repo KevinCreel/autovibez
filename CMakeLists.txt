@@ -121,8 +121,6 @@ add_executable(autovibez
     # Audio components
     src/audio/audio_capture.cpp
     src/audio/audio_capture.hpp
-    src/audio/audio_manager.cpp
-    src/audio/audio_manager.hpp
     src/audio/loopback.cpp
     src/audio/loopback.hpp
     src/audio/mix_player.cpp
@@ -143,10 +141,6 @@ add_executable(autovibez
     src/data/mix_metadata.hpp
     
     # User interface
-    src/core/app_state.cpp
-    src/core/app_state.hpp
-    src/core/input_handler.cpp
-    src/core/input_handler.hpp
     src/core/preset_manager.cpp
     src/core/preset_manager.hpp
     src/ui/help_overlay.cpp
@@ -158,14 +152,7 @@ add_executable(autovibez
     src/platform/path_manager.hpp
     
     # General utilities
-    src/utils/config_defaults.hpp
     src/utils/constants.hpp
-    src/utils/string_utils.hpp
-    src/utils/logger.cpp
-    src/utils/logger.hpp
-    src/utils/resource_guard.hpp
-    src/utils/input_validator.cpp
-    src/utils/input_validator.hpp
 )
 
 # Link libraries
@@ -319,8 +306,6 @@ set(AUTOVIBEZ_TEST_SOURCES
     # Audio components
     src/audio/audio_capture.cpp
     src/audio/audio_capture.hpp
-    src/audio/audio_manager.cpp
-    src/audio/audio_manager.hpp
     src/audio/loopback.cpp
     src/audio/loopback.hpp
     src/audio/mix_player.cpp
@@ -341,8 +326,6 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/data/mix_metadata.hpp
     
     # User interface
-    src/core/app_state.cpp
-    src/core/app_state.hpp
     src/core/preset_manager.cpp
     src/core/preset_manager.hpp
     src/ui/help_overlay.cpp
@@ -354,14 +337,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/platform/path_manager.hpp
     
     # General utilities
-    src/utils/config_defaults.hpp
     src/utils/constants.hpp
-    src/utils/string_utils.hpp
-    src/utils/logger.cpp
-    src/utils/logger.hpp
-    src/utils/resource_guard.hpp
-    src/utils/input_validator.cpp
-    src/utils/input_validator.hpp
     
     # Test fixtures
     tests/fixtures/test_fixtures.cpp
@@ -374,16 +350,13 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/mix_player_test.cpp
     tests/unit/mp3_analyzer_test.cpp
     tests/unit/path_manager_test.cpp
-    # tests/unit/logger_test.cpp
-    tests/unit/input_validator_test.cpp
-    tests/unit/resource_guard_test.cpp
+
+
     tests/unit/audio_capture_test.cpp
-    tests/unit/audio_manager_test.cpp
     tests/unit/mix_downloader_test.cpp
     tests/unit/mix_manager_test.cpp
-    tests/unit/string_utils_test.cpp
+
     tests/unit/constants_test.cpp
-    tests/unit/input_handler_test.cpp
     tests/unit/help_overlay_test.cpp
     
     # Integration tests

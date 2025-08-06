@@ -30,7 +30,6 @@
 
 #include "autovibez_app.hpp"
 #include "setup.hpp"
-#include "logger.hpp"
 #include "mix_manager.hpp"
 #include "mix_metadata.hpp"
 #include "mix_downloader.hpp"
@@ -53,7 +52,6 @@
 using AutoVibez::Data::MixManager;
 
 using AutoVibez::Data::Mix;
-using AutoVibez::Audio::AudioManager;
 using AutoVibez::Data::ConfigFile;
 using AutoVibez::UI::HelpOverlay;
 
@@ -64,7 +62,6 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     : _openGlContext(glCtx)
     , _projectM(projectm_create())
     , _playlist(projectm_playlist_create(_projectM))
-    , _texturePath(texturePath)
     , _showFps(showFps)
     , _selectedAudioDeviceIndex(audioDeviceIndex)
     , _mixManagerInitialized(false)
@@ -265,8 +262,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
             {
                 // command-s: [s]tretch monitors
-                // Stereo requires fullscreen
-#if !STEREOSCOPIC_SBS
                 if (!this->stretch)
                 {
                     stretchMonitors();
@@ -277,7 +272,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     toggleFullScreen(); // else, just toggle full screen so we leave stretch mode.
                     this->stretch = false;
                 }
-#endif
                 return; // handled
             }
 
@@ -285,10 +279,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
             {
                 // command-m: change [m]onitor
-                // Stereo requires fullscreen
-#if !STEREOSCOPIC_SBS
                 nextMonitor();
-#endif
                 this->stretch = false;
                 return;                // handled
             }
@@ -297,10 +288,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
             {
                 // command-f: fullscreen
-                // Stereo requires fullscreen
-#if !STEREOSCOPIC_SBS
                 toggleFullScreen();
-#endif
                 this->stretch = false;
                 return;                // handled
             }
@@ -340,11 +328,9 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 
         case SDLK_h:
             // H: toggle help overlay
-            toggleHelp();
-            // Also toggle simple UI
-                    if (_helpOverlay) {
-            _helpOverlay->toggle();
-        }
+            if (_helpOverlay) {
+                _helpOverlay->toggle();
+            }
             break;
 
         case SDLK_TAB:
@@ -731,14 +717,9 @@ projectm_handle AutoVibezApp::projectM()
     return _projectM;
 }
 
-void AutoVibezApp::setFps(size_t fps)
-{
-    _fps = fps;
-}
 
-size_t AutoVibezApp::fps() const {
-    return _fps;
-}
+
+
 
 float AutoVibezApp::getBeatSensitivity() const {
     return projectm_get_beat_sensitivity(_projectM);
@@ -759,11 +740,7 @@ void AutoVibezApp::UpdateWindowTitle()
     SDL_SetWindowTitle(_sdlWindow, title.c_str());
 }
 
-// New feature implementations
-void AutoVibezApp::toggleHelp()
-{
-    _showHelp = !_showHelp;
-}
+
 
 
 
@@ -771,31 +748,17 @@ void AutoVibezApp::toggleHelp()
 
 void AutoVibezApp::cycleAudioDevice()
 {
-    // Stop current recording
-    StopRecording();
-    
     // Calculate next device index like the original - will wrap around to default capture device (-1)
     int nextAudioDeviceId = ((_selectedAudioDeviceIndex + 2) % (SDL_GetNumAudioDevices(SDL_TRUE) + 1)) - 1;
     
     // Start recording with new device
-    StartRecording(_projectM, nextAudioDeviceId);
-}
-
-void AutoVibezApp::StartRecording(projectm_handle projectMHandle, int audioDeviceIndex)
-{
-    _selectedAudioDeviceIndex = audioDeviceIndex;
-    _curAudioDevice = audioDeviceIndex;
-    _selectedAudioDevice = audioDeviceIndex;
-    
+    _selectedAudioDeviceIndex = nextAudioDeviceId;
     if (initializeAudioInput()) {
         beginAudioCapture();
     }
 }
 
-void AutoVibezApp::StopRecording()
-{
-    endAudioCapture();
-}
+
 
 void AutoVibezApp::renderFpsCounter()
 {
@@ -815,69 +778,7 @@ void AutoVibezApp::renderFpsCounter()
     }
 }
 
-// Get XDG data directory for autovibez (cross-platform)
-std::string AutoVibezApp::getDataDirectory() {
-    return PathManager::getDataDirectory();
-}
 
-// Get XDG config directory for autovibez (cross-platform)
-std::string AutoVibezApp::getConfigDirectory() {
-    return PathManager::getConfigDirectory();
-}
-
-// Get XDG cache directory for autovibez (cross-platform)
-std::string AutoVibezApp::getCacheDirectory() {
-    return PathManager::getCacheDirectory();
-}
-
-// Get XDG state directory for autovibez (cross-platform)
-std::string AutoVibezApp::getStateDirectory() {
-    std::string state_dir;
-    
-#ifdef _WIN32
-    // Windows: Use %LOCALAPPDATA%/autovibez/state
-    const char* localappdata = std::getenv("LOCALAPPDATA");
-    if (localappdata) {
-        state_dir = std::string(localappdata) + "/autovibez/state";
-    } else {
-        state_dir = "state"; // Fallback
-    }
-#elif defined(__APPLE__)
-    // macOS: Use ~/Library/Application Support/autovibez/state
-    const char* home = std::getenv("HOME");
-    if (home) {
-        state_dir = std::string(home) + "/Library/Application Support/autovibez/state";
-    } else {
-        state_dir = "state"; // Fallback
-    }
-#else
-    // Linux/Unix: Use XDG Base Directory Specification
-    const char* xdg_state_home = std::getenv("XDG_STATE_HOME");
-    if (xdg_state_home && strlen(xdg_state_home) > 0) {
-        state_dir = std::string(xdg_state_home) + "/autovibez";
-    } else {
-        // Fallback to default XDG location
-        const char* home = std::getenv("HOME");
-        if (home) {
-            state_dir = std::string(home) + "/.local/state/autovibez";
-        } else {
-            state_dir = "state"; // Last resort fallback
-        }
-    }
-#endif
-    
-    // Create directory if it doesn't exist
-    if (!std::filesystem::exists(state_dir)) {
-        std::filesystem::create_directories(state_dir);
-    }
-    
-    return state_dir;
-}
-
-// Get XDG assets directory for autovibez (cross-platform)
-std::string AutoVibezApp::getAssetsDirectory() {
-    return PathManager::getAssetsDirectory();
-}
 
 // Mix management methods
 void AutoVibezApp::initMixManager()

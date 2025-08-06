@@ -5,10 +5,7 @@
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
 #include "path_manager.hpp"
-#include "string_utils.hpp"
-#include "resource_guard.hpp"
 #include "constants.hpp"
-#include "config_defaults.hpp"
 #include <iostream>
 #include <filesystem>
 #include <random>
