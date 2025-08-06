@@ -771,26 +771,30 @@ void AutoVibezApp::toggleHelp()
 
 void AutoVibezApp::cycleAudioDevice()
 {
-    if (_numAudioDevices > 0) {
-        _selectedAudioDeviceIndex = (_selectedAudioDeviceIndex + 1) % _numAudioDevices;
-        
-        // Initialize audio device
-        const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
-        if (deviceName) {
-            // Audio device notification removed - help overlay shows current device
-        } else {
-            // Audio device notification removed - help overlay shows current device
-        }
-        
-        // Reopen audio with new device
-        endAudioCapture();
-        _curAudioDevice = _selectedAudioDeviceIndex;
-        _selectedAudioDevice = _selectedAudioDeviceIndex;  // Set both variables
-        initializeAudioInput();  // Use initializeAudioInput directly instead of openAudioInput
+    // Stop current recording
+    StopRecording();
+    
+    // Calculate next device index like the original - will wrap around to default capture device (-1)
+    int nextAudioDeviceId = ((_selectedAudioDeviceIndex + 2) % (SDL_GetNumAudioDevices(SDL_TRUE) + 1)) - 1;
+    
+    // Start recording with new device
+    StartRecording(_projectM, nextAudioDeviceId);
+}
+
+void AutoVibezApp::StartRecording(projectm_handle projectMHandle, int audioDeviceIndex)
+{
+    _selectedAudioDeviceIndex = audioDeviceIndex;
+    _curAudioDevice = audioDeviceIndex;
+    _selectedAudioDevice = audioDeviceIndex;
+    
+    if (initializeAudioInput()) {
         beginAudioCapture();
-    } else {
-        // Audio device notification removed - help overlay shows current device
     }
+}
+
+void AutoVibezApp::StopRecording()
+{
+    endAudioCapture();
 }
 
 void AutoVibezApp::renderFpsCounter()

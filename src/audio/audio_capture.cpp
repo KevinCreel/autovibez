@@ -36,13 +36,18 @@ int AutoVibezApp::initializeAudioInput() {
         return 0;
     }
 
+    // Set hint to include monitor devices like the original
+#ifdef SDL_HINT_AUDIO_INCLUDE_MONITORS
+    SDL_SetHint(SDL_HINT_AUDIO_INCLUDE_MONITORS, "1");
+#endif
+
     // Get number of audio devices
     _numAudioDevices = SDL_GetNumAudioDevices(SDL_TRUE);
     
-    // Set up audio format
+    // Set up audio format - use AUDIO_F32 like the original
     SDL_zero(desired);
     desired.freq = 44100;
-    desired.format = AUDIO_F32SYS;
+    desired.format = AUDIO_F32;  // Changed from AUDIO_F32SYS to AUDIO_F32
     desired.channels = 2;
     desired.samples = 512;
     desired.callback = [](void* userdata, unsigned char* stream, int len) {
@@ -52,12 +57,12 @@ int AutoVibezApp::initializeAudioInput() {
     };
     desired.userdata = this;
 
-    // Open audio device
+    // Open audio device - handle -1 for default device like the original
     const char* deviceName = nullptr;
-    if (_selectedAudioDeviceIndex < _numAudioDevices) {
+    if (_selectedAudioDeviceIndex >= 0 && _selectedAudioDeviceIndex < _numAudioDevices) {
         deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
     }
-    _audioDeviceId = SDL_OpenAudioDevice(deviceName, SDL_TRUE, &desired, &obtained, 0);
+    _audioDeviceId = SDL_OpenAudioDevice(deviceName, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     if (_audioDeviceId == 0) {
         SDL_Log("Failed to open audio device: %s", SDL_GetError());
         return 0;
@@ -100,8 +105,10 @@ void AutoVibezApp::beginAudioCapture() {
 }
 
 void AutoVibezApp::endAudioCapture() {
-    SDL_PauseAudioDevice(_audioDeviceId, true);
-    SDL_CloseAudioDevice(_audioDeviceId);
-    _audioDeviceId = 0;  // Reset device ID after closing
+    if (_audioDeviceId != 0) {
+        SDL_PauseAudioDevice(_audioDeviceId, true);
+        SDL_CloseAudioDevice(_audioDeviceId);
+        _audioDeviceId = 0;  // Reset device ID after closing
+    }
 }
 

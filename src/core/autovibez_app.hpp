@@ -149,6 +149,8 @@ public:
     // Help and UI
     void toggleHelp();
     void cycleAudioDevice();
+    void StartRecording(projectm_handle projectMHandle, int audioDeviceIndex);
+    void StopRecording();
     void renderFpsCounter();
     
     // Mix management
