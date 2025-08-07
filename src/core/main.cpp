@@ -56,10 +56,6 @@ static int mainLoop(void* userData) {
     AutoVibez::Core::AutoVibezApp* app = appRef->get();
 
     // frame rate limiter
-    int fps = Constants::DEFAULT_FPS_VALUE;  // Default FPS since fps() method was removed
-    if (fps <= 0) {
-        fps = Constants::DEFAULT_FPS_VALUE;
-    }
     const Uint32 frame_delay = Constants::FRAME_DELAY_MS;
     Uint32 last_time = SDL_GetTicks();
 
