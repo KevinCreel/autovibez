@@ -75,6 +75,7 @@
 #include <mutex>
 #include <atomic>
 
+#ifdef _WIN32
 #ifdef WASAPI_LOOPBACK
 #include <windows.h>
 #include <mmdeviceapi.h>
@@ -89,8 +90,8 @@
 
 #define LOG(format, ...) wprintf(format L"\n", __VA_ARGS__)
 #define ERR(format, ...) LOG(L"Error: " format, __VA_ARGS__)
-
 #endif /** WASAPI_LOOPBACK */
+#endif /** _WIN32 */
 
 #ifdef _WIN32
 #define SDL_MAIN_HANDLED
