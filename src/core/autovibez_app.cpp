@@ -593,7 +593,7 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
         
         // Use complete reinitialization for automatic changes to ensure clean state
         if (app->_helpOverlay) {
-            app->_helpOverlay->triggerCompleteReinitialization();
+            app->_helpOverlay->reinitializeImGui();
         }
     } else {
         // Use immediate texture rebind for manual changes

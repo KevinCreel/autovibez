@@ -69,42 +69,7 @@ void HelpOverlay::render() {
     
     // Lazy initialize ImGui on first render
     if (!_imguiReady) {
-        // Ensure we have the OpenGL context
-        SDL_GL_MakeCurrent(_window, _glContext);
-        
-        // Setup Dear ImGui context with minimal configuration
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        
-        // Add default font with explicit atlas building
-        io.Fonts->AddFontDefault();
-        io.FontGlobalScale = 1.0f;
-        
-        // Explicitly build the font atlas
-        unsigned char* pixels;
-        int width, height;
-        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-        
-        // Set INI file path to user config directory
-        std::string configDir = getConfigDirectory();
-        if (!configDir.empty()) {
-            std::string iniPath = configDir + "/imgui.ini";
-            io.IniFilename = strdup(iniPath.c_str());
-        }
-        
-        // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
-        
-        // Setup Platform/Renderer backends
-        ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
-        ImGui_ImplOpenGL2_Init();
-        
-        // Explicitly create the font texture
-        ImGui_ImplOpenGL2_CreateFontsTexture();
-        
-        _imguiReady = true;
+        initializeImGui();
     }
     
     // Save current OpenGL state and isolate ImGui rendering
@@ -517,19 +482,8 @@ void HelpOverlay::rebuildFontAtlas() {
         // Ensure we have the OpenGL context
         SDL_GL_MakeCurrent(_window, _glContext);
         
-        // Rebuild the font atlas
-        ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->Clear();
-        io.Fonts->AddFontDefault();
-        
-        // Build the font atlas
-        unsigned char* pixels;
-        int width, height;
-        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-        
-        // This forces ImGui to recreate its font texture
-        ImGui_ImplOpenGL2_DestroyFontsTexture();
-        ImGui_ImplOpenGL2_CreateFontsTexture();
+        // Rebuild the font atlas using the helper method
+        rebuildFontAtlasInternal();
     }
 }
 
@@ -549,39 +503,8 @@ void HelpOverlay::reinitializeImGui() {
         _imguiReady = false;
     }
     
-    // Setup Dear ImGui context with minimal configuration
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    
-    // Add default font with explicit atlas building
-    io.Fonts->AddFontDefault();
-    io.FontGlobalScale = 1.0f;
-    
-    // Explicitly build the font atlas
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-    
-    // Set INI file path to user config directory
-    std::string configDir = getConfigDirectory();
-    if (!configDir.empty()) {
-        std::string iniPath = configDir + "/imgui.ini";
-        io.IniFilename = strdup(iniPath.c_str());
-    }
-    
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
-    ImGui_ImplOpenGL2_Init();
-    
-    // Explicitly create the font texture
-    ImGui_ImplOpenGL2_CreateFontsTexture();
-    
-    _imguiReady = true;
+    // Initialize ImGui using the helper method
+    initializeImGui();
     
     // Restore OpenGL state
     glPopMatrix();
@@ -596,60 +519,7 @@ void HelpOverlay::triggerDeferredTextureRebind() {
     _needsDeferredTextureRebind = true;
 }
 
-void HelpOverlay::triggerCompleteReinitialization() {
-    // Ensure we have the OpenGL context
-    SDL_GL_MakeCurrent(_window, _glContext);
-    
-    // Save current OpenGL state
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glPushMatrix();
-    
-    // Shutdown existing ImGui if it exists
-    if (_imguiReady) {
-        ImGui_ImplOpenGL2_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        ImGui::DestroyContext();
-        _imguiReady = false;
-    }
-    
-    // Setup Dear ImGui context with minimal configuration
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    
-    // Add default font with explicit atlas building
-    io.Fonts->AddFontDefault();
-    io.FontGlobalScale = 1.0f;
-    
-    // Explicitly build the font atlas
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-    
-    // Set INI file path to user config directory
-    std::string configDir = getConfigDirectory();
-    if (!configDir.empty()) {
-        std::string iniPath = configDir + "/imgui.ini";
-        io.IniFilename = strdup(iniPath.c_str());
-    }
-    
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
-    ImGui_ImplOpenGL2_Init();
-    
-    // Explicitly create the font texture
-    ImGui_ImplOpenGL2_CreateFontsTexture();
-    
-    _imguiReady = true;
-    
-    // Restore OpenGL state
-    glPopMatrix();
-    glPopAttrib();
-}
+
 
 // Dynamic information methods
 void HelpOverlay::setCurrentPreset(const std::string& preset) {
@@ -693,6 +563,61 @@ float HelpOverlay::calculateMaxKeyWidth(const std::vector<KeyBinding>& bindings)
         maxWidth = std::max(maxWidth, width);
     }
     return maxWidth;
+}
+
+void HelpOverlay::initializeImGui() {
+    // Ensure we have the OpenGL context
+    SDL_GL_MakeCurrent(_window, _glContext);
+    
+    // Setup Dear ImGui context with minimal configuration
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    
+    // Add default font with explicit atlas building
+    io.Fonts->AddFontDefault();
+    io.FontGlobalScale = 1.0f;
+    
+    // Explicitly build the font atlas
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    
+    // Set INI file path to user config directory
+    std::string configDir = getConfigDirectory();
+    if (!configDir.empty()) {
+        std::string iniPath = configDir + "/imgui.ini";
+        io.IniFilename = strdup(iniPath.c_str());
+    }
+    
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
+    ImGui_ImplOpenGL2_Init();
+    
+    // Explicitly create the font texture
+    ImGui_ImplOpenGL2_CreateFontsTexture();
+    
+    _imguiReady = true;
+}
+
+void HelpOverlay::rebuildFontAtlasInternal() {
+    // Rebuild the font atlas
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+    io.Fonts->AddFontDefault();
+    
+    // Build the font atlas
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    
+    // This forces ImGui to recreate its font texture
+    ImGui_ImplOpenGL2_DestroyFontsTexture();
+    ImGui_ImplOpenGL2_CreateFontsTexture();
 }
 
 void HelpOverlay::renderStatusLabel(const std::string& label, const std::string& value, const ImVec4& valueColor, float maxLabelWidth) {

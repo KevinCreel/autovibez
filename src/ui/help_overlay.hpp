@@ -26,7 +26,6 @@ public:
     void reinitializeImGui(); // Add method to completely reinitialize ImGui
     void triggerTextureRebind(); // Add method to trigger texture rebinding
     void triggerDeferredTextureRebind(); // Add method for deferred texture rebinding
-    void triggerCompleteReinitialization(); // Add method for complete reinitialization
     
     // Dynamic information methods
     void setCurrentPreset(const std::string& preset);
@@ -79,6 +78,8 @@ private:
     void renderKeyBindingAligned(const std::string& key, const std::string& description, float maxWidth);
     void renderKeyBindingSection(const std::string& sectionTitle, const std::vector<KeyBinding>& bindings, const ImVec4& titleColor, const ImVec4& separatorColor);
     void renderStatusLabel(const std::string& label, const std::string& value, const ImVec4& valueColor, float maxLabelWidth);
+    void initializeImGui();
+    void rebuildFontAtlasInternal();
 };
 
 } // namespace UI
