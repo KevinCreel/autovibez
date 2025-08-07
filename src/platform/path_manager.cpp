@@ -2,8 +2,9 @@
 #include "path_constants.hpp"
 #include <iostream>
 #include <cstdlib>
-#include <SDL2/SDL.h>
+#include <cstring>
 #include <algorithm>
+#include <filesystem>
 
 std::string PathManager::getConfigDirectory() {
     std::string config_dir;
@@ -12,7 +13,7 @@ std::string PathManager::getConfigDirectory() {
     // Windows: Use %APPDATA%/autovibez/config
     const char* appdata = std::getenv(PathConstants::ENV_APPDATA);
     if (appdata) {
-        config_dir = std::string(appdata) + "/" + PathConstants::APP_NAME + "/" + PathConstants::CONFIG_DIR;
+        config_dir = joinPath(joinPath(std::string(appdata), PathConstants::APP_NAME), PathConstants::CONFIG_DIR);
     } else {
         config_dir = PathConstants::FALLBACK_CONFIG; // Fallback
     }
@@ -20,13 +21,13 @@ std::string PathManager::getConfigDirectory() {
     // macOS: Use ~/Library/Application Support/autovibez/config
     const char* home = std::getenv(PathConstants::ENV_HOME);
     if (home) {
-        config_dir = std::string(home) + "/Library/Application Support/" + PathConstants::APP_NAME + "/" + PathConstants::CONFIG_DIR;
+        config_dir = joinPath(joinPath(joinPath(std::string(home), "Library/Application Support"), PathConstants::APP_NAME), PathConstants::CONFIG_DIR);
     } else {
         config_dir = PathConstants::FALLBACK_CONFIG; // Fallback
     }
 #else
     // Linux/Unix: Use XDG Base Directory Specification
-    config_dir = getXDGConfigHome() + "/" + PathConstants::APP_NAME + "/" + PathConstants::CONFIG_DIR;
+    config_dir = joinPath(joinPath(getXDGConfigHome(), PathConstants::APP_NAME), PathConstants::CONFIG_DIR);
 #endif
     
     ensureDirectoryExists(config_dir);
@@ -40,7 +41,7 @@ std::string PathManager::getAssetsDirectory() {
     // Windows: Use %APPDATA%/autovibez/assets
     const char* appdata = std::getenv(PathConstants::ENV_APPDATA);
     if (appdata) {
-        assets_dir = std::string(appdata) + "/" + PathConstants::APP_NAME + "/" + PathConstants::ASSETS_DIR;
+        assets_dir = joinPath(joinPath(std::string(appdata), PathConstants::APP_NAME), PathConstants::ASSETS_DIR);
     } else {
         assets_dir = PathConstants::FALLBACK_ASSETS; // Fallback
     }
@@ -48,13 +49,13 @@ std::string PathManager::getAssetsDirectory() {
     // macOS: Use ~/Library/Application Support/autovibez/assets
     const char* home = std::getenv(PathConstants::ENV_HOME);
     if (home) {
-        assets_dir = std::string(home) + "/Library/Application Support/" + PathConstants::APP_NAME + "/" + PathConstants::ASSETS_DIR;
+        assets_dir = joinPath(joinPath(joinPath(std::string(home), "Library/Application Support"), PathConstants::APP_NAME), PathConstants::ASSETS_DIR);
     } else {
         assets_dir = PathConstants::FALLBACK_ASSETS; // Fallback
     }
 #else
     // Linux/Unix: Use XDG Base Directory Specification
-    assets_dir = getXDGDataHome() + "/" + PathConstants::APP_NAME + "/" + PathConstants::ASSETS_DIR;
+    assets_dir = joinPath(joinPath(getXDGDataHome(), PathConstants::APP_NAME), PathConstants::ASSETS_DIR);
 #endif
     
     ensureDirectoryExists(assets_dir);
@@ -68,7 +69,7 @@ std::string PathManager::getDataDirectory() {
     // Windows: Use %APPDATA%/autovibez
     const char* appdata = std::getenv(PathConstants::ENV_APPDATA);
     if (appdata) {
-        data_dir = std::string(appdata) + "/" + PathConstants::APP_NAME;
+        data_dir = joinPath(std::string(appdata), PathConstants::APP_NAME);
     } else {
         data_dir = PathConstants::FALLBACK_DATA; // Fallback
     }
@@ -76,13 +77,13 @@ std::string PathManager::getDataDirectory() {
     // macOS: Use ~/Library/Application Support/autovibez
     const char* home = std::getenv(PathConstants::ENV_HOME);
     if (home) {
-        data_dir = std::string(home) + "/Library/Application Support/" + PathConstants::APP_NAME;
+        data_dir = joinPath(joinPath(std::string(home), "Library/Application Support"), PathConstants::APP_NAME);
     } else {
         data_dir = PathConstants::FALLBACK_DATA; // Fallback
     }
 #else
     // Linux/Unix: Use XDG Base Directory Specification
-    data_dir = getXDGDataHome() + "/" + PathConstants::APP_NAME;
+    data_dir = joinPath(getXDGDataHome(), PathConstants::APP_NAME);
 #endif
     
     ensureDirectoryExists(data_dir);
@@ -133,7 +134,7 @@ std::string PathManager::getCacheDirectory() {
     if (isWindows()) {
         std::string appdata = getWindowsAppData();
         if (!appdata.empty()) {
-            cache_dir = joinPath(appdata, std::string(PathConstants::APP_NAME) + "/" + PathConstants::CACHE_DIR);
+            cache_dir = joinPath(joinPath(appdata, PathConstants::APP_NAME), PathConstants::CACHE_DIR);
         } else {
             cache_dir = PathConstants::FALLBACK_CACHE; // Fallback
         }
@@ -159,14 +160,14 @@ std::string PathManager::getStateDirectory() {
     if (isWindows()) {
         std::string appdata = getWindowsAppData();
         if (!appdata.empty()) {
-            state_dir = joinPath(appdata, std::string(PathConstants::APP_NAME) + "/" + PathConstants::STATE_DIR);
+            state_dir = joinPath(joinPath(appdata, PathConstants::APP_NAME), PathConstants::STATE_DIR);
         } else {
             state_dir = PathConstants::FALLBACK_STATE; // Fallback
         }
     } else if (isMacOS()) {
         std::string appsupport = getMacOSAppSupport();
         if (!appsupport.empty()) {
-            state_dir = joinPath(appsupport, std::string(PathConstants::APP_NAME) + "/" + PathConstants::STATE_DIR);
+            state_dir = joinPath(joinPath(appsupport, PathConstants::APP_NAME), PathConstants::STATE_DIR);
         } else {
             state_dir = PathConstants::FALLBACK_STATE; // Fallback
         }
@@ -186,7 +187,7 @@ std::string PathManager::getXDGConfigHome() {
     } else {
         const char* home = std::getenv(PathConstants::ENV_HOME);
         if (home) {
-            return std::string(home) + PathConstants::XDG_CONFIG;
+            return joinPath(std::string(home), std::string(PathConstants::XDG_CONFIG).substr(1)); // Remove leading slash
         } else {
             return PathConstants::FALLBACK_CONFIG; // Last resort fallback
         }
@@ -200,7 +201,7 @@ std::string PathManager::getXDGDataHome() {
     } else {
         const char* home = std::getenv(PathConstants::ENV_HOME);
         if (home) {
-            return std::string(home) + PathConstants::XDG_LOCAL_SHARE;
+            return joinPath(std::string(home), std::string(PathConstants::XDG_LOCAL_SHARE).substr(1)); // Remove leading slash
         } else {
             return PathConstants::FALLBACK_ASSETS; // Last resort fallback
         }
@@ -216,23 +217,23 @@ void PathManager::ensureDirectoryExists(const std::string& path) {
 // ===== File Path Methods =====
 
 std::string PathManager::getDatabasePath() {
-    return getStateDirectory() + "/" + PathConstants::DATABASE_FILE;
+    return joinPath(getStateDirectory(), PathConstants::DATABASE_FILE);
 }
 
 std::string PathManager::getMixesDirectory() {
-    return getDataDirectory() + "/" + PathConstants::MIXES_DIR;
+    return joinPath(getDataDirectory(), PathConstants::MIXES_DIR);
 }
 
 std::string PathManager::getFileMappingsPath() {
-    return getStateDirectory() + "/" + PathConstants::FILE_MAPPINGS_FILE;
+    return joinPath(getStateDirectory(), PathConstants::FILE_MAPPINGS_FILE);
 }
 
 std::string PathManager::getPresetsDirectory() {
-    return getAssetsDirectory() + "/" + PathConstants::PRESETS_DIR;
+    return joinPath(getAssetsDirectory(), PathConstants::PRESETS_DIR);
 }
 
 std::string PathManager::getTexturesDirectory() {
-    return getAssetsDirectory() + "/" + PathConstants::TEXTURES_DIR;
+    return joinPath(getAssetsDirectory(), PathConstants::TEXTURES_DIR);
 }
 
 // ===== Utility Methods =====
@@ -247,25 +248,25 @@ std::vector<std::string> PathManager::getConfigFileSearchPaths() {
     }
     
     // 2. XDG config directory
-    paths.push_back(getConfigDirectory() + "/" + PathConstants::CONFIG_FILE);
+    paths.push_back(joinPath(getConfigDirectory(), PathConstants::CONFIG_FILE));
     
     // 3. Platform-specific system-wide fallback
     if (isWindows()) {
         // Windows: Use system-wide installation if available
-        paths.push_back("C:/ProgramData/" + std::string(PathConstants::APP_NAME) + "/" + PathConstants::CONFIG_FILE);
+        paths.push_back(joinPath(joinPath("C:/ProgramData", PathConstants::APP_NAME), PathConstants::CONFIG_FILE));
     } else if (isMacOS()) {
         // macOS: Use system-wide installation if available
-        paths.push_back("/Library/Application Support/" + std::string(PathConstants::APP_NAME) + "/" + PathConstants::CONFIG_FILE);
+        paths.push_back(joinPath(joinPath("/Library/Application Support", PathConstants::APP_NAME), PathConstants::CONFIG_FILE));
     } else {
         // Linux/Unix: Use XDG data directories for system-wide installation
         auto xdg_dirs = getXDGDataDirectories();
         for (const auto& dir : xdg_dirs) {
-            paths.push_back(dir + "/" + PathConstants::APP_NAME + "/" + PathConstants::CONFIG_FILE);
+            paths.push_back(joinPath(joinPath(dir, PathConstants::APP_NAME), PathConstants::CONFIG_FILE));
         }
     }
     
     // 4. Local config directory
-    paths.push_back(std::string(PathConstants::CONFIG_DIR) + "/" + PathConstants::CONFIG_FILE);
+    paths.push_back(joinPath(PathConstants::CONFIG_DIR, PathConstants::CONFIG_FILE));
     
     return paths;
 }
@@ -279,20 +280,20 @@ std::vector<std::string> PathManager::getPresetSearchPaths() {
     // 2. Platform-specific system-wide fallback
     if (isWindows()) {
         // Windows: Use system-wide installation if available
-        paths.push_back("C:/ProgramData/" + std::string(PathConstants::APP_NAME) + "/" + PathConstants::PRESETS_DIR);
+        paths.push_back(joinPath(joinPath("C:/ProgramData", PathConstants::APP_NAME), PathConstants::PRESETS_DIR));
     } else if (isMacOS()) {
         // macOS: Use system-wide installation if available
-        paths.push_back("/Library/Application Support/" + std::string(PathConstants::APP_NAME) + "/" + PathConstants::PRESETS_DIR);
+        paths.push_back(joinPath(joinPath("/Library/Application Support", PathConstants::APP_NAME), PathConstants::PRESETS_DIR));
     } else {
         // Linux/Unix: Use XDG data directories for system-wide installation
         auto xdg_dirs = getXDGDataDirectories();
         for (const auto& dir : xdg_dirs) {
-            paths.push_back(dir + "/" + PathConstants::APP_NAME + "/" + PathConstants::PRESETS_DIR);
+            paths.push_back(joinPath(joinPath(dir, PathConstants::APP_NAME), PathConstants::PRESETS_DIR));
         }
     }
     
     // 3. Local assets
-    paths.push_back(std::string(PathConstants::ASSETS_DIR) + "/" + PathConstants::PRESETS_DIR);
+    paths.push_back(joinPath(PathConstants::ASSETS_DIR, PathConstants::PRESETS_DIR));
     
     return paths;
 }
@@ -306,20 +307,20 @@ std::vector<std::string> PathManager::getTextureSearchPaths() {
     // 2. Platform-specific system-wide fallback
     if (isWindows()) {
         // Windows: Use system-wide installation if available
-        paths.push_back("C:/ProgramData/" + std::string(PathConstants::APP_NAME) + "/" + PathConstants::TEXTURES_DIR);
+        paths.push_back(joinPath(joinPath("C:/ProgramData", PathConstants::APP_NAME), PathConstants::TEXTURES_DIR));
     } else if (isMacOS()) {
         // macOS: Use system-wide installation if available
-        paths.push_back("/Library/Application Support/" + std::string(PathConstants::APP_NAME) + "/" + PathConstants::TEXTURES_DIR);
+        paths.push_back(joinPath(joinPath("/Library/Application Support", PathConstants::APP_NAME), PathConstants::TEXTURES_DIR));
     } else {
         // Linux/Unix: Use XDG data directories for system-wide installation
         auto xdg_dirs = getXDGDataDirectories();
         for (const auto& dir : xdg_dirs) {
-            paths.push_back(dir + "/" + PathConstants::APP_NAME + "/" + PathConstants::TEXTURES_DIR);
+            paths.push_back(joinPath(joinPath(dir, PathConstants::APP_NAME), PathConstants::TEXTURES_DIR));
         }
     }
     
     // 3. Local assets
-    paths.push_back(std::string(PathConstants::ASSETS_DIR) + "/" + PathConstants::TEXTURES_DIR);
+    paths.push_back(joinPath(PathConstants::ASSETS_DIR, PathConstants::TEXTURES_DIR));
     
     return paths;
 }
@@ -369,7 +370,7 @@ std::string PathManager::getXDGCacheHome() {
     } else {
         const char* home = std::getenv(PathConstants::ENV_HOME);
         if (home) {
-            return std::string(home) + PathConstants::XDG_CACHE;
+            return joinPath(std::string(home), std::string(PathConstants::XDG_CACHE).substr(1)); // Remove leading slash
         } else {
             return PathConstants::FALLBACK_CACHE; // Last resort fallback
         }
@@ -383,7 +384,7 @@ std::string PathManager::getXDGStateHome() {
     } else {
         const char* home = std::getenv(PathConstants::ENV_HOME);
         if (home) {
-            return std::string(home) + PathConstants::XDG_STATE;
+            return joinPath(std::string(home), std::string(PathConstants::XDG_STATE).substr(1)); // Remove leading slash
         } else {
             return PathConstants::FALLBACK_STATE; // Last resort fallback
         }
@@ -413,7 +414,7 @@ std::vector<std::string> PathManager::getXDGDataDirectories() {
         if (isWindows()) {
             // Windows: Use ProgramData and Program Files
             directories.push_back("C:/ProgramData");
-            directories.push_back("C:/Program Files/" + std::string(PathConstants::APP_NAME));
+            directories.push_back(joinPath("C:/Program Files", PathConstants::APP_NAME));
         } else if (isMacOS()) {
             // macOS: Use system-wide Application Support
             directories.push_back("/Library/Application Support");
@@ -441,7 +442,7 @@ std::string PathManager::getWindowsAppData() {
 std::string PathManager::getMacOSAppSupport() {
     const char* home = std::getenv(PathConstants::ENV_HOME);
     if (home) {
-        return std::string(home) + "/Library/Application Support";
+        return joinPath(std::string(home), "Library/Application Support");
     } else {
         return ""; // Fallback handled by caller
     }
@@ -450,7 +451,7 @@ std::string PathManager::getMacOSAppSupport() {
 std::string PathManager::getMacOSCaches() {
     const char* home = std::getenv(PathConstants::ENV_HOME);
     if (home) {
-        return std::string(home) + "/Library/Caches";
+        return joinPath(std::string(home), "Library/Caches");
     } else {
         return ""; // Fallback handled by caller
     }
@@ -488,7 +489,7 @@ std::string PathManager::joinPath(const std::string& base, const std::string& co
         result += '/';
     }
     
-    return result + component;
+    return normalizePath(result + component);
 }
 
 std::string PathManager::normalizePath(const std::string& path) {
