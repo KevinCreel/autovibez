@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "constants.hpp"
+#include "error_handler.hpp"
 #include "mix_database.hpp"
 #include "mix_downloader.hpp"
 #include "mix_metadata.hpp"
@@ -23,7 +24,7 @@ using FirstMixAddedCallback = std::function<void(const Mix&)>;
 /**
  * @brief Main orchestrator for mix management functionality
  */
-class MixManager {
+class MixManager : public AutoVibez::Utils::ErrorHandler {
 public:
     MixManager(const std::string& db_path, const std::string& data_dir);
     ~MixManager();
@@ -174,8 +175,6 @@ private:
     std::unique_ptr<AutoVibez::Audio::MP3Analyzer> mp3_analyzer;
     std::string db_path;
     std::string data_dir;
-    std::string last_error;
-    bool success;
     Mix current_mix;
     std::vector<Mix> available_mixes;
     std::vector<std::future<bool>> _download_futures;

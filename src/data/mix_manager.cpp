@@ -31,7 +31,7 @@ std::random_device MixManager::_random_device;
 std::mt19937 MixManager::_random_generator(MixManager::_random_device());
 
 MixManager::MixManager(const std::string& db_path, const std::string& data_dir)
-    : db_path(db_path), data_dir(data_dir), success(true) {}
+    : db_path(db_path), data_dir(data_dir) {}
 
 MixManager::~MixManager() {
     // Stop any playing music
@@ -56,8 +56,7 @@ bool MixManager::initialize() {
 
     database = std::make_unique<MixDatabase>(db_path);
     if (!database->initialize()) {
-        last_error = "Failed to initialize database: " + database->getLastError();
-        success = false;
+        setError("Failed to initialize database: " + database->getLastError());
         return false;
     }
 
@@ -83,7 +82,7 @@ bool MixManager::initialize() {
 
 bool MixManager::loadMixMetadata(const std::string& yaml_url) {
     if (!metadata) {
-        last_error = "Metadata parser not initialized";
+        setError("Metadata parser not initialized");
         return false;
     }
 
@@ -97,7 +96,7 @@ bool MixManager::loadMixMetadata(const std::string& yaml_url) {
                 syncMixesWithDatabase(mixes);
                 return true;
             } catch (const std::exception& e) {
-                last_error = "Database sync failed: " + std::string(e.what());
+                setError("Database sync failed: " + std::string(e.what()));
                 return false;
             }
         }
@@ -111,14 +110,13 @@ bool MixManager::loadMixMetadata(const std::string& yaml_url) {
     }
 
     // All attempts failed
-    last_error =
-        "Failed to load metadata after " + std::to_string(max_retries) + " attempts: " + metadata->getLastError();
+    setError("Failed to load metadata after " + std::to_string(max_retries) + " attempts: " + metadata->getLastError());
     return false;
 }
 
 bool MixManager::checkForNewMixes(const std::string& yaml_url) {
     if (!metadata) {
-        last_error = "Metadata parser not initialized";
+        setError("Metadata parser not initialized");
         return false;
     }
 
@@ -126,7 +124,7 @@ bool MixManager::checkForNewMixes(const std::string& yaml_url) {
     std::vector<Mix> new_mixes = metadata->loadFromYaml(yaml_url);
 
     if (!metadata->isSuccess()) {
-        last_error = "Failed to check for new mixes: " + metadata->getLastError();
+        setError("Failed to check for new mixes: " + metadata->getLastError());
         return false;
     }
 
@@ -177,7 +175,7 @@ bool MixManager::downloadAndPlayMix(const Mix& mix) {
 
 bool MixManager::startCrossfade(const Mix& new_mix, int crossfade_duration_ms) {
     if (!player) {
-        last_error = "Player not initialized";
+        setError("Player not initialized");
         return false;
     }
 
@@ -239,20 +237,20 @@ void MixManager::updateCrossfade() {
 
 bool MixManager::playMix(const Mix& mix) {
     if (!player) {
-        last_error = "Player not initialized";
+        setError("Player not initialized");
         return false;
     }
 
     std::string local_path = downloader->getLocalPath(mix.id);
 
     if (!downloader->isMixDownloaded(mix.id)) {
-        last_error = "Mix not downloaded: " + mix.title;
+        setError("Mix not downloaded: " + mix.title);
         return false;
     }
 
     // Validate that the file is actually a valid MP3 before attempting playback
     if (!AutoVibez::Utils::AudioUtils::isValidMP3File(local_path)) {
-        last_error = "Mix file is corrupted or invalid: " + mix.title;
+        setError("Mix file is corrupted or invalid: " + mix.title);
 
         // Clean up the corrupted file
         try {
@@ -269,14 +267,14 @@ bool MixManager::playMix(const Mix& mix) {
         setLocalPath(mix.id, local_path);
         return true;
     } else {
-        last_error = "Failed to play mix: " + player->getLastError();
+        setError("Failed to play mix: " + player->getLastError());
         return false;
     }
 }
 
 bool MixManager::togglePause() {
     if (!player) {
-        last_error = "Player not initialized";
+        setError("Player not initialized");
         return false;
     }
     return player->togglePause();
@@ -284,7 +282,7 @@ bool MixManager::togglePause() {
 
 bool MixManager::stop() {
     if (!player) {
-        last_error = "Player not initialized";
+        setError("Player not initialized");
         return false;
     }
     return player->stop();
@@ -301,7 +299,7 @@ bool MixManager::clearMixFiles() {
         std::filesystem::create_directories(data_dir);
         return true;
     } catch (const std::exception& e) {
-        last_error = "Failed to clear mix files: " + std::string(e.what());
+        setError("Failed to clear mix files: " + std::string(e.what()));
         return false;
     }
 }
@@ -375,7 +373,7 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
 
     // Step 1: Download the mix with title-based naming
     if (!downloader->downloadMixWithTitleNaming(mix, mp3_analyzer.get())) {
-        last_error = "Failed to download mix: " + downloader->getLastError();
+        setError("Failed to download mix: " + downloader->getLastError());
         return false;
     }
 
@@ -400,7 +398,7 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
     // Step 3: Analyze the downloaded file to extract ALL metadata
     MP3Metadata mp3_metadata = mp3_analyzer->analyzeFile(local_path);
     if (mp3_metadata.title.empty() && mp3_metadata.artist.empty()) {
-        last_error = "Failed to analyze MP3 file: " + mp3_analyzer->getLastError();
+        setError("Failed to analyze MP3 file: " + mp3_analyzer->getLastError());
         return false;
     }
 
@@ -454,7 +452,7 @@ Mix MixManager::getRandomMixByGenre(const std::string& genre, const std::string&
 
 bool MixManager::setVolume(int volume, bool suppress_output) {
     if (!player) {
-        last_error = "Player not initialized";
+        setError("Player not initialized");
         return false;
     }
 
@@ -618,7 +616,7 @@ std::vector<Mix> MixManager::getAvailableMixes() {
 
 Mix MixManager::getMixById(const std::string& id) {
     if (!database) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return Mix();
     }
     return database->getMixById(id);
@@ -843,7 +841,7 @@ std::string MixManager::findGenreCaseInsensitive(const std::string& target_genre
 
 bool MixManager::cleanupInconsistentIds() {
     if (!database) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return false;
     }
 
@@ -876,7 +874,7 @@ bool MixManager::cleanupInconsistentIds() {
 
 bool MixManager::cleanupMissingFiles() {
     if (!database) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return false;
     }
 
@@ -900,7 +898,7 @@ bool MixManager::cleanupMissingFiles() {
 
 bool MixManager::validateDatabaseFileConsistency() {
     if (!database) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return false;
     }
 
@@ -928,8 +926,8 @@ bool MixManager::validateDatabaseFileConsistency() {
     if (total_mixes > 0) {
         // But we can still return false if there are missing files
         if (missing_files > 0) {
-            last_error = "Found " + std::to_string(missing_files) + " missing files out of " +
-                         std::to_string(total_mixes) + " total mixes";
+            setError("Found " + std::to_string(missing_files) + " missing files out of " + std::to_string(total_mixes) +
+                     " total mixes");
             return false;
         }
     }
@@ -939,7 +937,7 @@ bool MixManager::validateDatabaseFileConsistency() {
 
 bool MixManager::downloadMissingMixesBackground() {
     if (!database || !downloader) {
-        last_error = "Database or downloader not initialized";
+        setError("Database or downloader not initialized");
         return false;
     }
 
