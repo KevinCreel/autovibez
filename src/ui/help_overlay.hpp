@@ -68,6 +68,17 @@ private:
     // Alternative rendering
     TTF_Font* _font = nullptr;
     bool _useNativeRendering = false;
+    
+    // Key binding alignment helper
+    struct KeyBinding {
+        std::string key;
+        std::string description;
+    };
+    
+    float calculateMaxKeyWidth(const std::vector<KeyBinding>& bindings);
+    void renderKeyBindingAligned(const std::string& key, const std::string& description, float maxWidth);
+    void renderKeyBindingSection(const std::string& sectionTitle, const std::vector<KeyBinding>& bindings, const ImVec4& titleColor, const ImVec4& separatorColor);
+    void renderStatusLabel(const std::string& label, const std::string& value, const ImVec4& valueColor, float maxLabelWidth);
 };
 
 } // namespace UI

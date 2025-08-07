@@ -140,14 +140,7 @@ void HelpOverlay::render() {
         ImGui::PopStyleColor();
     };
     
-    // Helper function to create aligned key binding
-    auto renderKeyBinding = [](const std::string& key, const std::string& description) {
-        ImGui::TextUnformatted(key.c_str());
-        ImGui::SameLine();
-        ImGui::TextUnformatted(" - ");
-        ImGui::SameLine();
-        ImGui::TextUnformatted(description.c_str());
-    };
+
     
     int windowWidth, windowHeight;
     SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
@@ -210,79 +203,31 @@ void HelpOverlay::render() {
     
     // Current preset
     if (!_currentPreset.empty()) {
-        std::string label = "  Preset:";
-        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
-        ImGui::TextUnformatted(_currentPreset.c_str());
-        ImGui::PopStyleColor();
+        renderStatusLabel("Preset:", _currentPreset, ImVec4(0.8f, 0.4f, 1.0f, 1.0f), maxLabelWidth);
     }
     
     // Current mix
     if (!_currentArtist.empty() && !_currentTitle.empty()) {
-        std::string label = "  Now playing:";
-        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
-        ImGui::TextUnformatted(_currentArtist.c_str());
-        ImGui::PopStyleColor();
-        ImGui::SameLine();
-        ImGui::TextUnformatted(" - ");
-        ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
-        ImGui::TextUnformatted(_currentTitle.c_str());
-        ImGui::PopStyleColor();
+        renderStatusLabel("Now playing:", _currentArtist + " - " + _currentTitle, ImVec4(1.0f, 0.6f, 0.0f, 1.0f), maxLabelWidth);
     }
     
     // Current genre
     if (!_currentGenre.empty()) {
-        std::string label = "  Genre:";
-        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
-        ImGui::TextUnformatted(_currentGenre.c_str());
-        ImGui::PopStyleColor();
+        renderStatusLabel("Genre:", _currentGenre, ImVec4(0.4f, 0.8f, 1.0f, 1.0f), maxLabelWidth);
     }
     
     // Volume level
     if (_volumeLevel >= 0) {
-        std::string label = "  Volume:";
-        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
-        ImGui::TextUnformatted((std::to_string(_volumeLevel) + "%").c_str());
-        ImGui::PopStyleColor();
+        renderStatusLabel("Volume:", std::to_string(_volumeLevel) + "%", ImVec4(0.4f, 0.8f, 1.0f, 1.0f), maxLabelWidth);
     }
     
     // Audio device
     if (!_audioDevice.empty()) {
-        std::string label = "  Device:";
-        float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
-        ImGui::TextUnformatted(_audioDevice.c_str());
-        ImGui::PopStyleColor();
+        renderStatusLabel("Device:", _audioDevice, ImVec4(0.4f, 0.8f, 1.0f, 1.0f), maxLabelWidth);
     }
     
     // Beat sensitivity
-    std::string label = "  Beat Sensitivity:";
-    float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-    ImGui::TextUnformatted(label.c_str());
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (maxLabelWidth - labelWidth));
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
-    ImGui::TextUnformatted((std::to_string(_beatSensitivity).substr(0, 4)).c_str());
-    ImGui::PopStyleColor();
+    renderStatusLabel("Beat Sensitivity:", std::to_string(_beatSensitivity).substr(0, 4), ImVec4(0.8f, 0.4f, 1.0f, 1.0f), maxLabelWidth);
     
     ImGui::PopStyleColor();
     
@@ -300,118 +245,47 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     // Mix Management Section with improved styling
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
-    ImGui::TextUnformatted("MIX MANAGEMENT");
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    // Subtle line under section header
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.6f, 0.0f, 0.4f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    renderKeyBinding("  Left/Right  ", "Previous/Next mix");
-    renderKeyBinding("  F           ", "Toggle favorite");
-    renderKeyBinding("  L           ", "Toggle favorites filter");
-    renderKeyBinding("  G           ", "Play random mix in current genre");
-    renderKeyBinding("  Shift+G     ", "Switch to random genre");
-    renderKeyBinding("  SPACE       ", "Pause/Resume playback");
-    ImGui::PopStyleColor();
-    
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
-    
-    // Decorative line
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.6f, 0.0f, 0.6f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
+    std::vector<KeyBinding> mixManagementBindings = {
+        {"Left/Right", "Previous/Next mix"},
+        {"F", "Toggle favorite"},
+        {"L", "Toggle favorites filter"},
+        {"G", "Play random mix in current genre"},
+        {"Shift+G", "Switch to random genre"},
+        {"SPACE", "Pause/Resume playback"}
+    };
+    renderKeyBindingSection("MIX MANAGEMENT", mixManagementBindings, 
+                           ImVec4(1.0f, 0.6f, 0.0f, 1.0f), 
+                           ImVec4(1.0f, 0.6f, 0.0f, 0.4f));
     
     // Audio Controls Section with improved styling
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
-    ImGui::TextUnformatted("AUDIO CONTROLS");
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    // Subtle line under section header
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.4f, 0.8f, 1.0f, 0.4f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    renderKeyBinding("  M           ", "Mute/Unmute audio");
-    renderKeyBinding("  Up/Down     ", "Volume up/down");
-    renderKeyBinding("  Tab         ", "Cycle through audio devices");
-    ImGui::PopStyleColor();
-    
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
-    
-    // Decorative line
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.4f, 0.8f, 1.0f, 0.6f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
+    std::vector<KeyBinding> audioControlBindings = {
+        {"M", "Mute/Unmute audio"},
+        {"Up/Down", "Volume up/down"},
+        {"Tab", "Cycle through audio devices"}
+    };
+    renderKeyBindingSection("AUDIO CONTROLS", audioControlBindings,
+                           ImVec4(0.4f, 0.8f, 1.0f, 1.0f),
+                           ImVec4(0.4f, 0.8f, 1.0f, 0.4f));
     
     // Visualizer Controls Section with improved styling
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.4f, 1.0f, 1.0f));
-    ImGui::TextUnformatted("VISUALIZER CONTROLS");
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    // Subtle line under section header
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.8f, 0.4f, 1.0f, 0.4f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    renderKeyBinding("  H           ", "Toggle this help overlay");
-    renderKeyBinding("  F11         ", "Toggle fullscreen mode");
-    renderKeyBinding("  R           ", "Load random preset");
-    renderKeyBinding("  [ / ]       ", "Previous/Next preset");
-    renderKeyBinding("  +/-         ", "Increase/Decrease beat sensitivity");
-    ImGui::PopStyleColor();
-    
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
-    
-    // Decorative line
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.8f, 0.4f, 1.0f, 0.6f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
+    std::vector<KeyBinding> visualizerControlBindings = {
+        {"H", "Toggle this help overlay"},
+        {"F11", "Toggle fullscreen mode"},
+        {"R", "Load random preset"},
+        {"[ / ]", "Previous/Next preset"},
+        {"+/-", "Increase/Decrease beat sensitivity"}
+    };
+    renderKeyBindingSection("VISUALIZER CONTROLS", visualizerControlBindings,
+                           ImVec4(0.8f, 0.4f, 1.0f, 1.0f),
+                           ImVec4(0.8f, 0.4f, 1.0f, 0.4f));
     
     // Application Section with improved styling
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-    ImGui::TextUnformatted("APPLICATION");
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    // Subtle line under section header
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.4f, 0.4f, 0.4f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-    ImGui::Spacing();
-    
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    renderKeyBinding("  Ctrl+Q      ", "Quit application");
-    ImGui::PopStyleColor();
+    std::vector<KeyBinding> applicationBindings = {
+        {"Ctrl+Q", "Quit application"}
+    };
+    renderKeyBindingSection("APPLICATION", applicationBindings,
+                           ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
+                           ImVec4(1.0f, 0.4f, 0.4f, 0.4f));
     
     // Mix Table Section (always shown if data is available)
     if (!_mixTableData.empty()) {
@@ -807,6 +681,91 @@ void HelpOverlay::setMixTableData(const std::vector<AutoVibez::Data::Mix>& mixes
 
 void HelpOverlay::toggleMixTableFilter() {
     _showFavoritesOnly = !_showFavoritesOnly;
+}
+
+// Helper methods for dynamic key binding alignment
+float HelpOverlay::calculateMaxKeyWidth(const std::vector<KeyBinding>& bindings) {
+    float maxWidth = 0.0f;
+    for (const auto& binding : bindings) {
+        // Add consistent indentation (2 spaces) for width calculation
+        std::string indentedKey = "  " + binding.key;
+        float width = ImGui::CalcTextSize(indentedKey.c_str()).x;
+        maxWidth = std::max(maxWidth, width);
+    }
+    return maxWidth;
+}
+
+void HelpOverlay::renderStatusLabel(const std::string& label, const std::string& value, const ImVec4& valueColor, float maxLabelWidth) {
+    // Add consistent left margin (2 spaces)
+    std::string indentedLabel = "  " + label;
+    float labelWidth = ImGui::CalcTextSize(indentedLabel.c_str()).x;
+    ImGui::TextUnformatted(indentedLabel.c_str());
+    ImGui::SameLine();
+    
+    // Add spacing to align values
+    float spacing = maxLabelWidth - labelWidth;
+    if (spacing > 0) {
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + spacing);
+    }
+    
+    ImGui::PushStyleColor(ImGuiCol_Text, valueColor);
+    ImGui::TextUnformatted(value.c_str());
+    ImGui::PopStyleColor();
+}
+
+void HelpOverlay::renderKeyBindingAligned(const std::string& key, const std::string& description, float maxWidth) {
+    // Add consistent indentation (2 spaces)
+    std::string indentedKey = "  " + key;
+    float keyWidth = ImGui::CalcTextSize(indentedKey.c_str()).x;
+    ImGui::TextUnformatted(indentedKey.c_str());
+    ImGui::SameLine();
+    
+    // Add spacing to align descriptions
+    float spacing = maxWidth - keyWidth;
+    if (spacing > 0) {
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + spacing);
+    }
+    
+    ImGui::TextUnformatted(" - ");
+    ImGui::SameLine();
+    ImGui::TextUnformatted(description.c_str());
+}
+
+void HelpOverlay::renderKeyBindingSection(const std::string& sectionTitle, const std::vector<KeyBinding>& bindings, const ImVec4& titleColor, const ImVec4& separatorColor) {
+    // Section title
+    ImGui::PushStyleColor(ImGuiCol_Text, titleColor);
+    ImGui::TextUnformatted(sectionTitle.c_str());
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Subtle line under section header
+    ImGui::PushStyleColor(ImGuiCol_Separator, separatorColor);
+    ImGui::Separator();
+    ImGui::PopStyleColor();
+    ImGui::Spacing();
+    
+    // Calculate max key width for alignment
+    float maxKeyWidth = calculateMaxKeyWidth(bindings);
+    
+    // Render all key bindings with consistent alignment
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
+    for (const auto& binding : bindings) {
+        renderKeyBindingAligned(binding.key, binding.description, maxKeyWidth);
+    }
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    
+    // Decorative line
+    ImGui::PushStyleColor(ImGuiCol_Separator, separatorColor);
+    ImGui::Separator();
+    ImGui::PopStyleColor();
+    
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
 }
 
 } // namespace UI
