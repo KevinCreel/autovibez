@@ -15,16 +15,13 @@ std::string UrlUtils::extractFilenameFromUrl(const std::string& url) {
         return "";
     }
 
-    // Find the last '/' character
     size_t last_slash = url.find_last_of('/');
     if (last_slash == std::string::npos) {
         return "";
     }
 
-    // Extract the filename part after the last '/'
     std::string filename = url.substr(last_slash + 1);
 
-    // Remove query parameters and fragments
     size_t query_start = filename.find('?');
     if (query_start != std::string::npos) {
         filename = filename.substr(0, query_start);
@@ -35,7 +32,6 @@ std::string UrlUtils::extractFilenameFromUrl(const std::string& url) {
         filename = filename.substr(0, fragment_start);
     }
 
-    // URL decode the filename
     return urlDecode(filename);
 }
 
@@ -43,12 +39,11 @@ std::string UrlUtils::urlDecode(const std::string& encoded) {
     std::string result;
     for (size_t i = 0; i < encoded.length(); ++i) {
         if (encoded[i] == '%' && i + 2 < encoded.length()) {
-            // Convert hex to char
             std::string hex = encoded.substr(i + 1, 2);
             if (isHexDigit(hex[0]) && isHexDigit(hex[1])) {
                 char decoded_char = static_cast<char>(hexToInt(hex[0]) * Constants::HEX_BASE + hexToInt(hex[1]));
                 result += decoded_char;
-                i += 2;  // Skip the next two characters
+                i += 2;
             } else {
                 result += encoded[i];
             }
@@ -67,16 +62,13 @@ std::string UrlUtils::getUrlExtension(const std::string& url) {
         return "";
     }
 
-    // Find the last '.' character
     size_t last_dot = filename.find_last_of('.');
     if (last_dot == std::string::npos) {
         return "";
     }
 
-    // Extract the extension
     std::string extension = filename.substr(last_dot + 1);
 
-    // Convert to lowercase
     extension = AutoVibez::Utils::StringUtils::toLower(extension);
     return extension;
 }
@@ -86,7 +78,6 @@ bool UrlUtils::isValidUrl(const std::string& url) {
         return false;
     }
 
-    // Basic URL validation regex
     std::regex url_regex(StringConstants::URL_REGEX_PATTERN);
     return std::regex_match(url, url_regex);
 }
@@ -96,16 +87,13 @@ std::string UrlUtils::getDomain(const std::string& url) {
         return "";
     }
 
-    // Find the protocol separator
     size_t protocol_end = url.find("://");
     if (protocol_end == std::string::npos) {
         return "";
     }
 
-    // Start after the protocol
     size_t domain_start = protocol_end + 3;
 
-    // Find the first slash or query parameter
     size_t domain_end = url.find('/', domain_start);
     if (domain_end == std::string::npos) {
         domain_end = url.find('?', domain_start);

@@ -61,25 +61,21 @@ bool MixDatabase::createTables() {
 }
 
 bool MixDatabase::validateMixData(const Mix& mix) {
-    // Validate mix data before database operations
     if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
         setError("Invalid mix data: missing required fields (id, title, artist, genre)");
         return false;
     }
 
-    // Prevent corrupted entries where title equals id
     if (mix.title == mix.id) {
         setError("Invalid mix data: title cannot be the same as id");
         return false;
     }
 
-    // Prevent "Unknown Artist" entries
     if (mix.artist == "Unknown Artist" || mix.artist.empty()) {
         setError("Invalid mix data: artist cannot be 'Unknown Artist' or empty");
         return false;
     }
 
-    // Validate duration
     if (mix.duration_seconds <= 0) {
         setError("Invalid mix data: duration must be greater than 0");
         return false;
@@ -89,7 +85,6 @@ bool MixDatabase::validateMixData(const Mix& mix) {
 }
 
 bool MixDatabase::addMix(const Mix& mix) {
-    // Validate mix data before insertion
     if (!validateMixData(mix)) {
         return false;
     }
@@ -107,7 +102,6 @@ bool MixDatabase::addMix(const Mix& mix) {
         return false;
     }
 
-    // Convert tags vector to JSON string
     std::string tags_json = "[";
     for (size_t i = 0; i < mix.tags.size(); ++i) {
         if (i > 0)
@@ -143,7 +137,6 @@ bool MixDatabase::addMix(const Mix& mix) {
 }
 
 bool MixDatabase::updateMix(const Mix& mix) {
-    // Validate mix data before update
     if (!validateMixData(mix)) {
         return false;
     }
@@ -159,17 +152,13 @@ bool MixDatabase::updateMix(const Mix& mix) {
         return false;
     }
 
-    // Convert tags to JSON
-    std::string tags_json = "[]";
-    if (!mix.tags.empty()) {
-        tags_json = "[";
-        for (size_t i = 0; i < mix.tags.size(); ++i) {
-            if (i > 0)
-                tags_json += ",";
-            tags_json += "\"" + mix.tags[i] + "\"";
-        }
-        tags_json += "]";
+    std::string tags_json = "[";
+    for (size_t i = 0; i < mix.tags.size(); ++i) {
+        if (i > 0)
+            tags_json += ",";
+        tags_json += "\"" + mix.tags[i] + "\"";
     }
+    tags_json += "]";
 
     sqlite3_bind_text(stmt, 1, mix.title.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, mix.artist.c_str(), -1, SQLITE_STATIC);
@@ -177,7 +166,6 @@ bool MixDatabase::updateMix(const Mix& mix) {
     sqlite3_bind_text(stmt, 4, mix.url.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 5, mix.local_path.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 6, mix.duration_seconds);
-
     sqlite3_bind_text(stmt, 7, tags_json.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 8, mix.description.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 9, mix.date_added.c_str(), -1, SQLITE_STATIC);
@@ -194,14 +182,6 @@ bool MixDatabase::updateMix(const Mix& mix) {
         return false;
     }
 
-    // Check if any rows were actually updated
-    int rows_affected = sqlite3_changes(db);
-    if (rows_affected == 0) {
-        setError("No mix found with id: " + mix.id);
-        return false;
-    }
-
-    success = true;
     return true;
 }
 
@@ -230,7 +210,6 @@ bool MixDatabase::deleteMix(const std::string& id) {
         return false;
     }
 
-    // Check if any rows were actually deleted
     int rows_affected = sqlite3_changes(db);
     if (rows_affected == 0) {
         setError("No mix found with id: " + id);
@@ -342,7 +321,6 @@ Mix MixDatabase::getRandomMix(const std::string& exclude_mix_id) {
         }
     }
 
-    // If no downloaded mixes found (excluding current), fall back to any mix (excluding current)
     sql = "SELECT * FROM mixes";
     if (!exclude_mix_id.empty()) {
         sql += " WHERE id != ?";
@@ -366,7 +344,6 @@ Mix MixDatabase::getRandomMix(const std::string& exclude_mix_id) {
 }
 
 Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
-    // Get total counts for weighted selection (excluding current mix and preferring downloaded)
     int total_mixes = 0;
     int favorite_mixes = 0;
     int preferred_genre_mixes = 0;
@@ -400,19 +377,16 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
     }
     sqlite3_finalize(count_stmt);
 
-    // If no downloaded mixes found, fall back to any mix
     if (total_mixes == 0) {
         return getRandomMix("");
     }
 
-    // Calculate probability: prioritize preferred genre, then favorites, then random
     bool prefer_genre = !preferred_genre.empty() && (preferred_genre_mixes > 0) &&
                         (rand() % 100 < Constants::PREFERRED_GENRE_PROBABILITY);
     bool prefer_favorites =
         !prefer_genre && (favorite_mixes > 0) && (rand() % 100 < Constants::FAVORITE_MIX_PROBABILITY);
 
     if (prefer_genre) {
-        // Get a mix from preferred genre with smart prioritization (excluding current, preferring downloaded)
         std::string sql = R"(
             SELECT * FROM mixes 
             WHERE genre COLLATE NOCASE = ? COLLATE NOCASE
@@ -486,7 +460,6 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
         }
     }
 
-    // Fall back to any downloaded mix (excluding the current mix)
     std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != ''";
     if (!exclude_mix_id.empty()) {
         sql += " AND id != ?";
@@ -509,7 +482,6 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
         }
     }
 
-    // If still no mix found, fall back to any mix (excluding the current mix)
     sql = "SELECT * FROM mixes";
     if (!exclude_mix_id.empty()) {
         sql += " WHERE id != ?";
@@ -539,10 +511,8 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
 
     std::string sql;
     if (current_mix_id.empty()) {
-        // Get first mix
         sql = "SELECT * FROM mixes ORDER BY id LIMIT 1";
     } else {
-        // Get next mix after current
         sql = "SELECT * FROM mixes WHERE id > ? ORDER BY id LIMIT 1";
     }
 
@@ -560,7 +530,6 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         result = rowToMix(stmt);
     } else {
-        // If no next mix found, wrap around to first
         sqlite3_finalize(stmt);
         sql = "SELECT * FROM mixes ORDER BY id LIMIT 1";
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -603,7 +572,6 @@ Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         result = rowToMix(stmt);
     } else {
-        // If no previous mix found, wrap around to last
         sqlite3_finalize(stmt);
         sql = "SELECT * FROM mixes ORDER BY id DESC LIMIT 1";
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {

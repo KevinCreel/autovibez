@@ -10,8 +10,6 @@
  */
 class PathManager {
 public:
-    // ===== Core Directory Methods =====
-
     /**
      * Get the XDG config directory for autovibez (cross-platform)
      */
@@ -36,8 +34,6 @@ public:
      * Get the state directory path
      */
     static std::string getStateDirectory();
-
-    // ===== File Path Methods =====
 
     /**
      * Find the configuration file to use (follows XDG spec)
@@ -68,8 +64,6 @@ public:
      * Get the textures directory path
      */
     static std::string getTexturesDirectory();
-
-    // ===== Utility Methods =====
 
     /**
      * Expand tilde in paths (cross-platform)
@@ -106,92 +100,22 @@ public:
      */
     static std::string getAppName();
 
-    // ===== Platform Detection =====
-
-    /**
-     * Check if running on Linux/Unix
-     */
     static bool isLinux();
-
-    /**
-     * Check if running on macOS
-     */
     static bool isMacOS();
-
-    /**
-     * Check if running on Windows
-     */
     static bool isWindows();
 
 private:
-    // ===== XDG Base Directory Methods =====
-
-    /**
-     * Get XDG config home directory
-     */
     static std::string getXDGConfigHome();
-
-    /**
-     * Get XDG data home directory
-     */
     static std::string getXDGDataHome();
-
-    /**
-     * Get XDG cache home directory
-     */
     static std::string getXDGCacheHome();
-
-    /**
-     * Get XDG state home directory
-     */
     static std::string getXDGStateHome();
-
-    /**
-     * Get XDG data directories (for fallback search)
-     */
     static std::vector<std::string> getXDGDataDirectories();
-
-    // ===== Platform-Specific Methods =====
-
-    /**
-     * Get Windows app data directory
-     */
     static std::string getWindowsAppData();
-
-    /**
-     * Get macOS application support directory
-     */
     static std::string getMacOSAppSupport();
-
-    /**
-     * Get macOS caches directory
-     */
     static std::string getMacOSCaches();
-
-    /**
-     * Get Windows ProgramData directory (dynamic)
-     */
     static std::string getWindowsProgramData();
-
-    /**
-     * Get Windows Program Files directory (dynamic)
-     */
     static std::string getWindowsProgramFiles();
-
-    // ===== Internal Utilities =====
-
-    /**
-     * Get home directory (cross-platform)
-     */
     static std::string getHomeDirectory();
-
-    /**
-     * Join path components (cross-platform)
-     */
     static std::string joinPath(const std::string& base, const std::string& component);
-
-    /**
-     * Normalize path separators for current platform
-     */
     static std::string normalizePath(const std::string& path);
 };

@@ -24,7 +24,6 @@ HelpOverlay::~HelpOverlay() {
         SDL_FreeCursor(_blankCursor);
         _blankCursor = nullptr;
     }
-    // Note: Don't free _originalCursor as it's managed by SDL
 }
 
 void HelpOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
@@ -45,7 +44,6 @@ void HelpOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
     _originalCursor = SDL_GetCursor();
 
     _initialized = true;
-    // Note: ImGui will be initialized on first render to avoid conflicts
 }
 
 void HelpOverlay::render() {

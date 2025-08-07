@@ -23,7 +23,7 @@
 // IN THE SOFTWARE.
 
 // Typical usage
-// -------------
+
 //
 // Given a configuration file "settings.inp":
 //   atoms  = 25
@@ -262,21 +262,3 @@ void ConfigFile::add(string key, const T& value) {
 }  // namespace Data
 }  // namespace AutoVibez
 
-// Release notes:
-// v1.0  21 May 1999
-//   + First release
-//   + Template read() access only through non-member readConfigFile()
-//   + ConfigurationFileBool is only built-in helper class
-//
-// v2.0  3 May 2002
-//   + Shortened name from ConfigurationFile to ConfigFile
-//   + Implemented template member functions
-//   + Changed default comment separator from % to #
-//   + Enabled reading of multiple-line values
-//
-// v2.1  24 May 2004
-//   + Made template specializations inline to avoid compiler-dependent linkage
-//   + Allowed comments within multiple-line values
-//   + Enabled blank line termination for multiple-line values
-//   + Added optional sentry to detect end of configuration file
-//   + Rewrote messy trimWhitespace() function as elegant trim()

@@ -228,8 +228,6 @@ void PathManager::ensureDirectoryExists(const std::string& path) {
     }
 }
 
-// ===== File Path Methods =====
-
 std::string PathManager::getDatabasePath() {
     return joinPath(getStateDirectory(), PathConstants::DATABASE_FILE);
 }
@@ -249,8 +247,6 @@ std::string PathManager::getPresetsDirectory() {
 std::string PathManager::getTexturesDirectory() {
     return joinPath(getAssetsDirectory(), PathConstants::TEXTURES_DIR);
 }
-
-// ===== Utility Methods =====
 
 std::vector<std::string> PathManager::getConfigFileSearchPaths() {
     std::vector<std::string> paths;
@@ -353,8 +349,6 @@ std::string PathManager::getAppName() {
     return PathConstants::APP_NAME;
 }
 
-// ===== Platform Detection =====
-
 bool PathManager::isLinux() {
 #ifdef _WIN32
     return false;
@@ -380,8 +374,6 @@ bool PathManager::isWindows() {
     return false;
 #endif
 }
-
-// ===== XDG Base Directory Methods =====
 
 std::string PathManager::getXDGCacheHome() {
     const char* xdg_cache_home = std::getenv(PathConstants::ENV_XDG_CACHE_HOME);
@@ -449,8 +441,6 @@ std::vector<std::string> PathManager::getXDGDataDirectories() {
 
     return directories;
 }
-
-// ===== Platform-Specific Methods =====
 
 std::string PathManager::getWindowsAppData() {
     const char* appdata = std::getenv(PathConstants::ENV_APPDATA);

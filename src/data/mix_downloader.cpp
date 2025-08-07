@@ -46,24 +46,19 @@ bool MixDownloader::downloadMix(const Mix& mix) {
 
     std::string local_path = getLocalPath(mix.id);
 
-    // Check if already downloaded
     if (isMixDownloaded(mix.id)) {
         return true;
     }
 
-    // Create cache directory if it doesn't exist
     std::filesystem::create_directories(mixes_dir);
 
-    // Handle local file URLs
     if (mix.url.substr(0, 7) == StringConstants::FILE_PROTOCOL) {
         std::string source_path = mix.url.substr(7);
-        // Copy local file
         if (std::filesystem::copy_file(source_path, local_path, std::filesystem::copy_options::overwrite_existing)) {
             return true;
         }
     }
 
-    // Handle HTTP downloads
     CURL* curl = curl_easy_init();
     if (!curl) {
         setError("Failed to initialize CURL");
@@ -85,7 +80,7 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, nullptr);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, Constants::DOWNLOAD_TIMEOUT_SECONDS);
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC);  // 1KB/s minimum
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC);
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, Constants::DOWNLOAD_LOW_SPEED_TIME_SECONDS);
 
     CURLcode res = curl_easy_perform(curl);
@@ -95,7 +90,7 @@ bool MixDownloader::downloadMix(const Mix& mix) {
 
     if (res != CURLE_OK) {
         setError("Download failed: " + std::string(curl_easy_strerror(res)));
-        std::filesystem::remove(local_path);  // Clean up failed download
+        std::filesystem::remove(local_path);
         return false;
     }
 
@@ -103,13 +98,11 @@ bool MixDownloader::downloadMix(const Mix& mix) {
 }
 
 bool MixDownloader::isMixDownloaded(const std::string& mix_id) {
-    // Check if the file exists with the hash-based name
     std::string local_path = getLocalPath(mix_id);
     if (std::filesystem::exists(local_path)) {
         return true;
     }
 
-    // Check if there's a mapping file that tracks renamed files
     std::string mapping_file = PathManager::getFileMappingsPath();
     if (std::filesystem::exists(mapping_file)) {
         std::ifstream file(mapping_file);
@@ -133,7 +126,6 @@ bool MixDownloader::isMixDownloaded(const std::string& mix_id) {
 }
 
 std::string MixDownloader::getLocalPath(const std::string& mix_id) {
-    // First check if there's a mapping for this mix ID
     std::string mapping_file = PathManager::getFileMappingsPath();
     if (std::filesystem::exists(mapping_file)) {
         std::ifstream file(mapping_file);
@@ -150,7 +142,6 @@ std::string MixDownloader::getLocalPath(const std::string& mix_id) {
         }
     }
 
-    // Fall back to hash-based naming
     return AutoVibez::Utils::PathUtils::joinPath(mixes_dir, mix_id + StringConstants::MP3_EXTENSION);
 }
 
@@ -177,30 +168,23 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     }
 
     std::string temp_path = getTemporaryPath(mix.id);
-    std::string final_path = getLocalPath(mix.id);  // Will be renamed later
+    std::string final_path = getLocalPath(mix.id);
 
-    // Check if already downloaded
     if (isMixDownloaded(mix.id)) {
         return true;
     }
 
-    // Create cache directory if it doesn't exist
     std::filesystem::create_directories(mixes_dir);
 
-    // Handle local file URLs
     if (mix.url.substr(0, 7) == StringConstants::FILE_PROTOCOL) {
         std::string source_path = mix.url.substr(7);
-        // Copy local file to temp location
         if (std::filesystem::copy_file(source_path, temp_path, std::filesystem::copy_options::overwrite_existing)) {
-            // Analyze the file to get the title
             AutoVibez::Audio::MP3Metadata mp3_metadata = mp3_analyzer->analyzeFile(temp_path);
             if (!mp3_metadata.title.empty()) {
-                // Create a safe filename from the title
                 std::string safe_title = AutoVibez::Utils::PathUtils::createSafeFilename(mp3_metadata.title);
                 final_path = AutoVibez::Utils::PathUtils::joinPath(mixes_dir, safe_title + ".mp3");
             }
 
-            // Rename temp file to final location
             if (std::filesystem::exists(temp_path)) {
                 std::filesystem::rename(temp_path, final_path);
             }
@@ -208,7 +192,6 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
         }
     }
 
-    // Handle HTTP downloads
     CURL* curl = curl_easy_init();
     if (!curl) {
         setError("Failed to initialize CURL");
@@ -230,7 +213,7 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, nullptr);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, Constants::DOWNLOAD_TIMEOUT_SECONDS);
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC);  // 1KB/s minimum
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC);
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, Constants::DOWNLOAD_LOW_SPEED_TIME_SECONDS);
 
     CURLcode res = curl_easy_perform(curl);
@@ -240,18 +223,15 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
 
     if (res != CURLE_OK) {
         setError("Download failed: " + std::string(curl_easy_strerror(res)));
-        std::filesystem::remove(temp_path);  // Clean up failed download
+        std::filesystem::remove(temp_path);
         return false;
     }
 
-    // Analyze the downloaded file to get the title
     AutoVibez::Audio::MP3Metadata mp3_metadata = mp3_analyzer->analyzeFile(temp_path);
     if (!mp3_metadata.title.empty()) {
-        // Create a safe filename from the title
         std::string safe_title = AutoVibez::Utils::PathUtils::createSafeFilename(mp3_metadata.title);
         final_path = AutoVibez::Utils::PathUtils::joinPath(mixes_dir, safe_title + StringConstants::MP3_EXTENSION);
 
-        // Save the mapping for future reference
         std::string mapping_file = PathManager::getFileMappingsPath();
         std::ofstream mapping(mapping_file, std::ios::app);
         if (mapping.is_open()) {
@@ -260,7 +240,6 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
         }
     }
 
-    // Rename temp file to final location
     if (std::filesystem::exists(temp_path)) {
         std::filesystem::rename(temp_path, final_path);
     }
