@@ -108,7 +108,7 @@ public:
 
     ~AutoVibezApp();
 
-    void initialize(SDL_Window* window, const bool renderToTexture = false);
+    void initialize(SDL_Window* window);
 
     int toggleAudioInput();
     int initializeAudioInput();

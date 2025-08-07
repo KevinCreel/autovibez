@@ -453,8 +453,7 @@ void AutoVibezApp::renderFrame() {
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
-void AutoVibezApp::initialize(SDL_Window* window, const bool _renderToTexture) {
-    (void)_renderToTexture;  // Parameter not used in current implementation
+void AutoVibezApp::initialize(SDL_Window* window) {
     _sdlWindow = window;
     projectm_set_window_size(_projectM, _width, _height);
 

@@ -191,22 +191,6 @@ void initGL() {
 #endif
 }
 
-void dumpOpenGLInfo() {}
-
-void initStereoscopicView(SDL_Window* win) {
-    (void)win;  // Parameter not used in current implementation
-#if STEREOSCOPIC_SB
-    // enable stereo
-    if (SDL_GL_SetAttribute(SDL_GL_STEREO, 1) == 0) {
-        SDL_Log("SDL_GL_STEREO: true");
-    }
-
-    // requires fullscreen mode
-    SDL_ShowCursor(false);
-    SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
-#endif
-}
-
 void enableGLDebugOutput() {
 #if OGL_DEBUG && !defined(USE_GLES)
     glEnable(GL_DEBUG_OUTPUT);
@@ -253,15 +237,11 @@ AutoVibezApp* setupSDLApp() {
     int width, height;
     SDL_GL_GetDrawableSize(win, &width, &height);
 
-    initStereoscopicView(win);
-
     SDL_GLContext glCtx = SDL_GL_CreateContext(win);
 
 #if defined(_WIN32)
     GLenum err = glewInit();
 #endif /** _WIN32 */
-
-    dumpOpenGLInfo();
 
     SDL_SetWindowTitle(win, "AutoVibez");
 
