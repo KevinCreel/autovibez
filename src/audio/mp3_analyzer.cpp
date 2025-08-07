@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -34,34 +33,7 @@ MP3Analyzer::~MP3Analyzer() {}
 
 MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     MP3Metadata metadata;
-    // Note: ID should be set by caller based on URL, not generated from file path
-
-    // Suppress TagLib warnings for this analysis
-    // The "Xing stream size off" warning is common and doesn't affect functionality
-    std::string original_error = last_error;
     last_error.clear();
-
-    // Temporarily redirect stderr to suppress TagLib warnings
-    std::streambuf* original_stderr = nullptr;
-    std::ofstream null_stream;
-    FILE* original_stderr_file = nullptr;
-
-    if (!_verbose) {
-#ifdef _WIN32
-        // On Windows, we can't easily redirect stderr, so we'll just proceed
-        // without redirecting (the library will handle its own output)
-#else
-        // On Unix-like systems, redirect stderr to /dev/null using freopen
-        original_stderr_file = freopen("/dev/null", "w", stderr);
-        if (!original_stderr_file) {
-            // If freopen fails, try using a null stream
-            null_stream.open("/dev/null");
-            if (!null_stream.is_open()) {
-                // Last resort: just proceed without redirecting
-            }
-        }
-#endif
-    }
 
     // Use TagLib to extract metadata
     TagLib::MPEG::File f(file_path.c_str());
@@ -156,23 +128,6 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
 
     metadata.format = StringConstants::MP3_FORMAT;
     metadata.date_added = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();
-
-    // Restore original error state if no new errors occurred
-    if (last_error.empty()) {
-        last_error = original_error;
-    }
-
-    // Restore stderr
-#ifdef _WIN32
-    // On Windows, we don't need to restore stderr since we didn't redirect it
-#else
-    if (original_stderr_file) {
-        freopen("/dev/stderr", "w", stderr);
-    } else if (null_stream.is_open()) {
-        std::cerr.rdbuf(original_stderr);
-        null_stream.close();
-    }
-#endif
 
     return metadata;
 }
