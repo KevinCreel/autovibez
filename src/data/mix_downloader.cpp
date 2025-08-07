@@ -9,6 +9,7 @@
 #include "mix_metadata.hpp"
 #include "mp3_analyzer.hpp"
 #include "path_manager.hpp"
+#include "path_utils.hpp"
 
 using AutoVibez::Data::MixDownloader;
 
@@ -143,25 +144,25 @@ std::string MixDownloader::getLocalPath(const std::string& mix_id) {
                 std::string stored_id = line.substr(0, pos);
                 std::string filename = line.substr(pos + 1);
                 if (stored_id == mix_id) {
-                    return mixes_dir + "/" + filename;
+                    return AutoVibez::Utils::PathUtils::joinPath(mixes_dir, filename);
                 }
             }
         }
     }
 
     // Fall back to hash-based naming
-    return mixes_dir + "/" + mix_id + StringConstants::MP3_EXTENSION;
+    return AutoVibez::Utils::PathUtils::joinPath(mixes_dir, mix_id + StringConstants::MP3_EXTENSION);
 }
 
 std::string MixDownloader::getTemporaryPath(const std::string& mix_id) {
-    return mixes_dir + "/" + mix_id + ".tmp";
+    return AutoVibez::Utils::PathUtils::joinPath(mixes_dir, mix_id + ".tmp");
 }
 
 std::string MixDownloader::getLocalPathWithOriginalFilename(const Mix& mix) {
     if (mix.original_filename.empty()) {
         return getLocalPath(mix.id);
     }
-    return mixes_dir + "/" + mix.original_filename;
+    return AutoVibez::Utils::PathUtils::joinPath(mixes_dir, mix.original_filename);
 }
 
 bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio::MP3Analyzer* mp3_analyzer) {
@@ -195,8 +196,8 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
             AutoVibez::Audio::MP3Metadata mp3_metadata = mp3_analyzer->analyzeFile(temp_path);
             if (!mp3_metadata.title.empty()) {
                 // Create a safe filename from the title
-                std::string safe_title = createSafeFilename(mp3_metadata.title);
-                final_path = mixes_dir + "/" + safe_title + ".mp3";
+                std::string safe_title = AutoVibez::Utils::PathUtils::createSafeFilename(mp3_metadata.title);
+                final_path = AutoVibez::Utils::PathUtils::joinPath(mixes_dir, safe_title + ".mp3");
             }
 
             // Rename temp file to final location
@@ -247,8 +248,8 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     AutoVibez::Audio::MP3Metadata mp3_metadata = mp3_analyzer->analyzeFile(temp_path);
     if (!mp3_metadata.title.empty()) {
         // Create a safe filename from the title
-        std::string safe_title = createSafeFilename(mp3_metadata.title);
-        final_path = mixes_dir + "/" + safe_title + StringConstants::MP3_EXTENSION;
+        std::string safe_title = AutoVibez::Utils::PathUtils::createSafeFilename(mp3_metadata.title);
+        final_path = AutoVibez::Utils::PathUtils::joinPath(mixes_dir, safe_title + StringConstants::MP3_EXTENSION);
 
         // Save the mapping for future reference
         std::string mapping_file = PathManager::getFileMappingsPath();
@@ -265,32 +266,6 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     }
 
     return true;
-}
-
-std::string MixDownloader::createSafeFilename(const std::string& title) {
-    std::string safe_filename = title;
-
-    // Replace only truly invalid filename characters (spaces are valid on most filesystems)
-    const std::string invalid_chars = "<>:\"/\\|?*";
-    for (char c : invalid_chars) {
-        size_t pos = 0;
-        while ((pos = safe_filename.find(c, pos)) != std::string::npos) {
-            safe_filename.replace(pos, 1, "_");
-            pos++;
-        }
-    }
-
-    // Remove trailing underscores
-    while (!safe_filename.empty() && safe_filename.back() == '_') {
-        safe_filename.pop_back();
-    }
-
-    // Limit length to avoid filesystem issues
-    if (safe_filename.length() > Constants::MAX_FILENAME_LENGTH) {
-        safe_filename = safe_filename.substr(0, Constants::MAX_FILENAME_LENGTH);
-    }
-
-    return safe_filename;
 }
 
 }  // namespace Data

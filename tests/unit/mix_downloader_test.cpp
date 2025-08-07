@@ -1,4 +1,5 @@
 #include "mix_downloader.hpp"
+#include "path_utils.hpp"
 
 #include <gtest/gtest.h>
 
@@ -446,14 +447,14 @@ TEST_F(MixDownloaderTest, PreserveSpacesInFilenames) {
 
     // Test the createSafeFilename method directly
     std::string test_title = "Daft Punk - Essential Mix [03-02-1997] BBC Radio 1";
-    std::string safe_filename = downloader.createSafeFilename(test_title);
+    std::string safe_filename = AutoVibez::Utils::PathUtils::createSafeFilename(test_title);
 
     // Should preserve spaces but replace invalid characters
     EXPECT_EQ(safe_filename, "Daft Punk - Essential Mix [03-02-1997] BBC Radio 1");
 
     // Test with truly invalid characters
     std::string invalid_title = "Test:File/With*Invalid<Chars>";
-    std::string safe_invalid = downloader.createSafeFilename(invalid_title);
+    std::string safe_invalid = AutoVibez::Utils::PathUtils::createSafeFilename(invalid_title);
 
     // Should replace invalid characters with underscores but preserve spaces
     EXPECT_EQ(safe_invalid, "Test_File_With_Invalid_Chars");

@@ -16,6 +16,7 @@
 #include "constants.hpp"
 #include "mix_metadata.hpp"
 #include "path_manager.hpp"
+#include "path_utils.hpp"
 
 using AutoVibez::Audio::MP3Analyzer;
 
@@ -96,8 +97,7 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
 
     // Fallback to filename if no metadata found
     if (metadata.title.empty()) {
-        std::filesystem::path path(file_path);
-        std::string filename = path.stem().string();
+        std::string filename = AutoVibez::Utils::PathUtils::getFilenameWithoutExtension(file_path);
         metadata.title = filename;
         metadata.description = filename;
     }
@@ -120,8 +120,7 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     }
 
     // Get file size
-    std::filesystem::path path(file_path);
-    metadata.file_size = std::filesystem::file_size(path);
+    metadata.file_size = std::filesystem::file_size(file_path);
 
     metadata.format = StringConstants::MP3_FORMAT;
     metadata.date_added = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();

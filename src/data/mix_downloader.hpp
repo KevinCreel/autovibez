@@ -75,13 +75,6 @@ public:
         return last_error;
     }
 
-    /**
-     * @brief Create a safe filename from a title
-     * @param title Original title
-     * @return Safe filename string
-     */
-    std::string createSafeFilename(const std::string& title);
-
 private:
     std::string mixes_dir;
 };

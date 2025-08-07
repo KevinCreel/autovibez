@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "constants.hpp"
+#include "path_utils.hpp"
 
 namespace AutoVibez {
 namespace Utils {
@@ -17,21 +18,12 @@ bool AudioUtils::isValidMP3File(const std::string& file_path) {
     }
 
     // Check file extension
-    std::filesystem::path path(file_path);
-    std::string extension = path.extension().string();
-
-    // Remove the dot and convert to lowercase
-    if (!extension.empty() && extension[0] == '.') {
-        extension = extension.substr(1);
-    }
-
-    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-    if (extension != "mp3") {
+    if (!AutoVibez::Utils::PathUtils::hasExtension(file_path, "mp3")) {
         return false;
     }
 
     // Check file size (must be at least 1KB to be a valid MP3)
-    if (std::filesystem::file_size(path) < Constants::MIN_MP3_FILE_SIZE) {
+    if (std::filesystem::file_size(file_path) < Constants::MIN_MP3_FILE_SIZE) {
         return false;
     }
 

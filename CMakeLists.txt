@@ -162,6 +162,8 @@ add_executable(autovibez
     src/utils/datetime_utils.hpp
     src/utils/url_utils.cpp
     src/utils/url_utils.hpp
+    src/utils/path_utils.cpp
+    src/utils/path_utils.hpp
     src/data/base_metadata.hpp
 )
 
@@ -357,6 +359,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/datetime_utils.hpp
     src/utils/url_utils.cpp
     src/utils/url_utils.hpp
+    src/utils/path_utils.cpp
+    src/utils/path_utils.hpp
     src/data/base_metadata.hpp
     
     # Test fixtures
