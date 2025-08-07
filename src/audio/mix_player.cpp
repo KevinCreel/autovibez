@@ -115,10 +115,6 @@ bool MixPlayer::stop() {
     return true;
 }
 
-bool MixPlayer::setVolume(int new_volume) {
-    return setVolume(new_volume, false);
-}
-
 bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
     if (new_volume < Constants::MIN_VOLUME)
         new_volume = Constants::MIN_VOLUME;

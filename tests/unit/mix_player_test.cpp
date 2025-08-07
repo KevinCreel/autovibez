@@ -115,21 +115,21 @@ TEST_F(MixPlayerTest, VolumeControl) {
     MixPlayer player;
 
     // Test volume setting
-    EXPECT_TRUE(player.setVolume(50));
+    EXPECT_TRUE(player.setVolume(50, false));
     EXPECT_EQ(player.getVolume(), 50);
 
     // Test volume bounds
-    EXPECT_TRUE(player.setVolume(0));
+    EXPECT_TRUE(player.setVolume(0, false));
     EXPECT_EQ(player.getVolume(), 0);
 
-    EXPECT_TRUE(player.setVolume(100));
+    EXPECT_TRUE(player.setVolume(100, false));
     EXPECT_EQ(player.getVolume(), 100);
 
     // Test out of bounds (should clamp)
-    EXPECT_TRUE(player.setVolume(150));
+    EXPECT_TRUE(player.setVolume(150, false));
     EXPECT_EQ(player.getVolume(), 100);
 
-    EXPECT_TRUE(player.setVolume(-10));
+    EXPECT_TRUE(player.setVolume(-10, false));
     EXPECT_EQ(player.getVolume(), 0);
 }
 

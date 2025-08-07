@@ -65,7 +65,6 @@ public:
     Mix getPreviousMix(const std::string& current_mix_id = "");
 
     // Audio control methods
-    bool setVolume(int volume);
     bool setVolume(int volume, bool suppress_output);
     int getVolume() const;
     bool isPlaying() const;

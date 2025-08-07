@@ -66,9 +66,5 @@ bool DateTimeUtils::isValidDateTime(const std::string& datetime_str) {
     return std::regex_match(datetime_str, datetime_regex);
 }
 
-std::string DateTimeUtils::getDefaultFormat() {
-    return StringConstants::DATETIME_FORMAT;
-}
-
 }  // namespace Utils
 }  // namespace AutoVibez

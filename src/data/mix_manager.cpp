@@ -465,7 +465,6 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
         if (is_first_mix && _first_mix_callback) {
             _first_mix_callback(updated_mix);
         }
-
     }
 
     return true;
@@ -489,9 +488,6 @@ Mix MixManager::getRandomMixByGenre(const std::string& genre, const std::string&
 }
 
 // Audio control methods
-bool MixManager::setVolume(int volume) {
-    return setVolume(volume, false);
-}
 
 bool MixManager::setVolume(int volume, bool suppress_output) {
     if (!player) {

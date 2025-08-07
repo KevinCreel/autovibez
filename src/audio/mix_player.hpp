@@ -39,13 +39,6 @@ public:
     bool stop();
 
     /**
-     * @brief Set volume
-     * @param volume Volume (0-100)
-     * @return True if successful, false otherwise
-     */
-    bool setVolume(int new_volume);
-
-    /**
      * @brief Set volume with optional output suppression
      * @param volume Volume (0-100)
      * @param suppress_output Whether to suppress volume output messages

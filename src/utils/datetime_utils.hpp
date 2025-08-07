@@ -51,11 +51,6 @@ public:
     static bool isValidDateTime(const std::string& datetime_str);
 
 private:
-    /**
-     * @brief Get the default datetime format string
-     * @return Format string for datetime operations
-     */
-    static std::string getDefaultFormat();
 };
 
 }  // namespace Utils
