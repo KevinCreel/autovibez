@@ -1,19 +1,19 @@
 #include "audio_capture.hpp"
+
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
-
 
 namespace AutoVibez {
 namespace Audio {
 
 void audioInputCallbackF32(void* userData, const float* buffer, int len) {
-    AutoVibezApp *app = static_cast<AutoVibezApp*>(userData);
-    
+    AutoVibezApp* app = static_cast<AutoVibezApp*>(userData);
+
     // stream contains float data in native byte order, len is in bytes
     // Convert to float pointer safely
     const float* floatStream = static_cast<const float*>(static_cast<const void*>(buffer));
     int numSamples = len / sizeof(float) / app->getAudioChannelsCount();  // Use getter method
-    
+
     if (app->getAudioChannelsCount() == 1)
         projectm_pcm_add_float(app->getProjectM(), const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
     else if (app->getAudioChannelsCount() == 2)
@@ -24,8 +24,8 @@ void audioInputCallbackF32(void* userData, const float* buffer, int len) {
     }
 }
 
-} // namespace Audio
-} // namespace AutoVibez
+}  // namespace Audio
+}  // namespace AutoVibez
 
 int AutoVibezApp::initializeAudioInput() {
     SDL_AudioSpec desired, obtained;
@@ -43,7 +43,7 @@ int AutoVibezApp::initializeAudioInput() {
 
     // Get number of audio devices
     _numAudioDevices = SDL_GetNumAudioDevices(SDL_TRUE);
-    
+
     // Set up audio format - use AUDIO_F32 like the original
     SDL_zero(desired);
     desired.freq = 44100;
@@ -68,16 +68,17 @@ int AutoVibezApp::initializeAudioInput() {
             _selectedAudioDeviceIndex = -1;
         }
     }
-    
+
     _audioDeviceId = SDL_OpenAudioDevice(deviceName, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     if (_audioDeviceId == 0) {
         SDL_Log("Failed to open audio device: %s", SDL_GetError());
-        
+
         // Try fallback to default device if we weren't already trying the default
         if (deviceName != nullptr) {
             SDL_Log("Trying fallback to default audio device");
             _selectedAudioDeviceIndex = -1;
-            _audioDeviceId = SDL_OpenAudioDevice(nullptr, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
+            _audioDeviceId =
+                SDL_OpenAudioDevice(nullptr, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
             if (_audioDeviceId == 0) {
                 SDL_Log("Failed to open default audio device: %s", SDL_GetError());
                 return 0;
@@ -92,26 +93,19 @@ int AutoVibezApp::initializeAudioInput() {
     return 1;
 }
 
-int AutoVibezApp::toggleAudioInput()
-{
-    if (this->fakeAudio)
-    {
+int AutoVibezApp::toggleAudioInput() {
+    if (this->fakeAudio) {
         this->fakeAudio = false;
         this->endAudioCapture();
         this->beginAudioCapture();
         return 1;
-    }
-    else
-    {
+    } else {
         this->fakeAudio = true;
         this->endAudioCapture();
-        if (this->initializeAudioInput())
-        {
+        if (this->initializeAudioInput()) {
             this->beginAudioCapture();
             return 1;
-        }
-        else
-        {
+        } else {
             this->fakeAudio = false;
             return 0;
         }
@@ -130,4 +124,3 @@ void AutoVibezApp::endAudioCapture() {
         _audioDeviceId = 0;  // Reset device ID after closing
     }
 }
-

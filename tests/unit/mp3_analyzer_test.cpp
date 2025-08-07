@@ -1,8 +1,11 @@
-#include <gtest/gtest.h>
+#include "mp3_analyzer.hpp"
+
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
-#include "mp3_analyzer.hpp"
+
 #include "fixtures/test_fixtures.hpp"
 using AutoVibez::Audio::MP3Metadata;
 
@@ -11,17 +14,17 @@ protected:
     void SetUp() override {
         test_dir = TestFixtures::createTempTestDir();
     }
-    
+
     void TearDown() override {
         TestFixtures::cleanupTestFiles({test_dir});
     }
-    
+
     std::string test_dir;
 };
 
 TEST_F(MP3AnalyzerTest, MP3MetadataDefaultValues) {
     MP3Metadata metadata;
-    
+
     // Test default values
     EXPECT_TRUE(metadata.title.empty());
     EXPECT_TRUE(metadata.artist.empty());
@@ -55,9 +58,9 @@ TEST_F(MP3AnalyzerTest, MP3MetadataAssignment) {
     original.bitrate = 320;
     original.sample_rate = 44100;
     original.channels = 2;
-    
+
     MP3Metadata copy = original;
-    
+
     // Test that assignment works correctly
     EXPECT_EQ(copy.title, original.title);
     EXPECT_EQ(copy.artist, original.artist);
@@ -74,7 +77,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataAssignment) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataModification) {
     MP3Metadata metadata;
-    
+
     // Test modifying metadata
     metadata.title = "Modified Title";
     metadata.artist = "Modified Artist";
@@ -87,7 +90,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataModification) {
     metadata.bitrate = 256;
     metadata.sample_rate = 48000;
     metadata.channels = 1;
-    
+
     EXPECT_EQ(metadata.title, "Modified Title");
     EXPECT_EQ(metadata.artist, "Modified Artist");
     EXPECT_EQ(metadata.genre, "Modified Genre");
@@ -109,7 +112,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataValidation) {
     valid_metadata.bitrate = 320;
     valid_metadata.sample_rate = 44100;
     valid_metadata.channels = 2;
-    
+
     // Test that valid metadata is valid
     EXPECT_FALSE(valid_metadata.title.empty());
     EXPECT_FALSE(valid_metadata.artist.empty());
@@ -121,7 +124,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataValidation) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataInvalidValues) {
     MP3Metadata invalid_metadata;
-    
+
     // Test that invalid metadata is detected
     EXPECT_TRUE(invalid_metadata.title.empty());
     EXPECT_TRUE(invalid_metadata.artist.empty());
@@ -136,12 +139,12 @@ TEST_F(MP3AnalyzerTest, MP3MetadataComparison) {
     metadata1.title = "Title 1";
     metadata1.artist = "Artist 1";
     metadata1.duration_seconds = 180;
-    
+
     MP3Metadata metadata2;
     metadata2.title = "Title 2";
     metadata2.artist = "Artist 2";
     metadata2.duration_seconds = 240;
-    
+
     // Test that different metadata are different
     EXPECT_NE(metadata1.title, metadata2.title);
     EXPECT_NE(metadata1.artist, metadata2.artist);
@@ -156,9 +159,9 @@ TEST_F(MP3AnalyzerTest, MP3MetadataCopyConstructor) {
     original.bitrate = 320;
     original.sample_rate = 44100;
     original.channels = 2;
-    
+
     MP3Metadata copy(original);
-    
+
     // Test that copy constructor works correctly
     EXPECT_EQ(copy.title, original.title);
     EXPECT_EQ(copy.artist, original.artist);
@@ -173,14 +176,14 @@ TEST_F(MP3AnalyzerTest, MP3MetadataMoveConstructor) {
     original.title = "Move Title";
     original.artist = "Move Artist";
     original.duration_seconds = 200;
-    
+
     MP3Metadata moved(std::move(original));
-    
+
     // Test that move constructor works correctly
     EXPECT_EQ(moved.title, "Move Title");
     EXPECT_EQ(moved.artist, "Move Artist");
     EXPECT_EQ(moved.duration_seconds, 200);
-    
+
     // Original should be in a valid but unspecified state
     // (implementation dependent)
 }
@@ -190,10 +193,10 @@ TEST_F(MP3AnalyzerTest, MP3MetadataMoveAssignment) {
     original.title = "Move Assignment Title";
     original.artist = "Move Assignment Artist";
     original.duration_seconds = 300;
-    
+
     MP3Metadata target;
     target = std::move(original);
-    
+
     // Test that move assignment works correctly
     EXPECT_EQ(target.title, "Move Assignment Title");
     EXPECT_EQ(target.artist, "Move Assignment Artist");
@@ -202,13 +205,13 @@ TEST_F(MP3AnalyzerTest, MP3MetadataMoveAssignment) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataStringHandling) {
     MP3Metadata metadata;
-    
+
     // Test handling of various string types
     metadata.title = "Simple Title";
     metadata.artist = "Artist with Spaces";
     metadata.genre = "Genre with 'Apostrophes'";
     metadata.description = "Description with \"Quotes\"";
-    
+
     EXPECT_EQ(metadata.title, "Simple Title");
     EXPECT_EQ(metadata.artist, "Artist with Spaces");
     EXPECT_EQ(metadata.genre, "Genre with 'Apostrophes'");
@@ -217,13 +220,13 @@ TEST_F(MP3AnalyzerTest, MP3MetadataStringHandling) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataNumericHandling) {
     MP3Metadata metadata;
-    
+
     // Test handling of various numeric values
     metadata.duration_seconds = 180;
     metadata.bitrate = 320;
     metadata.sample_rate = 44100;
     metadata.channels = 2;
-    
+
     EXPECT_EQ(metadata.duration_seconds, 180);
     EXPECT_EQ(metadata.bitrate, 320);
     EXPECT_EQ(metadata.sample_rate, 44100);
@@ -232,13 +235,13 @@ TEST_F(MP3AnalyzerTest, MP3MetadataNumericHandling) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataBoundaryValues) {
     MP3Metadata metadata;
-    
+
     // Test boundary values
     metadata.duration_seconds = 86400;  // 24 hours in seconds
-    metadata.bitrate = 1;  // Minimum bitrate
-    metadata.sample_rate = 8000;  // Low sample rate
-    metadata.channels = 1;  // Mono
-    
+    metadata.bitrate = 1;               // Minimum bitrate
+    metadata.sample_rate = 8000;        // Low sample rate
+    metadata.channels = 1;              // Mono
+
     EXPECT_EQ(metadata.duration_seconds, 86400);
     EXPECT_EQ(metadata.bitrate, 1);
     EXPECT_EQ(metadata.sample_rate, 8000);
@@ -247,13 +250,13 @@ TEST_F(MP3AnalyzerTest, MP3MetadataBoundaryValues) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataEmptyStringHandling) {
     MP3Metadata metadata;
-    
+
     // Test handling of empty strings
     metadata.title = "";
     metadata.artist = "";
     metadata.genre = "";
     metadata.description = "";
-    
+
     EXPECT_TRUE(metadata.title.empty());
     EXPECT_TRUE(metadata.artist.empty());
     EXPECT_TRUE(metadata.genre.empty());
@@ -262,13 +265,13 @@ TEST_F(MP3AnalyzerTest, MP3MetadataEmptyStringHandling) {
 
 TEST_F(MP3AnalyzerTest, MP3MetadataZeroValueHandling) {
     MP3Metadata metadata;
-    
+
     // Test handling of zero values
     metadata.duration_seconds = 0;
     metadata.bitrate = 0;
     metadata.sample_rate = 0;
     metadata.channels = 0;
-    
+
     EXPECT_EQ(metadata.duration_seconds, 0);
     EXPECT_EQ(metadata.bitrate, 0);
     EXPECT_EQ(metadata.sample_rate, 0);
@@ -278,7 +281,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataZeroValueHandling) {
 TEST_F(MP3AnalyzerTest, MP3MetadataMemoryEfficiency) {
     // Test that metadata doesn't use excessive memory
     std::vector<MP3Metadata> metadata_list;
-    
+
     // Create many metadata objects
     for (int i = 0; i < 1000; ++i) {
         MP3Metadata metadata;
@@ -287,7 +290,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataMemoryEfficiency) {
         metadata.duration_seconds = i;
         metadata_list.push_back(metadata);
     }
-    
+
     // Verify all metadata objects are valid
     for (size_t i = 0; i < metadata_list.size(); ++i) {
         EXPECT_EQ(metadata_list[i].title, "Title " + std::to_string(i));
@@ -299,12 +302,12 @@ TEST_F(MP3AnalyzerTest, MP3MetadataMemoryEfficiency) {
 TEST_F(MP3AnalyzerTest, MP3MetadataThreadSafety) {
     // Test that metadata can be safely used in multi-threaded environments
     // This is a basic test - in a real application, you'd need more comprehensive testing
-    
+
     MP3Metadata metadata;
     metadata.title = "Thread Safe Title";
     metadata.artist = "Thread Safe Artist";
     metadata.duration_seconds = 180;
-    
+
     // Verify metadata is accessible
     EXPECT_EQ(metadata.title, "Thread Safe Title");
     EXPECT_EQ(metadata.artist, "Thread Safe Artist");
@@ -314,7 +317,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataThreadSafety) {
 TEST_F(MP3AnalyzerTest, MP3MetadataSerialization) {
     // Test that metadata can be serialized/deserialized
     // This would be useful for saving/loading metadata
-    
+
     MP3Metadata original;
     original.title = "Serialization Test";
     original.artist = "Test Artist";
@@ -324,7 +327,7 @@ TEST_F(MP3AnalyzerTest, MP3MetadataSerialization) {
     original.bitrate = 320;
     original.sample_rate = 44100;
     original.channels = 2;
-    
+
     // In a real implementation, you'd serialize to JSON, XML, or binary format
     // For now, we'll just verify the data is accessible
     EXPECT_EQ(original.title, "Serialization Test");
@@ -335,4 +338,4 @@ TEST_F(MP3AnalyzerTest, MP3MetadataSerialization) {
     EXPECT_EQ(original.bitrate, 320);
     EXPECT_EQ(original.sample_rate, 44100);
     EXPECT_EQ(original.channels, 2);
-} 
+}

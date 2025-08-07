@@ -1,49 +1,50 @@
 /**
-* projectM -- Milkdrop-esque visualisation SDK
-* Copyright (C)2003-2019 projectM Team
-*
-* This library is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-* See 'LICENSE.txt' included within this release
-*
-* projectM-sdl
-* This is an implementation of projectM using libSDL2
-*
-* pmSDL.cpp
-* Authors: Created by Mischa Spiegelmock on 2017-09-18.
-*
-*
-* experimental Stereoscopic SBS driver functionality by
-*	RobertPancoast77@gmail.com
-*/
+ * projectM -- Milkdrop-esque visualisation SDK
+ * Copyright (C)2003-2019 projectM Team
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * See 'LICENSE.txt' included within this release
+ *
+ * projectM-sdl
+ * This is an implementation of projectM using libSDL2
+ *
+ * pmSDL.cpp
+ * Authors: Created by Mischa Spiegelmock on 2017-09-18.
+ *
+ *
+ * experimental Stereoscopic SBS driver functionality by
+ *	RobertPancoast77@gmail.com
+ */
 
 #include "autovibez_app.hpp"
-#include "constants.hpp"
-#include "setup.hpp"
-#include "mix_manager.hpp"
-#include "mix_metadata.hpp"
-#include "mix_downloader.hpp"
-#include "config_manager.hpp"
-#include "path_manager.hpp"
 
-#include <vector>
+#include <array>
+#include <cstdlib>
 #include <filesystem>
+#include <random>
 #include <set>
 #include <thread>
-#include <random>
-#include <cstdlib>
-#include <array>
+#include <vector>
+
+#include "config_manager.hpp"
+#include "constants.hpp"
+#include "mix_downloader.hpp"
+#include "mix_manager.hpp"
+#include "mix_metadata.hpp"
+#include "path_manager.hpp"
+#include "setup.hpp"
 #if defined _MSC_VER
 #include <direct.h>
 #else
@@ -52,27 +53,29 @@
 
 using AutoVibez::Data::MixManager;
 
-using AutoVibez::Data::Mix;
 using AutoVibez::Data::ConfigFile;
+using AutoVibez::Data::Mix;
 using AutoVibez::UI::HelpOverlay;
 
 namespace AutoVibez {
 namespace Core {
 
-AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath, int audioDeviceIndex, bool showFps)
-    : _openGlContext(glCtx)
-    , _projectM(projectm_create())
-    , _playlist(projectm_playlist_create(_projectM))
-    , _selectedAudioDeviceIndex(audioDeviceIndex)
-    , _mixManagerInitialized(false)
-    , _hadMixesOnStartup(false) {
+AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath,
+                           int audioDeviceIndex, bool showFps)
+    : _openGlContext(glCtx),
+      _projectM(projectm_create()),
+      _playlist(projectm_playlist_create(_projectM)),
+      _selectedAudioDeviceIndex(audioDeviceIndex),
+      _mixManagerInitialized(false),
+      _hadMixesOnStartup(false) {
     projectm_get_window_size(_projectM, &_width, &_height);
-    projectm_playlist_set_preset_switched_event_callback(_playlist, &AutoVibezApp::presetSwitchedEvent, static_cast<void*>(this));
+    projectm_playlist_set_preset_switched_event_callback(_playlist, &AutoVibezApp::presetSwitchedEvent,
+                                                         static_cast<void*>(this));
     projectm_playlist_add_path(_playlist, presetPath.c_str(), true, false);
-    
+
     // Initialize PresetManager
     _presetManager = std::make_unique<PresetManager>(_playlist);
-    
+
     // Load a random preset on startup
     if (_presetManager) {
         _presetManager->randomPreset();
@@ -84,14 +87,14 @@ AutoVibezApp::~AutoVibezApp() {
     if (_mixManager) {
         _mixManager->stop();
     }
-    
+
     if (_backgroundTaskRunning.load()) {
         if (_backgroundTask.valid()) {
             _backgroundTask.wait();
         }
         _backgroundTaskRunning.store(false);
     }
-    
+
     projectm_playlist_destroy(_playlist);
     _playlist = nullptr;
     projectm_destroy(_projectM);
@@ -99,8 +102,7 @@ AutoVibezApp::~AutoVibezApp() {
 }
 
 /* Stretch projectM across multiple monitors */
-void AutoVibezApp::stretchMonitors()
-{
+void AutoVibezApp::stretchMonitors() {
     int displayCount = SDL_GetNumVideoDisplays();
     if (displayCount >= 2) {
         std::vector<SDL_Rect> displayBounds;
@@ -140,8 +142,7 @@ void AutoVibezApp::stretchMonitors()
 }
 
 /* Moves projectM to the next monitor */
-void AutoVibezApp::nextMonitor()
-{
+void AutoVibezApp::nextMonitor() {
     int displayCount = SDL_GetNumVideoDisplays();
     int currentWindowIndex = SDL_GetWindowDisplayIndex(_sdlWindow);
     if (displayCount >= 2) {
@@ -173,9 +174,7 @@ void AutoVibezApp::toggleFullScreen() {
         if (_helpOverlay) {
             _helpOverlay->setFullscreenState(false);
         }
-    }
-    else
-    {
+    } else {
         SDL_SetRelativeMouseMode(SDL_TRUE);
         SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
         _isFullScreen = true;
@@ -187,29 +186,25 @@ void AutoVibezApp::toggleFullScreen() {
 
 // Mouse wheel scroll handler removed
 
-void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
-{
+void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
     if (!_mixManagerInitialized) {
         initMixManager();
     }
-    
+
     // Handle mix controls first
     handleMixControls(sdl_evt);
-    
-    SDL_Keymod sdl_mod = (SDL_Keymod) sdl_evt->key.keysym.mod;
+
+    SDL_Keymod sdl_mod = (SDL_Keymod)sdl_evt->key.keysym.mod;
     SDL_Keycode sdl_keycode = sdl_evt->key.keysym.sym;
 
     // Left or Right Gui or Left Ctrl
-    if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
-    {
+    if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
         keymod = true;
     }
 
-    switch (sdl_keycode)
-    {
+    switch (sdl_keycode) {
         case SDLK_q:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
-            {
+            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
                 // cmd/ctrl-q = quit
                 done = true;
                 return;
@@ -217,46 +212,39 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             break;
 
         case SDLK_i:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
-            {
+            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
                 toggleAudioInput();
-                return; // handled
+                return;  // handled
             }
             break;
 
         case SDLK_s:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
-            {
+            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
                 // command-s: [s]tretch monitors
-                if (!this->stretch)
-                {
+                if (!this->stretch) {
                     stretchMonitors();
                     this->stretch = true;
-                }
-                else
-                {
-                    toggleFullScreen(); // else, just toggle full screen so we leave stretch mode.
+                } else {
+                    toggleFullScreen();  // else, just toggle full screen so we leave stretch mode.
                     this->stretch = false;
                 }
-                return; // handled
+                return;  // handled
             }
 
         case SDLK_m:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
-            {
+            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
                 // command-m: change [m]onitor
                 nextMonitor();
                 this->stretch = false;
-                return;                // handled
+                return;  // handled
             }
 
         case SDLK_f:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL)
-            {
+            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
                 // command-f: fullscreen
                 toggleFullScreen();
                 this->stretch = false;
-                return;                // handled
+                return;  // handled
             }
             break;
 
@@ -271,22 +259,20 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             break;
 
         case SDLK_EQUALS:
-        case SDLK_PLUS:
-            {
-                float newSensitivity = getBeatSensitivity() + 0.1f;
-                if (newSensitivity > 1.0f) newSensitivity = 1.0f;
-                setBeatSensitivity(newSensitivity);
-            }
-            break;
+        case SDLK_PLUS: {
+            float newSensitivity = getBeatSensitivity() + 0.1f;
+            if (newSensitivity > 1.0f)
+                newSensitivity = 1.0f;
+            setBeatSensitivity(newSensitivity);
+        } break;
 
-        case SDLK_MINUS:
-            {
-                float newSensitivity = getBeatSensitivity() - 0.1f;
-                if (newSensitivity < 0.0f) newSensitivity = 0.0f;
-                setBeatSensitivity(newSensitivity);
-                // Beat sensitivity notification removed - help overlay shows current sensitivity
-            }
-            break;
+        case SDLK_MINUS: {
+            float newSensitivity = getBeatSensitivity() - 0.1f;
+            if (newSensitivity < 0.0f)
+                newSensitivity = 0.0f;
+            setBeatSensitivity(newSensitivity);
+            // Beat sensitivity notification removed - help overlay shows current sensitivity
+        } break;
 
         case SDLK_F11:
             // F11: toggle fullscreen
@@ -304,7 +290,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             // Tab: cycle through audio devices
             cycleAudioDevice();
             break;
-            
+
         case SDLK_SPACE:
             // SPACE: Pause/Resume (universal media standard)
             if (_mixManagerInitialized) {
@@ -318,7 +304,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             projectm_playlist_play_previous(_playlist, true);
             // Preset change notification removed - help overlay shows current preset
             break;
-            
+
         case SDLK_RIGHTBRACKET:
             // ]: Next preset
             _manualPresetChange = true;
@@ -332,7 +318,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                 // Preset change notification removed - help overlay shows current preset
             }
             break;
-            
+
         case SDLK_g:
             // G: Random mix in current genre
             if (_mixManagerInitialized) {
@@ -341,7 +327,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     // Shift+G: Switch to random genre
                     std::string newGenre = _mixManager->getRandomGenre();
                     // Genre change notification removed - help overlay shows current genre
-                    
+
                     // Play a random mix in the new genre
                     Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
                     if (!genreMix.id.empty()) {
@@ -369,17 +355,13 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
     }
 }
 
-
-
-void AutoVibezApp::resizeWindow(unsigned int width_, unsigned int height_)
-{
+void AutoVibezApp::resizeWindow(unsigned int width_, unsigned int height_) {
     _width = width_;
     _height = height_;
 
     // Hide cursor if window size equals desktop size
     SDL_DisplayMode dm;
-    if (SDL_GetDesktopDisplayMode(0, &dm) == 0)
-    {
+    if (SDL_GetDesktopDisplayMode(0, &dm) == 0) {
         SDL_ShowCursor(_isFullScreen ? SDL_DISABLE : SDL_ENABLE);
     }
 
@@ -470,10 +452,7 @@ void AutoVibezApp::handleMouseDragEvent() {
     // Mouse drag handling removed - touch functionality disabled
 }
 
-
-
-void AutoVibezApp::renderFrame()
-{
+void AutoVibezApp::renderFrame() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -485,9 +464,8 @@ void AutoVibezApp::renderFrame()
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
-void AutoVibezApp::initialize(SDL_Window* window, const bool _renderToTexture)
-{
-    (void)_renderToTexture; // Parameter not used in current implementation
+void AutoVibezApp::initialize(SDL_Window* window, const bool _renderToTexture) {
+    (void)_renderToTexture;  // Parameter not used in current implementation
     _sdlWindow = window;
     projectm_set_window_size(_projectM, _width, _height);
 
@@ -517,8 +495,9 @@ void AutoVibezApp::renderHelpOverlay() {
 }
 
 void AutoVibezApp::updateHelpOverlayInfo() {
-    if (!_helpOverlay) return;
-    
+    if (!_helpOverlay)
+        return;
+
     // Update current preset
     std::string currentPreset = getActivePresetName();
     if (!currentPreset.empty()) {
@@ -529,17 +508,17 @@ void AutoVibezApp::updateHelpOverlayInfo() {
         }
         _helpOverlay->setCurrentPreset(currentPreset);
     }
-    
+
     // Update current mix info
     if (_mixManager && !_currentMix.id.empty()) {
         _helpOverlay->setCurrentMix(_currentMix.artist, _currentMix.title, _currentMix.genre);
     }
-    
+
     // Update volume level
     if (_mixManager) {
         _helpOverlay->setVolumeLevel(_mixManager->getVolume());
     }
-    
+
     // Update audio device
     const char* deviceName = nullptr;
     if (_selectedAudioDeviceIndex >= 0 && _selectedAudioDeviceIndex < _numAudioDevices) {
@@ -551,10 +530,10 @@ void AutoVibezApp::updateHelpOverlayInfo() {
         // Show default device indicator
         _helpOverlay->setAudioDevice("Default Device");
     }
-    
+
     // Update beat sensitivity
     _helpOverlay->setBeatSensitivity(getBeatSensitivity());
-    
+
     // Update mix table data
     if (_mixManager) {
         auto mixes = _mixManager->getAllMixes();
@@ -562,12 +541,9 @@ void AutoVibezApp::updateHelpOverlayInfo() {
     }
 }
 
-
-std::string AutoVibezApp::getActivePresetName()
-{
+std::string AutoVibezApp::getActivePresetName() {
     unsigned int index = projectm_playlist_get_position(_playlist);
-    if (index)
-    {
+    if (index) {
         auto presetName = projectm_playlist_item(_playlist, index);
         std::string presetNameString(presetName);
         projectm_playlist_free_string(presetName);
@@ -576,13 +552,12 @@ std::string AutoVibezApp::getActivePresetName()
     return {};
 }
 
-void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void* context)
-{
+void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void* context) {
     auto app = reinterpret_cast<AutoVibezApp*>(context);
     auto presetName = projectm_playlist_item(app->_playlist, index);
-    
+
     app->_presetName = presetName;
-    
+
     // Only output for automatic changes (not manual ones)
     if (!app->_manualPresetChange) {
         // Extract just the filename for display
@@ -591,7 +566,7 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
         if (last_slash != std::string::npos) {
             preset_name = preset_name.substr(last_slash + 1);
         }
-        
+
         // Use complete reinitialization for automatic changes to ensure clean state
         if (app->_helpOverlay) {
             app->_helpOverlay->reinitializeImGui();
@@ -602,21 +577,16 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
             app->_helpOverlay->triggerTextureRebind();
         }
     }
-    
+
     app->_manualPresetChange = false;
-    
+
     projectm_playlist_free_string(presetName);
     app->UpdateWindowTitle();
 }
 
-projectm_handle AutoVibezApp::projectM()
-{
+projectm_handle AutoVibezApp::projectM() {
     return _projectM;
 }
-
-
-
-
 
 float AutoVibezApp::getBeatSensitivity() const {
     return projectm_get_beat_sensitivity(_projectM);
@@ -626,42 +596,33 @@ void AutoVibezApp::setBeatSensitivity(float sensitivity) {
     projectm_set_beat_sensitivity(_projectM, sensitivity);
 }
 
-void AutoVibezApp::UpdateWindowTitle()
-{
+void AutoVibezApp::UpdateWindowTitle() {
     std::string title = "AutoVibez";
-    if (projectm_get_preset_locked(_projectM))
-    {
+    if (projectm_get_preset_locked(_projectM)) {
         title.append(" [locked]");
     }
-    
+
     SDL_SetWindowTitle(_sdlWindow, title.c_str());
 }
 
-
-
-
-
-
-
-void AutoVibezApp::cycleAudioDevice()
-{
+void AutoVibezApp::cycleAudioDevice() {
     int numDevices = SDL_GetNumAudioDevices(SDL_TRUE);
-    
+
     // Handle edge cases - no devices available
     if (numDevices <= 0) {
         SDL_Log("No audio capture devices available");
         return;
     }
-    
+
     // Calculate next device index with proper bounds checking
     int nextAudioDeviceId = ((_selectedAudioDeviceIndex + 2) % (numDevices + 1)) - 1;
-    
+
     // Validate the new index
     if (nextAudioDeviceId < -1 || nextAudioDeviceId >= numDevices) {
         // Fallback to default device (-1)
         nextAudioDeviceId = -1;
     }
-    
+
     // Start recording with new device
     _selectedAudioDeviceIndex = nextAudioDeviceId;
     if (initializeAudioInput()) {
@@ -669,22 +630,16 @@ void AutoVibezApp::cycleAudioDevice()
     }
 }
 
-
-
-
-
-
-
 // Mix management methods
-void AutoVibezApp::initMixManager()
-{
-    if (_mixManagerInitialized) return;
-    
+void AutoVibezApp::initMixManager() {
+    if (_mixManagerInitialized)
+        return;
+
     std::string db_path = PathManager::getStateDirectory() + "/autovibez_mixes.db";
     std::string mixes_dir = PathManager::getMixesDirectory();
-    
+
     _mixManager = std::make_unique<MixManager>(db_path, mixes_dir);
-    
+
     // Set up callback for when first mix is added to empty database
     _mixManager->setFirstMixAddedCallback([this](const AutoVibez::Data::Mix& mix) {
         // Only auto-play if we started with an empty database
@@ -694,25 +649,25 @@ void AutoVibezApp::initMixManager()
             }
         }
     });
-    
+
     // Initialize database first (fast operation)
     if (!_mixManager->initialize()) {
         // Mix manager initialization error notification removed - too verbose for normal operation
         return;
     }
-    
+
     // Load configuration (fast operation)
     std::string configFilePath = findConfigFile();
     std::string yaml_url;
     std::string preferred_genre;
-    
+
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
-        
+
         // Load preferred genre from config
         config.readInto(preferred_genre, "preferred_genre");
         _mixManager->setCurrentGenre(preferred_genre);
-        
+
         // Show current audio device
         int audioDeviceIndex = config.getAudioDeviceIndex();
         const char* deviceName = SDL_GetAudioDeviceName(audioDeviceIndex, SDL_TRUE);
@@ -721,17 +676,17 @@ void AutoVibezApp::initMixManager()
         } else {
             // Audio device notification removed - help overlay shows current device
         }
-        
+
         // Get YAML URL
         yaml_url = config.getMixesUrl();
     }
-    
+
     // Mark as initialized early so UI can work
     _mixManagerInitialized = true;
-    
+
     // Check if there were mixes in the database when the app started
     _hadMixesOnStartup = !_mixManager->getAllMixes().empty();
-    
+
     // IMMEDIATELY try to play from local database (non-blocking)
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
@@ -740,7 +695,7 @@ void AutoVibezApp::initMixManager()
             autoPlayFromLocalDatabase();
         }
     }
-    
+
     // Load mix metadata in background (non-blocking)
     if (!yaml_url.empty() && !_backgroundTaskRunning.load()) {
         _backgroundTaskRunning.store(true);
@@ -749,7 +704,7 @@ void AutoVibezApp::initMixManager()
             if (_mixManager->loadMixMetadata(yaml_url)) {
                 // Check for new mixes from remote YAML in background (non-blocking)
                 _mixManager->checkForNewMixes(yaml_url);
-                
+
                 // Start background downloads if no local mixes were found
                 if (!configFilePath.empty()) {
                     ConfigFile config(configFilePath);
@@ -763,12 +718,12 @@ void AutoVibezApp::initMixManager()
     }
 }
 
-void AutoVibezApp::handleMixControls(SDL_Event* event)
-{
-    if (!_mixManagerInitialized) return;
-    
+void AutoVibezApp::handleMixControls(SDL_Event* event) {
+    if (!_mixManagerInitialized)
+        return;
+
     SDL_Keycode keycode = event->key.keysym.sym;
-    
+
     switch (keycode) {
         case SDLK_r:
             // R: Random preset
@@ -776,9 +731,9 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 _presetManager->randomPreset();
             }
             return;
-            
-        // N key removed - redundant with RIGHT key for next mix
-            
+
+            // N key removed - redundant with RIGHT key for next mix
+
         case SDLK_LEFT:
             // ←: Previous mix
             {
@@ -789,7 +744,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 }
             }
             return;
-            
+
         case SDLK_RIGHT:
             // →: Next mix
             {
@@ -800,9 +755,9 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 }
             }
             return;
-            
-        // D key removed - redundant functionality
-            
+
+            // D key removed - redundant functionality
+
         case SDLK_UP:
             // ↑: Volume up
             {
@@ -811,7 +766,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 _volumeKeyPressed = true;
             }
             return;
-            
+
         case SDLK_DOWN:
             // ↓: Volume down
             {
@@ -820,7 +775,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 _volumeKeyPressed = true;
             }
             return;
-            
+
         case SDLK_m:
             // M: Mute/Unmute (universal media standard)
             if (_mixManagerInitialized) {
@@ -835,39 +790,37 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 }
             }
             return;
-            
+
         case SDLK_1:
         case SDLK_2:
         case SDLK_3:
         case SDLK_4:
         case SDLK_5:
 
-            
         case SDLK_f:
             // F: Toggle favorite
             if (!_currentMix.id.empty()) {
                 _mixManager->toggleFavorite(_currentMix.id);
             }
             return;
-            
+
         case SDLK_l:
             // L: Toggle mix table filter when help overlay is visible
             if (_helpOverlay && _helpOverlay->isVisible()) {
                 _helpOverlay->toggleMixTableFilter();
             }
             return;
-            
-        // V key removed - non-functional binding
+
+            // V key removed - non-functional binding
     }
 }
 
-void AutoVibezApp::autoPlayOrDownload()
-{
+void AutoVibezApp::autoPlayOrDownload() {
     if (!_mixManagerInitialized) {
         // Auto-play initialization error notification removed - too verbose for normal operation
         return;
     }
-    
+
     // Step 1: Check for existing downloaded mixes and play one, prioritizing preferred genre
     auto downloadedMixes = _mixManager->getDownloadedMixes();
     if (!downloadedMixes.empty()) {
@@ -888,15 +841,15 @@ void AutoVibezApp::autoPlayOrDownload()
                 // Play failed notification removed - too verbose for normal operation
             }
         }
-        
+
         // Start background download of remaining mixes
         startBackgroundDownloads();
         return;
     }
-    
+
     // Step 2: No existing mixes, download and play one from preferred genre
     // Download notification removed - too verbose for normal operation
-    
+
     // Try to get a mix from the preferred genre first
     Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre());
     if (randomMix.id.empty()) {
@@ -907,9 +860,9 @@ void AutoVibezApp::autoPlayOrDownload()
         // If no mixes available notification removed - too verbose for normal operation
         return;
     }
-    
+
     // Download notification removed - too verbose for normal operation
-    
+
     if (_mixManager->downloadAndAnalyzeMix(randomMix)) {
         // Get the updated mix with complete metadata from database
         Mix updatedMix = _mixManager->getMixById(randomMix.id);
@@ -921,7 +874,7 @@ void AutoVibezApp::autoPlayOrDownload()
                 // Play failed notification removed - too verbose for normal operation
             }
         }
-        
+
         // Start background download of remaining mixes
         startBackgroundDownloads();
     } else {
@@ -929,13 +882,12 @@ void AutoVibezApp::autoPlayOrDownload()
     }
 }
 
-void AutoVibezApp::autoDownloadRandomMix()
-{
+void AutoVibezApp::autoDownloadRandomMix() {
     if (!_mixManagerInitialized) {
         // Auto-download initialization error notification removed - too verbose for normal operation
         return;
     }
-    
+
     // First try to get a random mix from available (not yet downloaded) mixes in preferred genre
     Mix randomMix = _mixManager->getRandomAvailableMixByGenre(_mixManager->getCurrentGenre(), _currentMix.id);
     if (randomMix.id.empty()) {
@@ -958,19 +910,19 @@ void AutoVibezApp::autoDownloadRandomMix()
         // No mixes available for auto-download notification removed - too verbose for normal operation
         return;
     }
-    
+
     // Auto-download notification removed - too verbose for normal operation
-    
+
     // Use the new download-first approach
     if (_mixManager->downloadAndAnalyzeMix(randomMix)) {
         // Auto-download success notification removed - too verbose for normal operation
-        
+
         // Get the updated mix with complete metadata from database
         Mix updatedMix = _mixManager->getMixById(randomMix.id);
         if (!updatedMix.id.empty()) {
             // Now play the analyzed mix
             if (_mixManager->playMix(updatedMix)) {
-                _currentMix = updatedMix; // Use the updated mix with metadata
+                _currentMix = updatedMix;  // Use the updated mix with metadata
                 // Auto-play success notification removed - too verbose for normal operation
             } else {
                 // Auto-play failed notification removed - too verbose for normal operation
@@ -983,12 +935,11 @@ void AutoVibezApp::autoDownloadRandomMix()
     }
 }
 
-void AutoVibezApp::startBackgroundDownloads()
-{
+void AutoVibezApp::startBackgroundDownloads() {
     if (!_mixManagerInitialized) {
         return;
     }
-    
+
     // Download missing mixes in the background
     _mixManager->downloadMissingMixesBackground();
 }
@@ -997,7 +948,7 @@ void AutoVibezApp::checkAndAutoPlayNext() {
     if (!_mixManagerInitialized || !_mixManager) {
         return;
     }
-    
+
     // Check if music has stopped playing (not just paused)
     if (!_mixManager->isPlaying() && !_mixManager->isPaused()) {
         // Music has ended or stopped, play next random mix
@@ -1027,8 +978,7 @@ void AutoVibezApp::checkAndAutoPlayNext() {
     }
 }
 
-void AutoVibezApp::autoPlayFromLocalDatabase()
-{
+void AutoVibezApp::autoPlayFromLocalDatabase() {
     if (!_mixManagerInitialized) {
         // Auto-play initialization error notification removed - too verbose for normal operation
         return;
@@ -1036,7 +986,7 @@ void AutoVibezApp::autoPlayFromLocalDatabase()
 
     // Try to play a mix from the local database with preferred genre
     Mix randomMix = _mixManager->getSmartRandomMix("", _mixManager->getCurrentGenre());
-    
+
     if (!randomMix.id.empty()) {
         if (_mixManager->playMix(randomMix)) {
             _currentMix = randomMix;
@@ -1061,5 +1011,5 @@ void AutoVibezApp::autoPlayFromLocalDatabase()
     }
 }
 
-} // namespace Core
-} // namespace AutoVibez
+}  // namespace Core
+}  // namespace AutoVibez

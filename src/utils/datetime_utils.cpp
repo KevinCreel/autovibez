@@ -1,7 +1,8 @@
 #include "datetime_utils.hpp"
+
 #include <iomanip>
-#include <sstream>
 #include <regex>
+#include <sstream>
 
 namespace AutoVibez {
 namespace Utils {
@@ -14,7 +15,7 @@ std::string DateTimeUtils::getCurrentDateTime() {
 std::string DateTimeUtils::formatDateTime(const std::chrono::system_clock::time_point& time) {
     auto time_t = std::chrono::system_clock::to_time_t(time);
     auto tm = *std::localtime(&time_t);
-    
+
     std::stringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     return ss.str();
@@ -24,7 +25,7 @@ std::string DateTimeUtils::getCurrentDate() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
     auto tm = *std::localtime(&time_t);
-    
+
     std::stringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d");
     return ss.str();
@@ -34,7 +35,7 @@ std::string DateTimeUtils::getCurrentTime() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
     auto tm = *std::localtime(&time_t);
-    
+
     std::stringstream ss;
     ss << std::put_time(&tm, "%H:%M:%S");
     return ss.str();
@@ -44,15 +45,15 @@ std::chrono::system_clock::time_point DateTimeUtils::parseDateTime(const std::st
     if (!isValidDateTime(datetime_str)) {
         return std::chrono::system_clock::now();
     }
-    
+
     std::tm tm = {};
     std::istringstream ss(datetime_str);
     ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    
+
     if (ss.fail()) {
         return std::chrono::system_clock::now();
     }
-    
+
     auto time_t = std::mktime(&tm);
     return std::chrono::system_clock::from_time_t(time_t);
 }
@@ -67,5 +68,5 @@ std::string DateTimeUtils::getDefaultFormat() {
     return "%Y-%m-%d %H:%M:%S";
 }
 
-} // namespace Utils
-} // namespace AutoVibez
+}  // namespace Utils
+}  // namespace AutoVibez

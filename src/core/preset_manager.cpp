@@ -1,13 +1,13 @@
 #include "preset_manager.hpp"
+
+#include <iostream>
+#include <random>  // Added for random preset selection
+
 #include "autovibez_app.hpp"
 #include "mix_manager.hpp"
-#include <iostream>
-#include <random> // Added for random preset selection
 
 PresetManager::PresetManager(projectm_playlist_handle playlist)
-    : _playlist(playlist)
-    , _randomGenerator(std::random_device{}()) {
-}
+    : _playlist(playlist), _randomGenerator(std::random_device{}()) {}
 
 void PresetManager::randomPreset() {
     if (_playlist) {
@@ -19,4 +19,4 @@ void PresetManager::randomPreset() {
             projectm_playlist_set_position(_playlist, random_index, true);
         }
     }
-} 
+}

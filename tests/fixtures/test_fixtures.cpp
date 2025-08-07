@@ -1,10 +1,12 @@
 #include "test_fixtures.hpp"
-#include <fstream>
-#include <sstream>
-#include <random>
-#include <chrono>
+
 #include <sqlite3.h>
 #include <yaml-cpp/yaml.h>
+
+#include <chrono>
+#include <fstream>
+#include <random>
+#include <sstream>
 
 using AutoVibez::Data::Mix;
 
@@ -30,7 +32,7 @@ bool TestFixtures::createTestConfigFile(const std::string& config_path, const st
 bool TestFixtures::createTestYamlFile(const std::string& yaml_path, const std::vector<Mix>& mixes) {
     YAML::Node root;
     YAML::Node mixes_node;
-    
+
     for (const auto& mix : mixes) {
         YAML::Node mix_node;
         mix_node["id"] = mix.id;
@@ -41,12 +43,12 @@ bool TestFixtures::createTestYamlFile(const std::string& yaml_path, const std::v
         mix_node["duration_seconds"] = mix.duration_seconds;
         mix_node["description"] = mix.description;
         mix_node["tags"] = mix.tags;
-        
+
         mixes_node.push_back(mix_node);
     }
-    
+
     root["mixes"] = mixes_node;
-    
+
     std::ofstream file(yaml_path);
     if (!file.is_open()) {
         return false;
@@ -62,7 +64,7 @@ bool TestFixtures::createTestDatabase(const std::string& db_path) {
     if (rc != SQLITE_OK) {
         return false;
     }
-    
+
     const char* sql = R"(
         CREATE TABLE IF NOT EXISTS mixes (
             id TEXT PRIMARY KEY,
@@ -85,7 +87,7 @@ bool TestFixtures::createTestDatabase(const std::string& db_path) {
             FOREIGN KEY (mix_id) REFERENCES mixes(id)
         );
     )";
-    
+
     char* err_msg = nullptr;
     rc = sqlite3_exec(db, sql, nullptr, nullptr, &err_msg);
     if (rc != SQLITE_OK) {
@@ -93,7 +95,7 @@ bool TestFixtures::createTestDatabase(const std::string& db_path) {
         sqlite3_close(db);
         return false;
     }
-    
+
     sqlite3_close(db);
     return true;
 }
@@ -105,7 +107,7 @@ Mix TestFixtures::createSampleMix(const std::string& id) {
     mix.artist = "Test Artist";
     mix.genre = "Electronic";
     mix.url = "https://example.com/mix_" + mix.id + ".mp3";
-    mix.duration_seconds = 3600; // 1 hour
+    mix.duration_seconds = 3600;  // 1 hour
     mix.description = "A test mix for unit testing";
     mix.tags = {"test", "electronic", "dance"};
     mix.play_count = 0;
@@ -116,11 +118,11 @@ Mix TestFixtures::createSampleMix(const std::string& id) {
 std::vector<Mix> TestFixtures::createSampleMixes(size_t count) {
     std::vector<Mix> mixes;
     mixes.reserve(count);
-    
+
     for (size_t i = 0; i < count; ++i) {
         mixes.push_back(createSampleMix("test_mix_" + std::to_string(i)));
     }
-    
+
     return mixes;
 }
 
@@ -186,7 +188,7 @@ mixes:
 }
 
 std::string TestFixtures::generateTestId() {
-    return "test_" + std::to_string(++test_counter) + "_" + 
+    return "test_" + std::to_string(++test_counter) + "_" +
            std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
@@ -195,24 +197,24 @@ bool TestFixtures::createTestMP3File(const std::string& file_path) {
     if (!file.is_open()) {
         return false;
     }
-    
+
     // Create a minimal valid MP3 file with ID3v2 header
     // This is a simplified MP3 file structure for testing
-    
+
     // ID3v2 header (10 bytes)
     const unsigned char id3_header[] = {
-        0x49, 0x44, 0x33,  // "ID3"
-        0x03, 0x00,         // Version 2.3
-        0x00,               // Flags
+        0x49, 0x44, 0x33,       // "ID3"
+        0x03, 0x00,             // Version 2.3
+        0x00,                   // Flags
         0x00, 0x00, 0x00, 0x00  // Size (0 for this test)
     };
-    
+
     file.write(reinterpret_cast<const char*>(id3_header), sizeof(id3_header));
-    
+
     // Add some dummy data to make it a "valid" file
     const char dummy_data[] = "This is a test MP3 file for unit testing";
     file.write(dummy_data, sizeof(dummy_data) - 1);
-    
+
     file.close();
     return true;
-} 
+}

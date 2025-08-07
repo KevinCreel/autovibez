@@ -1,5 +1,4 @@
-#ifndef AUDIO_UTILS_HPP
-#define AUDIO_UTILS_HPP
+#pragma once
 
 #include <string>
 
@@ -17,8 +16,6 @@ public:
      * @return True if valid MP3, false otherwise
      */
     static bool isValidMP3File(const std::string& file_path);
-    
-
 
 private:
     /**
@@ -29,7 +26,5 @@ private:
     static bool fileExists(const std::string& file_path);
 };
 
-} // namespace Utils
-} // namespace AutoVibez
-
-#endif // AUDIO_UTILS_HPP
+}  // namespace Utils
+}  // namespace AutoVibez

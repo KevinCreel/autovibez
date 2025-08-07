@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
 #include "base_metadata.hpp"
-#include "mp3_analyzer.hpp"
+
+#include <gtest/gtest.h>
+
 #include "mix_metadata.hpp"
+#include "mp3_analyzer.hpp"
 
 using AutoVibez::Data::BaseMetadata;
 
@@ -13,7 +15,7 @@ protected:
 
 TEST_F(BaseMetadataTest, DefaultConstructor_InitializesFields) {
     BaseMetadata metadata;
-    
+
     EXPECT_TRUE(metadata.id.empty());
     EXPECT_TRUE(metadata.title.empty());
     EXPECT_TRUE(metadata.artist.empty());
@@ -144,7 +146,7 @@ TEST_F(BaseMetadataTest, IsComplete_AllFieldsPresent) {
 TEST_F(BaseMetadataTest, Inheritance_MP3Metadata) {
     // Test that MP3Metadata inherits from BaseMetadata
     AutoVibez::Audio::MP3Metadata mp3_metadata;
-    
+
     // Should have all base fields
     EXPECT_TRUE(mp3_metadata.id.empty());
     EXPECT_TRUE(mp3_metadata.title.empty());
@@ -152,7 +154,7 @@ TEST_F(BaseMetadataTest, Inheritance_MP3Metadata) {
     EXPECT_EQ(mp3_metadata.duration_seconds, 0);
     EXPECT_EQ(mp3_metadata.play_count, 0);
     EXPECT_FALSE(mp3_metadata.is_favorite);
-    
+
     // Should have MP3-specific fields
     EXPECT_EQ(mp3_metadata.bitrate, 0);
     EXPECT_EQ(mp3_metadata.sample_rate, 0);
@@ -160,7 +162,7 @@ TEST_F(BaseMetadataTest, Inheritance_MP3Metadata) {
     EXPECT_EQ(mp3_metadata.file_size, 0);
     EXPECT_TRUE(mp3_metadata.format.empty());
     EXPECT_TRUE(mp3_metadata.url.empty());
-    
+
     // Should have base methods
     EXPECT_FALSE(mp3_metadata.hasValidId());
     EXPECT_FALSE(mp3_metadata.hasValidTitle());
@@ -175,7 +177,7 @@ TEST_F(BaseMetadataTest, Inheritance_MP3Metadata) {
 TEST_F(BaseMetadataTest, Inheritance_Mix) {
     // Test that Mix inherits from BaseMetadata
     AutoVibez::Data::Mix mix;
-    
+
     // Should have all base fields
     EXPECT_TRUE(mix.id.empty());
     EXPECT_TRUE(mix.title.empty());
@@ -183,11 +185,11 @@ TEST_F(BaseMetadataTest, Inheritance_Mix) {
     EXPECT_EQ(mix.duration_seconds, 0);
     EXPECT_EQ(mix.play_count, 0);
     EXPECT_FALSE(mix.is_favorite);
-    
+
     // Should have Mix-specific fields
     EXPECT_TRUE(mix.url.empty());
     EXPECT_TRUE(mix.original_filename.empty());
-    
+
     // Should have base methods
     EXPECT_FALSE(mix.hasValidId());
     EXPECT_FALSE(mix.hasValidTitle());

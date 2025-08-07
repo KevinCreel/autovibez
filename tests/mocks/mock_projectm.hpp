@@ -1,9 +1,10 @@
 #pragma once
 
+#include <gmock/gmock.h>
+
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <gmock/gmock.h>
 
 /**
  * @brief Mock ProjectM class for testing
@@ -36,33 +37,33 @@ public:
     MOCK_METHOD(bool, isInitialized, (), (const));
     MOCK_METHOD(std::string, getLastError, (), (const));
     MOCK_METHOD(bool, isSuccess, (), (const));
-    
+
     // Helper methods for testing
     void setMockPresetCount(int count) {
         mock_preset_count = count;
     }
-    
+
     void setMockPresetList(const std::vector<std::string>& presets) {
         mock_preset_list = presets;
     }
-    
+
     void setMockCurrentPresetName(const std::string& name) {
         mock_current_preset = name;
     }
-    
+
     void setMockBeatSensitivity(float sensitivity) {
         mock_beat_sensitivity = sensitivity;
     }
-    
+
     void setMockFPS(int fps) {
         mock_fps = fps;
     }
-    
+
     void setMockMeshSize(int x, int y) {
         mock_mesh_x = x;
         mock_mesh_y = y;
     }
-    
+
     void setMockIsInitialized(bool initialized) {
         mock_initialized = initialized;
     }
@@ -76,4 +77,4 @@ private:
     int mock_mesh_x = 32;
     int mock_mesh_y = 24;
     bool mock_initialized = false;
-}; 
+};

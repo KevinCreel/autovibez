@@ -34,73 +34,72 @@
 #include "autovibez_app.hpp"
 #include "constants.hpp"
 using AutoVibez::Core::AutoVibezApp;
-#include "setup.hpp"
-#include "mix_metadata.hpp"
-#include "mix_manager.hpp"
-#include "mix_player.hpp"
-#include "mix_downloader.hpp"
-#include "path_manager.hpp"
 #include <filesystem>
 
-using AutoVibez::Audio::processLoopbackFrame;
+#include "mix_downloader.hpp"
+#include "mix_manager.hpp"
+#include "mix_metadata.hpp"
+#include "mix_player.hpp"
+#include "path_manager.hpp"
+#include "setup.hpp"
+
 using AutoVibez::Audio::cleanupLoopback;
 using AutoVibez::Audio::MixPlayer;
-using AutoVibez::Data::MixDownloader;
-using AutoVibez::Data::MixMetadata;
-using AutoVibez::Data::MixManager;
+using AutoVibez::Audio::processLoopbackFrame;
 using AutoVibez::Data::Mix;
+using AutoVibez::Data::MixDownloader;
+using AutoVibez::Data::MixManager;
+using AutoVibez::Data::MixMetadata;
 
 static int mainLoop(void* userData) {
-    std::unique_ptr<AutoVibez::Core::AutoVibezApp> *appRef = static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp> *>(userData);
-    AutoVibez::Core::AutoVibezApp *app = appRef->get();
-    
+    std::unique_ptr<AutoVibez::Core::AutoVibezApp>* appRef =
+        static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp>*>(userData);
+    AutoVibez::Core::AutoVibezApp* app = appRef->get();
 
-    
     // frame rate limiter
-    int fps = 60; // Default FPS since fps() method was removed
+    int fps = 60;  // Default FPS since fps() method was removed
     if (fps <= 0) {
         fps = 60;
     }
     const Uint32 frame_delay = Constants::FRAME_DELAY_MS;
     Uint32 last_time = SDL_GetTicks();
-    
+
     // Initialize mix manager on startup
     if (!app->isMixManagerInitialized()) {
         app->initMixManager();
     }
-    
+
     // loop
-    while (! app->done) {
+    while (!app->done) {
         // render
         app->renderFrame();
-        
 
         processLoopbackFrame(app);
-        
+
         if (app->isMixManagerInitialized()) {
             if (app->getMixManager()->hasFinished()) {
                 app->checkAndAutoPlayNext();
             }
-            
+
             static Uint32 last_check = 0;
             Uint32 current_time = SDL_GetTicks();
             if (current_time - last_check > 5000) {
                 if (!app->getMixManager()->isPlaying() && !app->getMixManager()->isPaused()) {
                     app->checkAndAutoPlayNext();
                 }
-                
+
                 last_check = current_time;
             }
         }
-        
+
         if (app->isMixManagerInitialized()) {
             app->getMixManager()->updateCrossfade();
         }
-        
+
         if (app->isMixManagerInitialized()) {
             app->getMixManager()->cleanupCompletedDownloads();
         }
-        
+
         app->pollEvents();
         Uint32 elapsed = SDL_GetTicks() - last_time;
         if (elapsed < frame_delay) {
@@ -108,29 +107,29 @@ static int mainLoop(void* userData) {
         }
         last_time = SDL_GetTicks();
     }
-    
+
     return 0;
 }
 
 int main(int argc, char* argv[]) {
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
-    
+
     int status = mainLoop(&app);
 
     // cleanup
     cleanupLoopback();  // Add this line to clean up WASAPI resources
     SDL_GL_DeleteContext(app->_openGlContext);
 #if !FAKE_AUDIO
-    if (!app->wasapi) { // not currently using WASAPI, so we need to endAudioCapture.
+    if (!app->wasapi) {  // not currently using WASAPI, so we need to endAudioCapture.
         app->endAudioCapture();
     }
 #endif
-    
+
     // Get the window from the app and destroy it properly
     SDL_Window* window = app->getWindow();
     if (window) {
         SDL_DestroyWindow(window);
     }
-    
+
     return status;
 }

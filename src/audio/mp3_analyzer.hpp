@@ -1,12 +1,12 @@
-#ifndef MP3_ANALYZER_HPP
-#define MP3_ANALYZER_HPP
+#pragma once
 
+#include <chrono>
 #include <string>
 #include <vector>
-#include <chrono>
-#include "uuid_utils.hpp"
-#include "datetime_utils.hpp"
+
 #include "base_metadata.hpp"
+#include "datetime_utils.hpp"
+#include "uuid_utils.hpp"
 
 namespace AutoVibez {
 namespace Audio {
@@ -24,17 +24,19 @@ class MP3Analyzer {
 public:
     MP3Analyzer();
     ~MP3Analyzer();
-    
+
     MP3Metadata analyzeFile(const std::string& file_path);
-    std::string getLastError() const { return last_error; }
-    void setVerbose(bool verbose) { _verbose = verbose; }
-    
+    std::string getLastError() const {
+        return last_error;
+    }
+    void setVerbose(bool verbose) {
+        _verbose = verbose;
+    }
+
 private:
     std::string last_error;
     bool _verbose = false;
 };
 
-} // namespace Audio
-} // namespace AutoVibez
-
-#endif // MP3_ANALYZER_HPP 
+}  // namespace Audio
+}  // namespace AutoVibez

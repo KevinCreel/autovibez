@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "url_utils.hpp"
+
+#include <gtest/gtest.h>
 
 using AutoVibez::Utils::UrlUtils;
 
@@ -37,9 +38,9 @@ TEST_F(UrlUtilsTest, UrlDecode_ValidEncoded) {
 }
 
 TEST_F(UrlUtilsTest, UrlDecode_InvalidEncoded) {
-    EXPECT_EQ(UrlUtils::urlDecode("Hello%2"), "Hello%2"); // Invalid hex
-    EXPECT_EQ(UrlUtils::urlDecode("Hello%2G"), "Hello%2G"); // Invalid hex
-    EXPECT_EQ(UrlUtils::urlDecode("Hello%"), "Hello%"); // Incomplete
+    EXPECT_EQ(UrlUtils::urlDecode("Hello%2"), "Hello%2");    // Invalid hex
+    EXPECT_EQ(UrlUtils::urlDecode("Hello%2G"), "Hello%2G");  // Invalid hex
+    EXPECT_EQ(UrlUtils::urlDecode("Hello%"), "Hello%");      // Incomplete
 }
 
 TEST_F(UrlUtilsTest, GetUrlExtension_ValidUrls) {
@@ -97,7 +98,7 @@ TEST_F(UrlUtilsTest, GetProtocol_InvalidUrls) {
 
 TEST_F(UrlUtilsTest, ComplexUrlHandling) {
     std::string complex_url = "https://music.example.com/artist/album/song%20with%20spaces.mp3?param=value#fragment";
-    
+
     EXPECT_EQ(UrlUtils::extractFilenameFromUrl(complex_url), "song with spaces.mp3");
     EXPECT_EQ(UrlUtils::getUrlExtension(complex_url), "mp3");
     EXPECT_EQ(UrlUtils::getDomain(complex_url), "music.example.com");

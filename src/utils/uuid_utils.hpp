@@ -1,5 +1,4 @@
-#ifndef UUID_UTILS_HPP
-#define UUID_UTILS_HPP
+#pragma once
 
 #include <string>
 
@@ -17,8 +16,6 @@ public:
      * @return Deterministic UUID v5 string
      */
     static std::string generateIdFromUrl(const std::string& url);
-    
-
 
 private:
     /**
@@ -29,7 +26,5 @@ private:
     static std::string generateUuidFromHash(size_t hash);
 };
 
-} // namespace Utils
-} // namespace AutoVibez
-
-#endif // UUID_UTILS_HPP
+}  // namespace Utils
+}  // namespace AutoVibez

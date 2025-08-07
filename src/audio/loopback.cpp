@@ -1,13 +1,15 @@
 // Handles audio loopback
 
 #include "loopback.hpp"
+
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
 namespace AutoVibez {
 namespace Audio {
 
-// ref https://blogs.msdn.microsoft.com/matthew_van_eerde/2008/12/16/sample-wasapi-loopback-capture-record-what-you-hear/
+// ref
+// https://blogs.msdn.microsoft.com/matthew_van_eerde/2008/12/16/sample-wasapi-loopback-capture-record-what-you-hear/
 #ifdef WASAPI_LOOPBACK
 
 // Global WASAPI resources that need cleanup
@@ -24,40 +26,36 @@ bool bFirstPacket = true;
 
 HRESULT get_default_device(IMMDevice **ppMMDevice) {
     HRESULT hr = S_OK;
-    
+
     // activate a device enumerator
-    hr = CoCreateInstance(
-                          __uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL,
-                          __uuidof(IMMDeviceEnumerator),
-                          static_cast<void**>(&pMMDeviceEnumerator)
-                          );
+    hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator),
+                          static_cast<void **>(&pMMDeviceEnumerator));
     if (FAILED(hr)) {
         ERR(L"CoCreateInstance(IMMDeviceEnumerator) failed: hr = 0x%08x", hr);
         return false;
     }
-    
+
     // get the default render endpoint
     hr = pMMDeviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, ppMMDevice);
     if (FAILED(hr)) {
         ERR(L"IMMDeviceEnumerator::GetDefaultAudioEndpoint failed: hr = 0x%08x", hr);
         return false;
     }
-    
+
     return S_OK;
 }
 #endif /** WASAPI_LOOPBACK */
 
-bool initLoopback()
-{
+bool initLoopback() {
 #ifdef WASAPI_LOOPBACK
     HRESULT hr;
-    
+
     hr = CoInitialize(NULL);
     if (FAILED(hr)) {
         ERR(L"CoInitialize failed: hr = 0x%08x", hr);
         return false;
     }
-    
+
     // open default device if not specified
     if (NULL == pMMDevice) {
         hr = get_default_device(&pMMDevice);
@@ -66,20 +64,16 @@ bool initLoopback()
             return false;
         }
     }
-    
+
     bool bInt16 = false;
-    
+
     // activate an IAudioClient
-    hr = pMMDevice->Activate(
-                             __uuidof(IAudioClient),
-                             CLSCTX_ALL, NULL,
-                             static_cast<void**>(&pAudioClient)
-                             );
+    hr = pMMDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, static_cast<void **>(&pAudioClient));
     if (FAILED(hr)) {
         ERR(L"IMMDevice::Activate(IAudioClient) failed: hr = 0x%08x", hr);
         return false;
     }
-    
+
     // get the default device periodicity
     REFERENCE_TIME hnsDefaultDevicePeriod;
     hr = pAudioClient->GetDevicePeriod(&hnsDefaultDevicePeriod, NULL);
@@ -87,14 +81,14 @@ bool initLoopback()
         ERR(L"IAudioClient::GetDevicePeriod failed: hr = 0x%08x", hr);
         return false;
     }
-    
+
     // get the default device format
     hr = pAudioClient->GetMixFormat(&pwfx);
     if (FAILED(hr)) {
         ERR(L"IAudioClient::GetMixFormat failed: hr = 0x%08x", hr);
         return false;
     }
-    
+
     if (bInt16) {
         // coerce int-16 wave format
         // can do this in-place since we're not changing the size of the format
@@ -106,9 +100,8 @@ bool initLoopback()
                 pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
                 pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
                 break;
-                
-            case WAVE_FORMAT_EXTENSIBLE:
-            {
+
+            case WAVE_FORMAT_EXTENSIBLE: {
                 // naked scope for case-local variable
                 PWAVEFORMATEXTENSIBLE pEx = reinterpret_cast<PWAVEFORMATEXTENSIBLE>(pwfx);
                 if (IsEqualGUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, pEx->SubFormat)) {
@@ -117,107 +110,97 @@ bool initLoopback()
                     pwfx->wBitsPerSample = 16;
                     pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
                     pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
-                }
-                else {
+                } else {
                     ERR(L"%s", L"Don't know how to coerce mix format to int-16");
                     return E_UNEXPECTED;
                 }
-            }
-                break;
-                
+            } break;
+
             default:
                 ERR(L"Don't know how to coerce WAVEFORMATEX with wFormatTag = 0x%08x to int-16", pwfx->wFormatTag);
                 return E_UNEXPECTED;
         }
     }
-    
+
     nBlockAlign = pwfx->nBlockAlign;
     *pnFrames = 0;
-    
+
     // call IAudioClient::Initialize
     // note that AUDCLNT_STREAMFLAGS_LOOPBACK and AUDCLNT_STREAMFLAGS_EVENTCALLBACK
     // do not work together...
     // the "data ready" event never gets set
     // so we're going to do a timer-driven loop
-    hr = pAudioClient->Initialize(
-                                  AUDCLNT_SHAREMODE_SHARED,
-                                  AUDCLNT_STREAMFLAGS_LOOPBACK,
-                                  0, 0, pwfx, 0
-                                  );
+    hr = pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, 0, 0, pwfx, 0);
     if (FAILED(hr)) {
         ERR(L"pAudioClient->Initialize error");
         return false;
     }
-    
+
     // activate an IAudioCaptureClient
-    hr = pAudioClient->GetService(
-                                  __uuidof(IAudioCaptureClient),
-                                  static_cast<void**>(&pAudioCaptureClient)
-                                  );
+    hr = pAudioClient->GetService(__uuidof(IAudioCaptureClient), static_cast<void **>(&pAudioCaptureClient));
     if (FAILED(hr)) {
         ERR(L"pAudioClient->GetService error");
         return false;
     }
-    
+
     // call IAudioClient::Start
     hr = pAudioClient->Start();
     if (FAILED(hr)) {
         ERR(L"pAudioClient->Start error");
         return false;
     }
-    
+
 #endif /** WASAPI_LOOPBACK */
 
     return true;
 }
 
-bool cleanupLoopback()
-{
+bool cleanupLoopback() {
 #ifdef WASAPI_LOOPBACK
     // Stop audio capture if it's running
     if (pAudioClient) {
         pAudioClient->Stop();
     }
-    
+
     // Release IAudioCaptureClient
     if (pAudioCaptureClient) {
         pAudioCaptureClient->Release();
         pAudioCaptureClient = nullptr;
     }
-    
+
     // Release IAudioClient
     if (pAudioClient) {
         pAudioClient->Release();
         pAudioClient = nullptr;
     }
-    
+
     // Free WAVEFORMATEX structure
     if (pwfx) {
         CoTaskMemFree(pwfx);
         pwfx = nullptr;
     }
-    
+
     // Release IMMDevice
     if (pMMDevice) {
         pMMDevice->Release();
         pMMDevice = nullptr;
     }
-    
+
     // Release IMMDeviceEnumerator
     if (pMMDeviceEnumerator) {
         pMMDeviceEnumerator->Release();
         pMMDeviceEnumerator = nullptr;
     }
-    
+
     // Uninitialize COM
     CoUninitialize();
-    
+
     // Reset global variables
     nBlockAlign = 0;
     nPasses = 0;
     bFirstPacket = true;
     *pnFrames = 0;
-    
+
     return true;
 #else
     return true;
@@ -225,13 +208,13 @@ bool cleanupLoopback()
 }
 
 void configureLoopback(Core::AutoVibezApp *app) {
-    (void)app; // Parameter not used in current implementation
+    (void)app;  // Parameter not used in current implementation
 #ifdef WASAPI_LOOPBACK
     // Default to WASAPI loopback if it was enabled at compilation.
     app->wasapi = true;
     // Notify that loopback capture was started.
     SDL_Log("Opened audio capture loopback.");
-    
+
     // Initialize the loopback
     if (!initLoopback()) {
         SDL_Log("Failed to initialize WASAPI loopback - falling back to fake audio");
@@ -244,50 +227,42 @@ void configureLoopback(Core::AutoVibezApp *app) {
 }
 
 bool processLoopbackFrame(Core::AutoVibezApp *app) {
-    (void)app; // Parameter not used in current implementation
+    (void)app;  // Parameter not used in current implementation
 #ifdef WASAPI_LOOPBACK
-	HRESULT hr;
+    HRESULT hr;
 
     if (app->wasapi) {
         // drain data while it is available
         nPasses++;
         UINT32 nNextPacketSize;
-        for (
-             hr = pAudioCaptureClient->GetNextPacketSize(&nNextPacketSize);
-             SUCCEEDED(hr) && nNextPacketSize > 0;
-             hr = pAudioCaptureClient->GetNextPacketSize(&nNextPacketSize)
-             ) {
+        for (hr = pAudioCaptureClient->GetNextPacketSize(&nNextPacketSize); SUCCEEDED(hr) && nNextPacketSize > 0;
+             hr = pAudioCaptureClient->GetNextPacketSize(&nNextPacketSize)) {
             // get the captured data
             BYTE *pData;
             UINT32 nNumFramesToRead;
             DWORD dwFlags;
-            
-            hr = pAudioCaptureClient->GetBuffer(
-                                                &pData,
-                                                &nNumFramesToRead,
-                                                &dwFlags,
-                                                NULL,
-                                                NULL
-                                                );
+
+            hr = pAudioCaptureClient->GetBuffer(&pData, &nNumFramesToRead, &dwFlags, NULL, NULL);
             if (FAILED(hr)) {
                 return false;
             }
-            
+
             LONG lBytesToWrite = nNumFramesToRead * nBlockAlign;
-            
+
             /** Add the waveform data */
-            projectm_pcm_add_float(app->projectM(), reinterpret_cast<float*>(pData), nNumFramesToRead, PROJECTM_STEREO);
-            
+            projectm_pcm_add_float(app->projectM(), reinterpret_cast<float *>(pData), nNumFramesToRead,
+                                   PROJECTM_STEREO);
+
             *pnFrames += nNumFramesToRead;
-            
+
             hr = pAudioCaptureClient->ReleaseBuffer(nNumFramesToRead);
             if (FAILED(hr)) {
                 return false;
             }
-            
+
             bFirstPacket = false;
         }
-        
+
         if (FAILED(hr)) {
             return false;
         }
@@ -297,5 +272,5 @@ bool processLoopbackFrame(Core::AutoVibezApp *app) {
     return true;
 }
 
-} // namespace Audio
-} // namespace AutoVibez
+}  // namespace Audio
+}  // namespace AutoVibez

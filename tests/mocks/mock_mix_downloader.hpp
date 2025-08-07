@@ -1,9 +1,11 @@
 #pragma once
 
+#include <gmock/gmock.h>
+
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <gmock/gmock.h>
+
 #include "mix_metadata.hpp"
 
 /**
@@ -27,24 +29,24 @@ public:
     MOCK_METHOD(bool, verifyDownload, (const std::string& mix_id), (const));
     MOCK_METHOD(std::string, getLastError, (), (const));
     MOCK_METHOD(bool, isSuccess, (), (const));
-    
+
     // Helper methods for testing
     void setMockDownloadProgress(double progress) {
         mock_download_progress = progress;
     }
-    
+
     void setMockDownloadStatus(const std::string& status) {
         mock_download_status = status;
     }
-    
+
     void setMockIsDownloading(bool downloading) {
         mock_is_downloading = downloading;
     }
-    
+
     void setMockDownloadedMixIds(const std::vector<std::string>& ids) {
         mock_downloaded_ids = ids;
     }
-    
+
     void setMockLocalPaths(const std::map<std::string, std::string>& paths) {
         mock_local_paths = paths;
     }
@@ -55,4 +57,4 @@ private:
     bool mock_is_downloading = false;
     std::vector<std::string> mock_downloaded_ids;
     std::map<std::string, std::string> mock_local_paths;
-}; 
+};

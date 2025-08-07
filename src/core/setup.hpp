@@ -1,19 +1,17 @@
-#ifndef setup_hpp
-#define setup_hpp
-
-#include "autovibez_app.hpp"
+#pragma once
 
 #include <string>
 
-namespace AutoVibez { namespace Core { class AutoVibezApp; } }
+#include "autovibez_app.hpp"
 
-void debugGL(GLenum source,
-               GLenum type,
-               GLuint id,
-               GLenum severity,
-               GLsizei length,
-               const GLchar* message,
-             const void* userParam);
+namespace AutoVibez {
+namespace Core {
+class AutoVibezApp;
+}
+}  // namespace AutoVibez
+
+void debugGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
+             const void *userParam);
 
 std::string getConfigDirectory();
 std::string getConfigFilePath(std::string datadir_path);
@@ -27,5 +25,3 @@ void testAllPresets(AutoVibez::Core::AutoVibezApp *app);
 AutoVibez::Core::AutoVibezApp *setupSDLApp();
 int64_t startUnlockedFPSCounter();
 void advanceUnlockedFPSCounterFrame(int64_t startFrame);
-
-#endif /* setup_hpp */

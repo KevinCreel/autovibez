@@ -1,29 +1,29 @@
 /**
-* projectM -- Milkdrop-esque visualisation SDK
-* Copyright (C)2003-2019 projectM Team
-*
-* This library is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-* See 'LICENSE.txt' included within this release
-*
-* projectM-sdl
-* This is an implementation of projectM using libSDL2
-* 
-* pmSDL.hpp 
-* Authors: Created by Mischa Spiegelmock on 2017-09-18.
-*
-*/
+ * projectM -- Milkdrop-esque visualisation SDK
+ * Copyright (C)2003-2019 projectM Team
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * See 'LICENSE.txt' included within this release
+ *
+ * projectM-sdl
+ * This is an implementation of projectM using libSDL2
+ *
+ * pmSDL.hpp
+ * Authors: Created by Mischa Spiegelmock on 2017-09-18.
+ *
+ */
 
 #pragma once
 
@@ -46,16 +46,14 @@
 #include "setup.hpp"
 
 // Mix management
-#include "mix_manager.hpp"
-#include "mix_metadata.hpp"
-#include "mix_downloader.hpp"
 #include "config_manager.hpp"
 #include "help_overlay.hpp"
+#include "mix_downloader.hpp"
+#include "mix_manager.hpp"
+#include "mix_metadata.hpp"
 
-    // New modular components
+// New modular components
 #include "constants.hpp"
-
-
 #include "path_manager.hpp"
 #include "preset_manager.hpp"
 
@@ -65,28 +63,25 @@
 #include <sys/stat.h>
 #endif
 
+#include <atomic>
 #include <fstream>
+#include <future>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <thread>
-#include <future>
-#include <mutex>
-#include <atomic>
 
 #ifdef _WIN32
 #ifdef WASAPI_LOOPBACK
-#include <windows.h>
-#include <mmdeviceapi.h>
 #include <audioclient.h>
-
-#include <functiondiscoverykeys_devpkey.h>
 #include <avrt.h>
-
+#include <functiondiscoverykeys_devpkey.h>
+#include <mmdeviceapi.h>
 #include <mmsystem.h>
 #include <stdio.h>
-
+#include <windows.h>
 
 #define LOG(format, ...) wprintf(format L"\n", __VA_ARGS__)
 #define ERR(format, ...) LOG(L"Error: " format, __VA_ARGS__)
@@ -100,19 +95,16 @@
 #include <SDL2/SDL.h>
 #endif /** _WIN32 */
 
-
 // DATADIR_PATH should be set by the root Makefile if this is being
 // built with autotools.
-
 
 namespace AutoVibez {
 namespace Core {
 
-class AutoVibezApp
-{
-
+class AutoVibezApp {
 public:
-    AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath, int audioDeviceIndex = 0, bool showFps = false);
+    AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath,
+                 int audioDeviceIndex = 0, bool showFps = false);
 
     ~AutoVibezApp();
 
@@ -125,7 +117,7 @@ public:
     void stretchMonitors();
     void nextMonitor();
     void toggleFullScreen();
-    void syncFullscreenState(); // Synchronize _isFullScreen with actual SDL state
+    void syncFullscreenState();  // Synchronize _isFullScreen with actual SDL state
     void resizeWindow(unsigned int width, unsigned int height);
 
     void renderFrame();
@@ -137,7 +129,7 @@ public:
 
     // Help and UI
     void cycleAudioDevice();
-    
+
     // Mix management
 
     void initMixManager();
@@ -147,28 +139,37 @@ public:
     void startBackgroundDownloads();
     void autoPlayFromLocalDatabase();
     void checkAndAutoPlayNext();
-    bool isMixManagerInitialized() const { return _mixManagerInitialized; }
-    AutoVibez::Data::MixManager* getMixManager() { return _mixManager.get(); }
-    
+    bool isMixManagerInitialized() const {
+        return _mixManagerInitialized;
+    }
+    AutoVibez::Data::MixManager* getMixManager() {
+        return _mixManager.get();
+    }
+
     // Window management
-    SDL_Window* getWindow() const { return _sdlWindow; }
-    
+    SDL_Window* getWindow() const {
+        return _sdlWindow;
+    }
+
     // Help Overlay
     void initHelpOverlay();
     void renderHelpOverlay();
     void updateHelpOverlayInfo();
-    
+
     // New modular component accessors
-    PresetManager* getPresetManager() { return _presetManager.get(); }
-    
+    PresetManager* getPresetManager() {
+        return _presetManager.get();
+    }
+
     // Beat sensitivity
     void setBeatSensitivity(float sensitivity);
 
     bool done{false};
     bool mouseDown{false};
-    bool wasapi{false};    // Used to track if wasapi is currently active. This bool will allow us to run a WASAPI app and still toggle to microphone inputs.
-    bool fakeAudio{false}; // Used to track fake audio, so we can turn it off and on.
-    bool stretch{false};   // used for toggling stretch mode
+    bool wasapi{false};  // Used to track if wasapi is currently active. This bool will allow us to run a WASAPI app and
+                         // still toggle to microphone inputs.
+    bool fakeAudio{false};  // Used to track fake audio, so we can turn it off and on.
+    bool stretch{false};    // used for toggling stretch mode
 
     SDL_GLContext _openGlContext{nullptr};
     SDL_Window* _sdlWindow{nullptr};
@@ -176,16 +177,19 @@ public:
 public:
     static void presetSwitchedEvent(bool isHardCut, uint32_t index, void* context);
     static void audioInputCallbackF32(void* userdata, unsigned char* stream, int len);
-    
+
     // Audio-related getters
-    unsigned short getAudioChannelsCount() const { return _audioChannelsCount; }
-    projectm_handle getProjectM() const { return _projectM; }
-    
+    unsigned short getAudioChannelsCount() const {
+        return _audioChannelsCount;
+    }
+    projectm_handle getProjectM() const {
+        return _projectM;
+    }
+
     // Friend function for audio callback
     friend void AutoVibez::Audio::audioInputCallbackF32(void* userData, const float* buffer, int len);
 
 private:
-
     void UpdateWindowTitle();
 
     // Mouse wheel function declarations removed
@@ -202,9 +206,9 @@ private:
     unsigned int _numAudioDevices{0};
     SDL_AudioDeviceID _audioDeviceId{0};
 
-    std::string _presetName; //!< Current preset name
+    std::string _presetName;  //!< Current preset name
 
-    int _selectedAudioDeviceIndex{0}; //!< Selected audio device index
+    int _selectedAudioDeviceIndex{0};  //!< Selected audio device index
 
     // Mix management
     std::unique_ptr<AutoVibez::Data::MixManager> _mixManager;
@@ -212,16 +216,16 @@ private:
     AutoVibez::Data::Mix _currentMix;
     bool _mixManagerInitialized;
     bool _hadMixesOnStartup;
-    bool _volumeKeyPressed{false}; // Track if volume key is being held
-    bool _manualPresetChange{false}; // Track if preset change was manual
-    int _previousVolume{Constants::MAX_VOLUME}; // Store volume before mute
-    
+    bool _volumeKeyPressed{false};               // Track if volume key is being held
+    bool _manualPresetChange{false};             // Track if preset change was manual
+    int _previousVolume{Constants::MAX_VOLUME};  // Store volume before mute
+
     // Help Overlay
     std::unique_ptr<AutoVibez::UI::HelpOverlay> _helpOverlay;
-    
+
     // New modular components
     std::unique_ptr<PresetManager> _presetManager;
-    
+
     // Thread safety members
     std::future<void> _backgroundTask;
     std::atomic<bool> _backgroundTaskRunning{false};
@@ -234,8 +238,7 @@ private:
     void handleMouseButtonUpEvent(const SDL_Event& evt);
     void handleQuitEvent(const SDL_Event& evt);
     void handleMouseDragEvent();
-
 };
 
-} // namespace Core
-} // namespace AutoVibez
+}  // namespace Core
+}  // namespace AutoVibez
