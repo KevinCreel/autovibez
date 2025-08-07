@@ -61,11 +61,30 @@ int AutoVibezApp::initializeAudioInput() {
     const char* deviceName = nullptr;
     if (_selectedAudioDeviceIndex >= 0 && _selectedAudioDeviceIndex < _numAudioDevices) {
         deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
+        if (!deviceName) {
+            // Device name is null, fallback to default device
+            SDL_Log("Device name is null for index %d, falling back to default device", _selectedAudioDeviceIndex);
+            deviceName = nullptr;
+            _selectedAudioDeviceIndex = -1;
+        }
     }
+    
     _audioDeviceId = SDL_OpenAudioDevice(deviceName, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     if (_audioDeviceId == 0) {
         SDL_Log("Failed to open audio device: %s", SDL_GetError());
-        return 0;
+        
+        // Try fallback to default device if we weren't already trying the default
+        if (deviceName != nullptr) {
+            SDL_Log("Trying fallback to default audio device");
+            _selectedAudioDeviceIndex = -1;
+            _audioDeviceId = SDL_OpenAudioDevice(nullptr, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
+            if (_audioDeviceId == 0) {
+                SDL_Log("Failed to open default audio device: %s", SDL_GetError());
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
 
     _audioChannelsCount = obtained.channels;

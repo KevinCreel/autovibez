@@ -585,9 +585,15 @@ void AutoVibezApp::updateHelpOverlayInfo() {
     }
     
     // Update audio device
-    const char* deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
+    const char* deviceName = nullptr;
+    if (_selectedAudioDeviceIndex >= 0 && _selectedAudioDeviceIndex < _numAudioDevices) {
+        deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
+    }
     if (deviceName) {
         _helpOverlay->setAudioDevice(deviceName);
+    } else {
+        // Show default device indicator
+        _helpOverlay->setAudioDevice("Default Device");
     }
     
     // Update beat sensitivity
@@ -683,8 +689,22 @@ void AutoVibezApp::UpdateWindowTitle()
 
 void AutoVibezApp::cycleAudioDevice()
 {
-    // Calculate next device index like the original - will wrap around to default capture device (-1)
-    int nextAudioDeviceId = ((_selectedAudioDeviceIndex + 2) % (SDL_GetNumAudioDevices(SDL_TRUE) + 1)) - 1;
+    int numDevices = SDL_GetNumAudioDevices(SDL_TRUE);
+    
+    // Handle edge cases - no devices available
+    if (numDevices <= 0) {
+        SDL_Log("No audio capture devices available");
+        return;
+    }
+    
+    // Calculate next device index with proper bounds checking
+    int nextAudioDeviceId = ((_selectedAudioDeviceIndex + 2) % (numDevices + 1)) - 1;
+    
+    // Validate the new index
+    if (nextAudioDeviceId < -1 || nextAudioDeviceId >= numDevices) {
+        // Fallback to default device (-1)
+        nextAudioDeviceId = -1;
+    }
     
     // Start recording with new device
     _selectedAudioDeviceIndex = nextAudioDeviceId;
