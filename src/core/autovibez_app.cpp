@@ -743,12 +743,6 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
             }
             return;
 
-        case SDLK_1:
-        case SDLK_2:
-        case SDLK_3:
-        case SDLK_4:
-        case SDLK_5:
-
         case SDLK_f:
             // F: Toggle favorite
             if (!_currentMix.id.empty()) {
