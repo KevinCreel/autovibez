@@ -134,10 +134,8 @@ public:
 
     void initMixManager();
     void handleMixControls(SDL_Event* event);
-    void autoDownloadRandomMix();
-    void autoPlayOrDownload();
-    void startBackgroundDownloads();
     void autoPlayFromLocalDatabase();
+    void startBackgroundDownloads();
     void checkAndAutoPlayNext();
     bool isMixManagerInitialized() const {
         return _mixManagerInitialized;
