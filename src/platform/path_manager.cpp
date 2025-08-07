@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 
 #include "constants.hpp"
 #include "path_constants.hpp"

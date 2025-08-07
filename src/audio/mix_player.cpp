@@ -3,7 +3,6 @@
 #include <SDL2/SDL_mixer.h>
 
 #include <filesystem>
-#include <fstream>
 
 #include "constants.hpp"
 #include "mix_metadata.hpp"

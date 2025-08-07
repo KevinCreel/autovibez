@@ -1,11 +1,8 @@
 #include "mix_metadata.hpp"
 
 #include <curl/curl.h>
-#include <filesystem>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
-
-#include <iomanip>
 
 #include "constants.hpp"
 #include "path_manager.hpp"

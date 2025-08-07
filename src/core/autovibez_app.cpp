@@ -31,7 +31,6 @@
 #include "autovibez_app.hpp"
 
 #include <filesystem>
-#include <set>
 #include <thread>
 #include <vector>
 

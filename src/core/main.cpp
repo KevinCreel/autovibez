@@ -34,7 +34,6 @@
 #include "autovibez_app.hpp"
 #include "constants.hpp"
 using AutoVibez::Core::AutoVibezApp;
-#include <filesystem>
 
 #include "mix_downloader.hpp"
 #include "mix_manager.hpp"
