@@ -17,6 +17,7 @@
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
 #include "path_manager.hpp"
+#include "string_utils.hpp"
 #include "uuid_utils.hpp"
 
 using AutoVibez::Audio::MixPlayer;
@@ -559,13 +560,11 @@ Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre) {
 
     // Filter available mixes by genre (case-insensitive)
     std::vector<Mix> genre_mixes;
-    std::string genre_lower = genre;
-    std::transform(genre_lower.begin(), genre_lower.end(), genre_lower.begin(), ::tolower);
+    std::string genre_lower = AutoVibez::Utils::StringUtils::toLower(genre);
 
     for (const auto& mix : available_mixes) {
         if (!mix.genre.empty()) {
-            std::string mix_genre_lower = mix.genre;
-            std::transform(mix_genre_lower.begin(), mix_genre_lower.end(), mix_genre_lower.begin(), ::tolower);
+            std::string mix_genre_lower = AutoVibez::Utils::StringUtils::toLower(mix.genre);
             if (mix_genre_lower == genre_lower) {
                 genre_mixes.push_back(mix);
             }
@@ -588,13 +587,11 @@ Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre, const std
 
     // Filter available mixes by genre (case-insensitive) and exclude the specified mix
     std::vector<Mix> genre_mixes;
-    std::string genre_lower = genre;
-    std::transform(genre_lower.begin(), genre_lower.end(), genre_lower.begin(), ::tolower);
+    std::string genre_lower = AutoVibez::Utils::StringUtils::toLower(genre);
 
     for (const auto& mix : available_mixes) {
         if (!mix.genre.empty() && mix.id != exclude_mix_id) {
-            std::string mix_genre_lower = mix.genre;
-            std::transform(mix_genre_lower.begin(), mix_genre_lower.end(), mix_genre_lower.begin(), ::tolower);
+            std::string mix_genre_lower = AutoVibez::Utils::StringUtils::toLower(mix.genre);
             if (mix_genre_lower == genre_lower) {
                 genre_mixes.push_back(mix);
             }
@@ -823,13 +820,11 @@ std::string MixManager::findGenreCaseInsensitive(const std::string& target_genre
     }
 
     // Convert target to lowercase for comparison
-    std::string target_lower = target_genre;
-    std::transform(target_lower.begin(), target_lower.end(), target_lower.begin(), ::tolower);
+    std::string target_lower = AutoVibez::Utils::StringUtils::toLower(target_genre);
 
     // Find matching genre (case-insensitive)
     for (const auto& genre : genres) {
-        std::string genre_lower = genre;
-        std::transform(genre_lower.begin(), genre_lower.end(), genre_lower.begin(), ::tolower);
+        std::string genre_lower = AutoVibez::Utils::StringUtils::toLower(genre);
 
         if (genre_lower == target_lower) {
             return genre;  // Return the actual genre name from database

@@ -7,6 +7,7 @@
 
 #include "constants.hpp"
 #include "path_constants.hpp"
+#include "string_utils.hpp"
 
 #ifdef _WIN32
 #include <shlobj.h>
@@ -548,10 +549,10 @@ std::string PathManager::normalizePath(const std::string& path) {
 
 #ifdef _WIN32
     // Convert forward slashes to backslashes on Windows
-    std::replace(normalized.begin(), normalized.end(), '/', '\\');
+    normalized = AutoVibez::Utils::StringUtils::replaceChar(normalized, '/', '\\');
 #else
     // Convert backslashes to forward slashes on Unix-like systems
-    std::replace(normalized.begin(), normalized.end(), '\\', '/');
+    normalized = AutoVibez::Utils::StringUtils::replaceChar(normalized, '\\', '/');
 #endif
 
     return normalized;

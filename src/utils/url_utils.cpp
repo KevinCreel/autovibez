@@ -5,6 +5,7 @@
 #include <regex>
 
 #include "constants.hpp"
+#include "string_utils.hpp"
 
 namespace AutoVibez {
 namespace Utils {
@@ -76,7 +77,7 @@ std::string UrlUtils::getUrlExtension(const std::string& url) {
     std::string extension = filename.substr(last_dot + 1);
 
     // Convert to lowercase
-    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+    extension = AutoVibez::Utils::StringUtils::toLower(extension);
     return extension;
 }
 

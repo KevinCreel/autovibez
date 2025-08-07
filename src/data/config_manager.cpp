@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "constants.hpp"
+#include "string_utils.hpp"
 
 using AutoVibez::Data::ConfigFile;
 using std::string;
@@ -42,9 +43,7 @@ bool ConfigFile::keyExists(const string& key) const {
 /* static */
 void ConfigFile::trim(string& s) {
     // Remove leading and trailing whitespace
-    static const char whitespace[] = " \n\t\v\r\f";
-    s.erase(0, s.find_first_not_of(whitespace));
-    s.erase(s.find_last_not_of(whitespace) + 1U);
+    s = AutoVibez::Utils::StringUtils::trim(s);
 }
 
 std::ostream& operator<<(std::ostream& os, const ConfigFile& cf) {

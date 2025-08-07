@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "constants.hpp"
+#include "string_utils.hpp"
 
 namespace AutoVibez {
 namespace Utils {
@@ -24,7 +25,7 @@ std::string PathUtils::getFileExtension(const std::string& file_path) {
         extension = extension.substr(1);
     }
 
-    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+    extension = AutoVibez::Utils::StringUtils::toLower(extension);
     return extension;
 }
 
@@ -68,8 +69,7 @@ std::string PathUtils::createSafeFilename(const std::string& title) {
 
 bool PathUtils::hasExtension(const std::string& file_path, const std::string& extension) {
     std::string file_extension = getFileExtension(file_path);
-    std::string target_extension = extension;
-    std::transform(target_extension.begin(), target_extension.end(), target_extension.begin(), ::tolower);
+    std::string target_extension = AutoVibez::Utils::StringUtils::toLower(extension);
     return file_extension == target_extension;
 }
 
