@@ -47,7 +47,6 @@ std::string expandTilde(const std::string& path) {
 #if OGL_DEBUG
 void debugGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message,
              const void* userParam) {
-    // Debug output disabled
 }
 #endif
 
@@ -342,7 +341,6 @@ AutoVibezApp* setupSDLApp() {
     app->resizeWindow(finalWidth, finalHeight);
 
     // Create a help menu specific to SDL
-    // Note: modKey removed - not needed for current implementation
 
     app->initialize(win);
 

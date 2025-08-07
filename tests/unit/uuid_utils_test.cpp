@@ -47,7 +47,6 @@ TEST_F(UuidUtilsTest, UuidFormat) {
     std::string url = "https://example.com/test.mp3";
     std::string id = UuidUtils::generateIdFromUrl(url);
 
-    // UUID should be in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     EXPECT_EQ(id.length(), 36);
     EXPECT_EQ(id[8], '-');
     EXPECT_EQ(id[13], '-');
