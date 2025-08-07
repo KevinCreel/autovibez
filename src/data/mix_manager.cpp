@@ -297,7 +297,7 @@ bool MixManager::playMix(const Mix& mix) {
         return false;
     }
 
-    if (player->playMix(local_path, mix.title)) {
+    if (player->playMix(local_path)) {
         current_mix = mix;
         updatePlayStats(mix.id);
         setLocalPath(mix.id, local_path);

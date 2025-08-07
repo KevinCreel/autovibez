@@ -25,11 +25,9 @@ static size_t WriteFileCallback(void* contents, size_t size, size_t nmemb, FILE*
 static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     (void)clientp;
     (void)ultotal;
-    (void)ulnow;  // Parameters not used in current implementation
-    // Update progress
-    if (dltotal > 0) {
-        int progress = static_cast<int>((dlnow * Constants::MAX_VOLUME) / dltotal);
-    }
+    (void)ulnow;
+    (void)dltotal;
+    (void)dlnow;
     return 0;
 }
 

@@ -40,8 +40,7 @@ MixPlayer::~MixPlayer() {
     Mix_CloseAudio();
 }
 
-bool MixPlayer::playMix(const std::string& local_path, const std::string& title) {
-    (void)title;  // Parameter not used in current implementation
+bool MixPlayer::playMix(const std::string& local_path) {
     last_error.clear();
 
     if (!std::filesystem::exists(local_path)) {

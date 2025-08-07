@@ -208,7 +208,6 @@ bool cleanupLoopback() {
 }
 
 void configureLoopback(Core::AutoVibezApp *app) {
-    (void)app;  // Parameter not used in current implementation
 #ifdef WASAPI_LOOPBACK
     // Default to WASAPI loopback if it was enabled at compilation.
     app->wasapi = true;
@@ -227,7 +226,6 @@ void configureLoopback(Core::AutoVibezApp *app) {
 }
 
 bool processLoopbackFrame(Core::AutoVibezApp *app) {
-    (void)app;  // Parameter not used in current implementation
 #ifdef WASAPI_LOOPBACK
     HRESULT hr;
 

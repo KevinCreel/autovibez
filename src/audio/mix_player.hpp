@@ -22,10 +22,9 @@ public:
     /**
      * @brief Load and play a mix file
      * @param local_path Path to local mix file
-     * @param title Optional title to display (if empty, shows filename)
      * @return True if successful, false otherwise
      */
-    bool playMix(const std::string& local_path, const std::string& title = "");
+    bool playMix(const std::string& local_path);
 
     /**
      * @brief Pause/resume playback
