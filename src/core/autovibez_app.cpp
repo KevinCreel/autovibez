@@ -611,7 +611,6 @@ void AutoVibezApp::initMixManager() {
 
     // Initialize database first (fast operation)
     if (!_mixManager->initialize()) {
-        // Mix manager initialization error notification removed - too verbose for normal operation
         return;
     }
 
@@ -689,8 +688,6 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
             }
             return;
 
-            // N key removed - redundant with RIGHT key for next mix
-
         case SDLK_LEFT:
             // ←: Previous mix
             {
@@ -712,8 +709,6 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
                 }
             }
             return;
-
-            // D key removed - redundant functionality
 
         case SDLK_UP:
             // ↑: Volume up
@@ -767,8 +762,6 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
                 _helpOverlay->toggleMixTableFilter();
             }
             return;
-
-            // V key removed - non-functional binding
     }
 }
 

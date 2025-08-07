@@ -994,7 +994,6 @@ bool MixManager::validateDatabaseFileConsistency() {
 
     // Log the validation results
     if (total_mixes > 0) {
-        // Validation results notification removed - too verbose for normal operation
         // But we can still return false if there are missing files
         if (missing_files > 0) {
             last_error = "Found " + std::to_string(missing_files) + " missing files out of " +
@@ -1031,7 +1030,6 @@ bool MixManager::downloadMissingMixesBackground() {
     }
 
     if (download_count > 0) {
-        // Missing mixes download notification removed - too verbose for normal operation
     }
 
     return true;
