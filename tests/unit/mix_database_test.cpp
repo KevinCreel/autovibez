@@ -254,7 +254,7 @@ TEST_F(MixDatabaseTest, GetSmartRandomMixWithExclusion) {
     
     // Set local_path for all test mixes so they pass the downloaded filter
     for (auto& mix : test_mixes) {
-        mix.local_path = "/tmp/test_" + mix.id + ".mp3";
+        mix.local_path = (std::filesystem::temp_directory_path() / ("test_" + mix.id + ".mp3")).string();
     }
     
     for (const auto& mix : test_mixes) {
