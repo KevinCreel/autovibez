@@ -312,14 +312,12 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    renderKeyBinding("  N           ", "Play next mix");
+    renderKeyBinding("  Left/Right  ", "Previous/Next mix");
     renderKeyBinding("  F           ", "Toggle favorite");
-    renderKeyBinding("  V           ", "List favorite mixes");
-    renderKeyBinding("  L           ", "List available mixes");
+    renderKeyBinding("  L           ", "Toggle favorites filter");
     renderKeyBinding("  G           ", "Play random mix in current genre");
     renderKeyBinding("  Shift+G     ", "Switch to random genre");
-    renderKeyBinding("  Ctrl+G      ", "Show available genres");
-    renderKeyBinding("  SPACE       ", "Load random mix");
+    renderKeyBinding("  SPACE       ", "Pause/Resume playback");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
@@ -348,7 +346,7 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.0f));
-    renderKeyBinding("  P           ", "Pause/Resume playback");
+    renderKeyBinding("  M           ", "Mute/Unmute audio");
     renderKeyBinding("  Up/Down     ", "Volume up/down");
     renderKeyBinding("  Tab         ", "Cycle through audio devices");
     ImGui::PopStyleColor();
@@ -383,7 +381,7 @@ void HelpOverlay::render() {
     renderKeyBinding("  F11         ", "Toggle fullscreen mode");
     renderKeyBinding("  R           ", "Load random preset");
     renderKeyBinding("  [ / ]       ", "Previous/Next preset");
-    renderKeyBinding("  B / J       ", "Increase/Decrease beat sensitivity");
+    renderKeyBinding("  +/-         ", "Increase/Decrease beat sensitivity");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();

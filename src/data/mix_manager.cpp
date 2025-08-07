@@ -547,6 +547,10 @@ Mix MixManager::getNextMix(const std::string& current_mix_id) {
     return database ? database->getNextMix(current_mix_id) : Mix();
 }
 
+Mix MixManager::getPreviousMix(const std::string& current_mix_id) {
+    return database ? database->getPreviousMix(current_mix_id) : Mix();
+}
+
 Mix MixManager::getRandomAvailableMix() {
     if (available_mixes.empty()) {
         return Mix();

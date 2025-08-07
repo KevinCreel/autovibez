@@ -89,6 +89,13 @@ public:
     Mix getNextMix(const std::string& current_mix_id = "");
     
     /**
+     * @brief Get the previous mix in database order
+     * @param current_mix_id ID of current mix (empty for last mix)
+     * @return Previous mix in database, or last mix if current is empty
+     */
+    Mix getPreviousMix(const std::string& current_mix_id = "");
+    
+    /**
      * @brief Get a random mix by genre
      * @param genre Genre to filter by
      * @return Random mix in the genre, or empty mix if none available

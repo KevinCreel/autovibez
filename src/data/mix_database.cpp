@@ -620,6 +620,49 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
     return result;
 }
 
+Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
+    if (!db) {
+        last_error = "Database not initialized";
+        return Mix();
+    }
+    
+    std::string sql;
+    if (current_mix_id.empty()) {
+        // Get last mix
+        sql = "SELECT * FROM mixes ORDER BY id DESC LIMIT 1";
+    } else {
+        // Get previous mix before current
+        sql = "SELECT * FROM mixes WHERE id < ? ORDER BY id DESC LIMIT 1";
+    }
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        return Mix();
+    }
+    
+    if (!current_mix_id.empty()) {
+        sqlite3_bind_text(stmt, 1, current_mix_id.c_str(), -1, SQLITE_STATIC);
+    }
+    
+    Mix result;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        result = rowToMix(stmt);
+    } else {
+        // If no previous mix found, wrap around to last
+        sqlite3_finalize(stmt);
+        sql = "SELECT * FROM mixes ORDER BY id DESC LIMIT 1";
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                result = rowToMix(stmt);
+            }
+        }
+    }
+    
+    sqlite3_finalize(stmt);
+    return result;
+}
+
 Mix MixDatabase::getRandomMixByGenre(const std::string& genre) {
     const char* sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE ORDER BY RANDOM() LIMIT 1";
     

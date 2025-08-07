@@ -269,7 +269,8 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             }
             break;
 
-        case SDLK_b:
+        case SDLK_EQUALS:
+        case SDLK_PLUS:
             {
                 float newSensitivity = getBeatSensitivity() + 0.1f;
                 if (newSensitivity > 1.0f) newSensitivity = 1.0f;
@@ -277,7 +278,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             }
             break;
 
-        case SDLK_j:
+        case SDLK_MINUS:
             {
                 float newSensitivity = getBeatSensitivity() - 0.1f;
                 if (newSensitivity < 0.0f) newSensitivity = 0.0f;
@@ -304,13 +305,9 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
             break;
             
         case SDLK_SPACE:
-            // SPACE: Random mix
-            {
-                Mix randomMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
-                if (!randomMix.id.empty()) {
-                    _mixManager->downloadAndPlayMix(randomMix);
-                    _currentMix = randomMix;
-                }
+            // SPACE: Pause/Resume (universal media standard)
+            if (_mixManagerInitialized) {
+                _mixManager->togglePause();
             }
             break;
 
@@ -352,10 +349,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
                     } else {
                         // Genre switch notification removed - too verbose for normal operation
                     }
-                } else if (sdl_mod & KMOD_LCTRL || sdl_mod & KMOD_RCTRL) {
-                    // Ctrl+G: Show available genres
-                    auto genres = _mixManager->getAvailableGenres();
-                    // Genre list notification removed - help overlay shows current genre
                 } else {
                     // G: Random mix in current mix's genre
                     if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
@@ -783,8 +776,21 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             }
             return;
             
-        case SDLK_n:
-            // N: Next mix
+        // N key removed - redundant with RIGHT key for next mix
+            
+        case SDLK_LEFT:
+            // ←: Previous mix
+            {
+                Mix prevMix = _mixManager->getPreviousMix(_currentMix.id);
+                if (!prevMix.id.empty()) {
+                    _mixManager->downloadAndPlayMix(prevMix);
+                    _currentMix = prevMix;
+                }
+            }
+            return;
+            
+        case SDLK_RIGHT:
+            // →: Next mix
             {
                 Mix nextMix = _mixManager->getNextMix(_currentMix.id);
                 if (!nextMix.id.empty()) {
@@ -794,10 +800,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             }
             return;
             
-        case SDLK_p:
-            // P: Pause/Resume
-            _mixManager->togglePause();
-            return;
+        // D key removed - redundant functionality
             
         case SDLK_UP:
             // ↑: Volume up
@@ -814,6 +817,21 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
                 int currentVolume = _mixManager->getVolume();
                 _mixManager->setVolume(currentVolume - 10, true);
                 _volumeKeyPressed = true;
+            }
+            return;
+            
+        case SDLK_m:
+            // M: Mute/Unmute (universal media standard)
+            if (_mixManagerInitialized) {
+                int currentVolume = _mixManager->getVolume();
+                if (currentVolume > 0) {
+                    // Store current volume and mute
+                    _previousVolume = currentVolume;
+                    _mixManager->setVolume(0, true);
+                } else {
+                    // Unmute by restoring previous volume
+                    _mixManager->setVolume(_previousVolume, true);
+                }
             }
             return;
             
@@ -838,9 +856,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event)
             }
             return;
             
-        case SDLK_v:
-            // V: List favorite mixes (handled by help overlay)
-            return;
+        // V key removed - non-functional binding
     }
 }
 
