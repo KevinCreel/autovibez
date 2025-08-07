@@ -46,10 +46,10 @@ int AutoVibezApp::initializeAudioInput() {
 
     // Set up audio format - use AUDIO_F32 like the original
     SDL_zero(desired);
-    desired.freq = 44100;
+    desired.freq = Constants::DEFAULT_SAMPLE_RATE;
     desired.format = AUDIO_F32;  // Changed from AUDIO_F32SYS to AUDIO_F32
-    desired.channels = 2;
-    desired.samples = 512;
+    desired.channels = Constants::DEFAULT_CHANNELS;
+    desired.samples = Constants::DEFAULT_SAMPLES;
     desired.callback = [](void* userdata, unsigned char* stream, int len) {
         // Convert to float and call our callback
         const float* floatStream = static_cast<const float*>(static_cast<const void*>(stream));

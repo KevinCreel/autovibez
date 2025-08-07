@@ -49,15 +49,18 @@ std::string urlDecode(const std::string& encoded) {
 
 // Convert seconds to human-readable format (HH:MM:SS)
 std::string formatDuration(int seconds) {
-    int hours = seconds / 3600;
-    int minutes = (seconds % 3600) / 60;
-    int secs = seconds % 60;
+    int hours = seconds / Constants::SECONDS_PER_HOUR;
+    int minutes = (seconds % Constants::SECONDS_PER_HOUR) / Constants::SECONDS_PER_MINUTE;
+    int secs = seconds % Constants::SECONDS_PER_MINUTE;
 
     if (hours > 0) {
-        return std::to_string(hours) + ":" + (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
-               (secs < 10 ? "0" : "") + std::to_string(secs);
+        return std::to_string(hours) + StringConstants::TIME_SEPARATOR +
+               (minutes < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") +
+               std::to_string(minutes) + StringConstants::TIME_SEPARATOR +
+               (secs < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") + std::to_string(secs);
     } else {
-        return std::to_string(minutes) + ":" + (secs < 10 ? "0" : "") + std::to_string(secs);
+        return std::to_string(minutes) + StringConstants::TIME_SEPARATOR +
+               (secs < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") + std::to_string(secs);
     }
 }
 
@@ -136,7 +139,7 @@ bool MixManager::loadMixMetadata(const std::string& yaml_url) {
         // If this is not the last attempt, wait before retrying
         if (attempt < max_retries) {
             // Exponential backoff: 1s, 2s, 4s
-            int delay_ms = (1 << (attempt - 1)) * 1000;
+            int delay_ms = (1 << (attempt - 1)) * Constants::DEFAULT_TIMEOUT_SECONDS * 1000;
             SDL_Delay(delay_ms);
         }
     }
@@ -257,7 +260,7 @@ void MixManager::updateCrossfade() {
         return;
     }
 
-    // Calculate progress (0-100)
+    // Calculate progress (0-Constants::PROGRESS_PERCENTAGE_MAX)
     _crossfade_progress = (elapsed * Constants::MAX_VOLUME) / _crossfade_duration_ms;
 
     // Calculate new volume level
@@ -373,10 +376,10 @@ bool MixManager::cleanupCorruptedMixFiles() {
                 continue;
             }
 
-            char header[10];
-            file.read(header, 10);
+            char header[Constants::ID3V2_HEADER_SIZE];
+            file.read(header, Constants::ID3V2_HEADER_SIZE);
 
-            if (file.gcount() < 10) {
+            if (file.gcount() < Constants::ID3V2_HEADER_SIZE) {
                 // File too small, likely corrupted
                 std::filesystem::remove(file_path);
                 cleaned_count++;

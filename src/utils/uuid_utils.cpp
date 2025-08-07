@@ -34,7 +34,8 @@ std::string UuidUtils::generateUuidFromHash(size_t hash) {
     ss << std::hex << std::setfill('0');
 
     for (int i = 0; i < Constants::UUID_BYTE_LENGTH; i++) {
-        if (i == 4 || i == 6 || i == 8 || i == 10) {
+        if (i == Constants::UUID_POSITION_1 || i == Constants::UUID_POSITION_2 || i == Constants::UUID_POSITION_3 ||
+            i == Constants::UUID_POSITION_4) {
             ss << "-";
         }
         ss << std::setw(2) << static_cast<int>(uuid_bytes[i]);

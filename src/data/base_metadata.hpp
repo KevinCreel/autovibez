@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "constants.hpp"
-#include <vector>
 
 namespace AutoVibez {
 namespace Data {

@@ -57,9 +57,9 @@ static int mainLoop(void* userData) {
     AutoVibez::Core::AutoVibezApp* app = appRef->get();
 
     // frame rate limiter
-    int fps = 60;  // Default FPS since fps() method was removed
+    int fps = Constants::DEFAULT_FPS_VALUE;  // Default FPS since fps() method was removed
     if (fps <= 0) {
-        fps = 60;
+        fps = Constants::DEFAULT_FPS_VALUE;
     }
     const Uint32 frame_delay = Constants::FRAME_DELAY_MS;
     Uint32 last_time = SDL_GetTicks();
@@ -83,7 +83,7 @@ static int mainLoop(void* userData) {
 
             static Uint32 last_check = 0;
             Uint32 current_time = SDL_GetTicks();
-            if (current_time - last_check > 5000) {
+            if (current_time - last_check > Constants::DEFAULT_CHECK_INTERVAL_MS) {
                 if (!app->getMixManager()->isPlaying() && !app->getMixManager()->isPaused()) {
                     app->checkAndAutoPlayNext();
                 }

@@ -32,7 +32,7 @@ constexpr int MAX_DOWNLOAD_RETRIES = 5;
 // Download
 constexpr int MIN_DOWNLOAD_SPEED_BYTES_PER_SEC = 1000;  // 1KB/s minimum
 constexpr int DEFAULT_DOWNLOAD_TIMEOUT_SECONDS = 60;
-constexpr int DOWNLOAD_TIMEOUT_SECONDS = 300;  // 5 minutes timeout
+constexpr int DOWNLOAD_TIMEOUT_SECONDS = 300;        // 5 minutes timeout
 constexpr int DOWNLOAD_LOW_SPEED_TIME_SECONDS = 60;  // 60 seconds
 constexpr int MAX_FILENAME_LENGTH = 200;
 
@@ -56,13 +56,17 @@ constexpr int PROGRESS_PERCENTAGE_MAX = 100;
 constexpr int SQLITE_BIND_START_INDEX = 1;
 constexpr int SQLITE_COLUMN_START_INDEX = 0;
 constexpr int SQLITE_TEXT_BINDING = -1;
-constexpr int SQLITE_STATIC_BINDING = SQLITE_STATIC;
 
 // Audio/Media
 constexpr int HEX_BASE = 16;
 constexpr int HEX_ALPHA_OFFSET = 10;
 constexpr int BITS_PER_BYTE = 8;
 constexpr int MIN_RESPONSE_LENGTH = 10;
+
+// Test constants
+constexpr int DEFAULT_CACHE_SIZE_MB = 100;
+constexpr int TEST_PLAY_COUNT_SMALL = 10;
+constexpr int TEST_PLAY_COUNT_LARGE = 20;
 
 // UI/Window
 constexpr int DEFAULT_WINDOW_SIZE = 512;
@@ -96,7 +100,6 @@ constexpr int FAVORITE_MIX_PROBABILITY = 70;     // 70% chance to prefer favorit
 // Configuration defaults
 constexpr int DEFAULT_SEEK_INCREMENT_SECONDS = 60;
 constexpr int DEFAULT_VOLUME_STEP_PERCENT = 10;
-constexpr int DEFAULT_CACHE_SIZE_MB = 100;
 
 // Test constants
 constexpr int TEST_ITERATIONS = 1000;
@@ -143,6 +146,19 @@ constexpr const char* MIXES_URL_KEY = "mixes_url";
 constexpr const char* DEV_NULL = "/dev/null";
 constexpr const char* DEV_STDERR = "/dev/stderr";
 constexpr const char* PROGRAM_DATA_PATH = "C:/ProgramData";
+
+// Configuration keys
+constexpr const char* MESH_X_KEY = "Mesh X";
+constexpr const char* MESH_Y_KEY = "Mesh Y";
+constexpr const char* WINDOW_WIDTH_KEY = "Window Width";
+constexpr const char* WINDOW_HEIGHT_KEY = "Window Height";
+constexpr const char* PRESET_DURATION_KEY = "Preset Duration";
+constexpr const char* HARD_CUT_DURATION_KEY = "Hard Cut Duration";
+constexpr const char* FPS_KEY = "FPS";
+
+// Time formatting
+constexpr const char* TIME_SEPARATOR = ":";
+constexpr const char* TIME_PADDING = "0";
 
 // Date/Time formats
 constexpr const char* DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S";

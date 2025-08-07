@@ -247,8 +247,9 @@ AutoVibezApp* setupSDLApp() {
 
     initGL();
 
-    SDL_Window* win = SDL_CreateWindow("AutoVibez", 0, 0, 512, 512,
-                                       SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL_Window* win =
+        SDL_CreateWindow("AutoVibez", 0, 0, Constants::DEFAULT_WINDOW_SIZE, Constants::DEFAULT_WINDOW_SIZE,
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     int width, height;
     SDL_GL_GetDrawableSize(win, &width, &height);
 
@@ -328,22 +329,25 @@ AutoVibezApp* setupSDLApp() {
         ConfigFile config(configFilePath);
         auto* projectMHandle = app->projectM();
 
-        projectm_set_mesh_size(projectMHandle, config.read<uint32_t>("Mesh X", 32),
-                               config.read<uint32_t>("Mesh Y", 24));
+        projectm_set_mesh_size(projectMHandle,
+                               config.read<uint32_t>(StringConstants::MESH_X_KEY, Constants::DEFAULT_MESH_X),
+                               config.read<uint32_t>(StringConstants::MESH_Y_KEY, Constants::DEFAULT_MESH_Y));
 
         // Get window size from config
-        int configWidth = config.read<uint32_t>("Window Width", 512);
-        int configHeight = config.read<uint32_t>("Window Height", 512);
+        int configWidth = config.read<uint32_t>(StringConstants::WINDOW_WIDTH_KEY, Constants::DEFAULT_WINDOW_SIZE);
+        int configHeight = config.read<uint32_t>(StringConstants::WINDOW_HEIGHT_KEY, Constants::DEFAULT_WINDOW_SIZE);
         SDL_SetWindowSize(win, configWidth, configHeight);
         projectm_set_soft_cut_duration(projectMHandle, config.read<double>("Smooth Preset Duration", 3));
-        projectm_set_preset_duration(projectMHandle, config.read<double>("Preset Duration", 30));
+        projectm_set_preset_duration(projectMHandle, config.read<double>(StringConstants::PRESET_DURATION_KEY,
+                                                                         Constants::DEFAULT_PRESET_DURATION));
         projectm_set_easter_egg(projectMHandle, config.read<float>("Easter Egg Parameter", 0.0));
         projectm_set_hard_cut_enabled(projectMHandle, config.read<bool>("hard_cuts_enabled", false));
-        projectm_set_hard_cut_duration(projectMHandle, config.read<double>("Hard Cut Duration", 60));
+        projectm_set_hard_cut_duration(projectMHandle, config.read<double>(StringConstants::HARD_CUT_DURATION_KEY,
+                                                                           Constants::DEFAULT_HARD_CUT_DURATION));
         projectm_set_hard_cut_sensitivity(projectMHandle, config.read<float>("hard_cut_sensitivity", 1.0));
         projectm_set_beat_sensitivity(projectMHandle, config.read<float>("beat_sensitivity", 1.0));
         projectm_set_aspect_correction(projectMHandle, config.read<bool>("Aspect Correction", true));
-        projectm_set_fps(projectMHandle, config.read<int32_t>("FPS", 60));
+        projectm_set_fps(projectMHandle, config.read<int32_t>(StringConstants::FPS_KEY, Constants::DEFAULT_FPS_VALUE));
 
         // Handle fullscreen setting
         bool fullscreen = config.read<bool>("fullscreen", false);

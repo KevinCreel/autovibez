@@ -96,7 +96,7 @@ bool initLoopback() {
         switch (pwfx->wFormatTag) {
             case WAVE_FORMAT_IEEE_FLOAT:
                 pwfx->wFormatTag = WAVE_FORMAT_PCM;
-                pwfx->wBitsPerSample = 16;
+                pwfx->wBitsPerSample = Constants::BITS_PER_SAMPLE;
                 pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
                 pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
                 break;
@@ -106,8 +106,8 @@ bool initLoopback() {
                 PWAVEFORMATEXTENSIBLE pEx = reinterpret_cast<PWAVEFORMATEXTENSIBLE>(pwfx);
                 if (IsEqualGUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, pEx->SubFormat)) {
                     pEx->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-                    pEx->Samples.wValidBitsPerSample = 16;
-                    pwfx->wBitsPerSample = 16;
+                    pEx->Samples.wValidBitsPerSample = Constants::BITS_PER_SAMPLE;
+                    pwfx->wBitsPerSample = Constants::BITS_PER_SAMPLE;
                     pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
                     pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
                 } else {

@@ -140,7 +140,7 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
     }
 
     // Check if response is empty or too small
-    if (response.empty() || response.length() < 10) {
+    if (response.empty() || response.length() < Constants::MIN_RESPONSE_LENGTH) {
         setError("Empty or invalid response from server");
         return mixes;
     }

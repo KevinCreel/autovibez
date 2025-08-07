@@ -38,7 +38,8 @@ TEST_F(MixManagerIntegrationTest, InitializeMixManager) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = 100
+cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
+                                 R"(
 auto_download = true
 preferred_genre = Electronic
 )";
@@ -61,7 +62,8 @@ TEST_F(MixManagerIntegrationTest, LoadMixesFromYaml) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = 100
+cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
+                                 R"(
 auto_download = true
 preferred_genre = Electronic
 )";
@@ -87,7 +89,8 @@ TEST_F(MixManagerIntegrationTest, SyncMixesToDatabase) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = 100
+cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
+                                 R"(
 auto_download = true
 preferred_genre = Electronic
 )";
@@ -113,7 +116,8 @@ TEST_F(MixManagerIntegrationTest, GetRandomMix) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = 100
+cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
+                                 R"(
 auto_download = true
 preferred_genre = Electronic
 )";
@@ -162,11 +166,11 @@ preferred_genre = Electronic
 
     // Set up test data
     test_mixes[0].is_favorite = true;
-    test_mixes[0].play_count = 10;
+    test_mixes[0].play_count = Constants::TEST_PLAY_COUNT_SMALL;
     test_mixes[1].is_favorite = false;
     test_mixes[1].play_count = 1;
     test_mixes[2].is_favorite = false;
-    test_mixes[2].play_count = 20;
+    test_mixes[2].play_count = Constants::TEST_PLAY_COUNT_LARGE;
 
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
 

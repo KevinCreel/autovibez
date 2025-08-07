@@ -158,7 +158,7 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     std::filesystem::path path(file_path);
     metadata.file_size = std::filesystem::file_size(path);
 
-            metadata.format = StringConstants::MP3_FORMAT;
+    metadata.format = StringConstants::MP3_FORMAT;
     metadata.date_added = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();
 
     // Restore original error state if no new errors occurred

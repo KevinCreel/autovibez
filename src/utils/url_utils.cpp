@@ -45,7 +45,7 @@ std::string UrlUtils::urlDecode(const std::string& encoded) {
             // Convert hex to char
             std::string hex = encoded.substr(i + 1, 2);
             if (isHexDigit(hex[0]) && isHexDigit(hex[1])) {
-                char decoded_char = static_cast<char>(hexToInt(hex[0]) * 16 + hexToInt(hex[1]));
+                char decoded_char = static_cast<char>(hexToInt(hex[0]) * Constants::HEX_BASE + hexToInt(hex[1]));
                 result += decoded_char;
                 i += 2;  // Skip the next two characters
             } else {
@@ -140,9 +140,9 @@ int UrlUtils::hexToInt(char c) {
     if (c >= '0' && c <= '9') {
         return c - '0';
     } else if (c >= 'a' && c <= 'f') {
-        return c - 'a' + 10;
+        return c - 'a' + Constants::HEX_ALPHA_OFFSET;
     } else if (c >= 'A' && c <= 'F') {
-        return c - 'A' + 10;
+        return c - 'A' + Constants::HEX_ALPHA_OFFSET;
     }
     return 0;
 }

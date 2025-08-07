@@ -40,7 +40,8 @@ void HelpOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
     // Create a blank cursor (1x1 transparent pixel)
     Uint8 blankData[Constants::BLANK_CURSOR_SIZE] = {0, 0, 0, 0};  // Transparent
     Uint8 blankMask[Constants::BLANK_CURSOR_SIZE] = {0, 0, 0, 0};  // Transparent
-    _blankCursor = SDL_CreateCursor(blankData, blankMask, Constants::CURSOR_DIMENSIONS, Constants::CURSOR_DIMENSIONS, Constants::CURSOR_HOTSPOT, Constants::CURSOR_HOTSPOT);
+    _blankCursor = SDL_CreateCursor(blankData, blankMask, Constants::CURSOR_DIMENSIONS, Constants::CURSOR_DIMENSIONS,
+                                    Constants::CURSOR_HOTSPOT, Constants::CURSOR_HOTSPOT);
 
     // Store the original cursor
     _originalCursor = SDL_GetCursor();
@@ -283,9 +284,11 @@ void HelpOverlay::render() {
             float genreTextWidth = ImGui::CalcTextSize(mix.genre.c_str()).x;
 
             // Duration formatting
-            int minutes = mix.duration_seconds / 60;
-            int seconds = mix.duration_seconds % 60;
-            std::string duration = std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds);
+            int minutes = mix.duration_seconds / Constants::SECONDS_PER_MINUTE;
+            int seconds = mix.duration_seconds % Constants::SECONDS_PER_MINUTE;
+            std::string duration = std::to_string(minutes) + StringConstants::TIME_SEPARATOR +
+                                   (seconds < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") +
+                                   std::to_string(seconds);
             float durationTextWidth = ImGui::CalcTextSize(duration.c_str()).x;
 
             // Plays
@@ -391,9 +394,11 @@ void HelpOverlay::render() {
             ImGui::TextUnformatted(genre.c_str());
 
             // Duration (format as MM:SS)
-            int minutes = mix.duration_seconds / 60;
-            int seconds = mix.duration_seconds % 60;
-            std::string duration = std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds);
+            int minutes = mix.duration_seconds / Constants::SECONDS_PER_MINUTE;
+            int seconds = mix.duration_seconds % Constants::SECONDS_PER_MINUTE;
+            std::string duration = std::to_string(minutes) + StringConstants::TIME_SEPARATOR +
+                                   (seconds < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") +
+                                   std::to_string(seconds);
             ImGui::SameLine();
             ImGui::SetCursorPosX(durationX);
             ImGui::TextUnformatted(duration.c_str());
