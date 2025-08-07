@@ -84,7 +84,7 @@ bool MixManager::loadMixMetadata(const std::string& yaml_url) {
     }
 
     // Try up to 3 times with exponential backoff
-    const int max_retries = 3;
+    const int max_retries = Constants::MAX_RETRIES;
     for (int attempt = 1; attempt <= max_retries; ++attempt) {
         std::vector<Mix> mixes = metadata->loadFromYaml(yaml_url);
 

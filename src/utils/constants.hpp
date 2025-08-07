@@ -12,26 +12,19 @@ constexpr int BITS_PER_SAMPLE = 16;
 constexpr int ID3V2_HEADER_SIZE = 10;
 
 // Beat sensitivity
-constexpr float MIN_BEAT_SENSITIVITY = 0.0f;
-constexpr float MAX_BEAT_SENSITIVITY = 5.0f;
-constexpr float BEAT_SENSITIVITY_STEP = 0.1f;
 
 // File validation
 constexpr int MIN_MP3_FILE_SIZE = 1024;  // Minimum valid MP3 file size in bytes
 
 // Crossfade
 constexpr int DEFAULT_CROSSFADE_DURATION_MS = 3000;
-constexpr int MAX_CROSSFADE_DURATION_MS = 10000;
-constexpr int MIN_CROSSFADE_DURATION_MS = 500;
 
 // Database
 constexpr int MAX_RETRIES = 3;
 constexpr int DEFAULT_TIMEOUT_SECONDS = 30;
-constexpr int MAX_DOWNLOAD_RETRIES = 5;
 
 // Download
 constexpr int MIN_DOWNLOAD_SPEED_BYTES_PER_SEC = 1000;  // 1KB/s minimum
-constexpr int DEFAULT_DOWNLOAD_TIMEOUT_SECONDS = 60;
 constexpr int DOWNLOAD_TIMEOUT_SECONDS = 300;        // 5 minutes timeout
 constexpr int DOWNLOAD_LOW_SPEED_TIME_SECONDS = 60;  // 60 seconds
 constexpr int MAX_FILENAME_LENGTH = 200;
@@ -44,9 +37,7 @@ constexpr int UUID_POSITION_3 = 8;
 constexpr int UUID_POSITION_4 = 10;
 
 // Time/Duration
-constexpr int SECONDS_PER_HOUR = 3600;
 constexpr int SECONDS_PER_MINUTE = 60;
-constexpr int MINUTES_PER_HOUR = 60;
 
 // Time formatting
 constexpr int TIME_FORMAT_PADDING = 10;  // For "0" padding in time display
@@ -82,16 +73,8 @@ constexpr int FAVORITE_MIX_PROBABILITY = 70;     // 70% chance to prefer favorit
 namespace StringConstants {
 // File extensions
 constexpr const char* MP3_EXTENSION = ".mp3";
-constexpr const char* MILK_EXTENSION = ".milk";
-constexpr const char* JPG_EXTENSION = ".jpg";
-constexpr const char* PNG_EXTENSION = ".png";
-constexpr const char* DB_EXTENSION = ".db";
-constexpr const char* YAML_EXTENSION = ".yaml";
-constexpr const char* JSON_EXTENSION = ".json";
 
 // Protocols
-constexpr const char* HTTP_PROTOCOL = "http://";
-constexpr const char* HTTPS_PROTOCOL = "https://";
 constexpr const char* FILE_PROTOCOL = "file://";
 
 // Error messages
@@ -99,7 +82,6 @@ constexpr const char* UNKNOWN_ARTIST = "Unknown Artist";
 constexpr const char* UNKNOWN_TRACK = "Unknown Track";
 constexpr const char* DEFAULT_GENRE = "Electronic";
 constexpr const char* MP3_FORMAT = "MP3";
-constexpr const char* ID3_TAG = "ID3";
 
 // UI strings
 constexpr const char* APP_TITLE = "AutoVibez";
@@ -108,9 +90,6 @@ constexpr const char* DEFAULT_AUDIO_DEVICE = "Default Device";
 
 // Configuration keys
 constexpr const char* CROSSFADE_DURATION_KEY = "crossfade_duration_ms";
-constexpr const char* CROSSFADE_ENABLED_KEY = "crossfade_enabled";
-constexpr const char* PREFERRED_GENRE_KEY = "preferred_genre";
-constexpr const char* MIXES_URL_KEY = "mixes_url";
 
 // Configuration keys
 constexpr const char* MESH_X_KEY = "Mesh X";
