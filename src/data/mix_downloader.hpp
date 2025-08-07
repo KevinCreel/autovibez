@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "error_handler.hpp"
 #include "mix_metadata.hpp"
 
 namespace AutoVibez {
@@ -18,7 +19,7 @@ namespace Data {
 /**
  * @brief Handles downloading of mix files from URLs
  */
-class MixDownloader {
+class MixDownloader : public AutoVibez::Utils::ErrorHandler {
 public:
     MixDownloader(const std::string& mixes_dir);
     ~MixDownloader();
@@ -83,7 +84,6 @@ public:
 
 private:
     std::string mixes_dir;
-    std::string last_error;
 };
 
 }  // namespace Data

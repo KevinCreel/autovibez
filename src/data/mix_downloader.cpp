@@ -38,10 +38,8 @@ MixDownloader::~MixDownloader() {
 }
 
 bool MixDownloader::downloadMix(const Mix& mix) {
-    last_error.clear();
-
     if (mix.url.empty()) {
-        last_error = "Mix URL is empty";
+        setError("Mix URL is empty");
         return false;
     }
 
@@ -67,13 +65,13 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     // Handle HTTP downloads
     CURL* curl = curl_easy_init();
     if (!curl) {
-        last_error = "Failed to initialize CURL";
+        setError("Failed to initialize CURL");
         return false;
     }
 
     FILE* file = fopen(local_path.c_str(), "wb");
     if (!file) {
-        last_error = "Failed to create local file: " + local_path;
+        setError("Failed to create local file: " + local_path);
         curl_easy_cleanup(curl);
         return false;
     }
@@ -95,7 +93,7 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
-        last_error = "Download failed: " + std::string(curl_easy_strerror(res));
+        setError("Download failed: " + std::string(curl_easy_strerror(res)));
         std::filesystem::remove(local_path);  // Clean up failed download
         return false;
     }
@@ -167,15 +165,13 @@ std::string MixDownloader::getLocalPathWithOriginalFilename(const Mix& mix) {
 }
 
 bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio::MP3Analyzer* mp3_analyzer) {
-    last_error.clear();
-
     if (mix.url.empty()) {
-        last_error = "Mix URL is empty";
+        setError("Mix URL is empty");
         return false;
     }
 
     if (!mp3_analyzer) {
-        last_error = "MP3Analyzer is required for title-based naming";
+        setError("MP3Analyzer is required for title-based naming");
         return false;
     }
 
@@ -214,13 +210,13 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     // Handle HTTP downloads
     CURL* curl = curl_easy_init();
     if (!curl) {
-        last_error = "Failed to initialize CURL";
+        setError("Failed to initialize CURL");
         return false;
     }
 
     FILE* file = fopen(temp_path.c_str(), "wb");
     if (!file) {
-        last_error = "Failed to create temporary file: " + temp_path;
+        setError("Failed to create temporary file: " + temp_path);
         curl_easy_cleanup(curl);
         return false;
     }
@@ -242,7 +238,7 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
-        last_error = "Download failed: " + std::string(curl_easy_strerror(res));
+        setError("Download failed: " + std::string(curl_easy_strerror(res)));
         std::filesystem::remove(temp_path);  // Clean up failed download
         return false;
     }

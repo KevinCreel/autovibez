@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "error_handler.hpp"
 #include "mix_metadata.hpp"
 
 namespace AutoVibez {
@@ -14,7 +15,7 @@ namespace Data {
 /**
  * @brief Manages SQLite database operations for mix metadata and user data
  */
-class MixDatabase {
+class MixDatabase : public AutoVibez::Utils::ErrorHandler {
 public:
     explicit MixDatabase(const std::string& db_path);
     ~MixDatabase();
@@ -170,8 +171,6 @@ public:
 private:
     sqlite3* db;
     std::string db_path;
-    std::string last_error;
-    bool success;
 
     /**
      * @brief Create database tables

@@ -10,7 +10,7 @@
 namespace AutoVibez {
 namespace Data {
 
-MixDatabase::MixDatabase(const std::string& db_path) : db(nullptr), db_path(db_path), success(true) {}
+MixDatabase::MixDatabase(const std::string& db_path) : db(nullptr), db_path(db_path) {}
 
 MixDatabase::~MixDatabase() {
     if (db) {
@@ -19,13 +19,9 @@ MixDatabase::~MixDatabase() {
 }
 
 bool MixDatabase::initialize() {
-    success = true;
-    last_error.clear();
-
     int rc = sqlite3_open(db_path.c_str(), &db);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to open database: " + std::string(sqlite3_errmsg(db));
-        success = false;
+        setError("Failed to open database: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -65,34 +61,27 @@ bool MixDatabase::createTables() {
 }
 
 bool MixDatabase::addMix(const Mix& mix) {
-    success = true;
-    last_error.clear();
-
     // Validate mix data before insertion
     if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
-        last_error = "Invalid mix data: missing required fields (id, title, artist, genre)";
-        success = false;
+        setError("Invalid mix data: missing required fields (id, title, artist, genre)");
         return false;
     }
 
     // Prevent corrupted entries where title equals id
     if (mix.title == mix.id) {
-        last_error = "Invalid mix data: title cannot be the same as id";
-        success = false;
+        setError("Invalid mix data: title cannot be the same as id");
         return false;
     }
 
     // Prevent "Unknown Artist" entries
     if (mix.artist == "Unknown Artist" || mix.artist.empty()) {
-        last_error = "Invalid mix data: artist cannot be 'Unknown Artist' or empty";
-        success = false;
+        setError("Invalid mix data: artist cannot be 'Unknown Artist' or empty");
         return false;
     }
 
     // Validate duration
     if (mix.duration_seconds <= 0) {
-        last_error = "Invalid mix data: duration must be greater than 0";
-        success = false;
+        setError("Invalid mix data: duration must be greater than 0");
         return false;
     }
 
@@ -105,8 +94,7 @@ bool MixDatabase::addMix(const Mix& mix) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
-        success = false;
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -138,8 +126,7 @@ bool MixDatabase::addMix(const Mix& mix) {
     sqlite3_finalize(stmt);
 
     if (rc != SQLITE_DONE) {
-        last_error = "Failed to insert mix: " + std::string(sqlite3_errmsg(db));
-        success = false;
+        setError("Failed to insert mix: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -149,25 +136,25 @@ bool MixDatabase::addMix(const Mix& mix) {
 bool MixDatabase::updateMix(const Mix& mix) {
     // Validate mix data before update
     if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
-        last_error = "Invalid mix data: missing required fields (id, title, artist, genre)";
+        setError("Invalid mix data: missing required fields (id, title, artist, genre)");
         return false;
     }
 
     // Prevent corrupted entries where title equals id
     if (mix.title == mix.id) {
-        last_error = "Invalid mix data: title cannot be the same as id";
+        setError("Invalid mix data: title cannot be the same as id");
         return false;
     }
 
     // Prevent "Unknown Artist" entries
     if (mix.artist == "Unknown Artist" || mix.artist.empty()) {
-        last_error = "Invalid mix data: artist cannot be 'Unknown Artist' or empty";
+        setError("Invalid mix data: artist cannot be 'Unknown Artist' or empty");
         return false;
     }
 
     // Validate duration
     if (mix.duration_seconds <= 0) {
-        last_error = "Invalid mix data: duration must be greater than 0";
+        setError("Invalid mix data: duration must be greater than 0");
         return false;
     }
 
@@ -178,7 +165,7 @@ bool MixDatabase::updateMix(const Mix& mix) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare update statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare update statement: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -213,15 +200,14 @@ bool MixDatabase::updateMix(const Mix& mix) {
     sqlite3_finalize(stmt);
 
     if (rc != SQLITE_DONE) {
-        last_error = "Failed to update mix: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to update mix: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
     // Check if any rows were actually updated
     int rows_affected = sqlite3_changes(db);
     if (rows_affected == 0) {
-        last_error = "No mix found with id: " + mix.id;
-        success = false;
+        setError("No mix found with id: " + mix.id);
         return false;
     }
 
@@ -231,7 +217,7 @@ bool MixDatabase::updateMix(const Mix& mix) {
 
 bool MixDatabase::deleteMix(const std::string& id) {
     if (!db) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return false;
     }
 
@@ -240,7 +226,7 @@ bool MixDatabase::deleteMix(const std::string& id) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -250,20 +236,17 @@ bool MixDatabase::deleteMix(const std::string& id) {
     sqlite3_finalize(stmt);
 
     if (rc != SQLITE_DONE) {
-        last_error = "Failed to delete mix: " + std::string(sqlite3_errmsg(db));
-        success = false;
+        setError("Failed to delete mix: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
     // Check if any rows were actually deleted
     int rows_affected = sqlite3_changes(db);
     if (rows_affected == 0) {
-        last_error = "No mix found with id: " + id;
-        success = false;
+        setError("No mix found with id: " + id);
         return false;
     }
 
-    success = true;
     return true;
 }
 
@@ -273,7 +256,7 @@ Mix MixDatabase::getMixById(const std::string& id) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return Mix();
     }
 
@@ -295,7 +278,7 @@ std::vector<Mix> MixDatabase::getAllMixes() {
 
 std::vector<Mix> MixDatabase::getMixesByGenre(const std::string& genre) {
     if (!db) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return std::vector<Mix>();
     }
 
@@ -303,7 +286,7 @@ std::vector<Mix> MixDatabase::getMixesByGenre(const std::string& genre) {
 
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return std::vector<Mix>();
     }
 
@@ -320,7 +303,7 @@ std::vector<Mix> MixDatabase::getMixesByGenre(const std::string& genre) {
 
 std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
     if (!db) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return std::vector<Mix>();
     }
 
@@ -329,7 +312,7 @@ std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return std::vector<Mix>();
     }
 
@@ -560,7 +543,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
 
 Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
     if (!db) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return Mix();
     }
 
@@ -575,7 +558,7 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
 
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return Mix();
     }
 
@@ -603,7 +586,7 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
 
 Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
     if (!db) {
-        last_error = "Database not initialized";
+        setError("Database not initialized");
         return Mix();
     }
 
@@ -618,7 +601,7 @@ Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
 
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return Mix();
     }
 
@@ -738,7 +721,7 @@ bool MixDatabase::toggleFavorite(const std::string& mix_id) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -756,7 +739,7 @@ bool MixDatabase::updatePlayStats(const std::string& mix_id) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -774,7 +757,7 @@ bool MixDatabase::setLocalPath(const std::string& mix_id, const std::string& loc
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
 
@@ -803,7 +786,7 @@ std::vector<Mix> MixDatabase::getRecentlyPlayed(int limit) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return std::vector<Mix>();
     }
 
@@ -897,7 +880,7 @@ std::vector<Mix> MixDatabase::executeQueryForMixes(const char* sql) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return std::vector<Mix>();
     }
 
@@ -918,7 +901,7 @@ Mix MixDatabase::executeQueryForSingleMix(const char* sql) {
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
     if (rc != SQLITE_OK) {
-        last_error = "Failed to prepare statement: " + std::string(sqlite3_errmsg(db));
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
         return Mix();
     }
 
@@ -936,9 +919,8 @@ bool MixDatabase::executeQuery(const std::string& sql) {
     int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg);
 
     if (rc != SQLITE_OK) {
-        last_error = "SQL error: " + std::string(err_msg);
+        setError("SQL error: " + std::string(err_msg));
         sqlite3_free(err_msg);
-        success = false;
         return false;
     }
 

@@ -23,8 +23,6 @@ namespace AutoVibez {
 namespace Audio {
 
 MP3Analyzer::MP3Analyzer() {
-    last_error.clear();
-
     // TagLib will handle MP3 files with stream size issues gracefully
     // The "Xing stream size off" warning is common and doesn't affect functionality
 }
@@ -33,12 +31,11 @@ MP3Analyzer::~MP3Analyzer() {}
 
 MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     MP3Metadata metadata;
-    last_error.clear();
 
     // Use TagLib to extract metadata
     TagLib::MPEG::File f(file_path.c_str());
     if (!f.isValid()) {
-        last_error = "Failed to open MP3 file: " + file_path;
+        setError("Failed to open MP3 file: " + file_path);
         return metadata;
     }
 

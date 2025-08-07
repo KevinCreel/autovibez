@@ -18,7 +18,7 @@ MixPlayer::MixPlayer()
     // Initialize SDL_mixer
     if (Mix_OpenAudio(Constants::DEFAULT_SAMPLE_RATE, MIX_DEFAULT_FORMAT, Constants::DEFAULT_CHANNELS,
                       Constants::DEFAULT_BUFFER_SIZE) < 0) {
-        last_error = "Failed to initialize SDL_mixer: " + std::string(Mix_GetError());
+        setError("Failed to initialize SDL_mixer: " + std::string(Mix_GetError()));
         return;
     }
 
@@ -38,10 +38,8 @@ MixPlayer::~MixPlayer() {
 }
 
 bool MixPlayer::playMix(const std::string& local_path) {
-    last_error.clear();
-
     if (!std::filesystem::exists(local_path)) {
-        last_error = "File does not exist: " + local_path;
+        setError("File does not exist: " + local_path);
         return false;
     }
 
@@ -56,19 +54,19 @@ bool MixPlayer::playMix(const std::string& local_path) {
 
     // Validate that the file is actually an MP3
     if (!AutoVibez::Utils::AudioUtils::isValidMP3File(local_path)) {
-        last_error = "File is not a valid MP3: " + local_path;
+        setError("File is not a valid MP3: " + local_path);
         return false;
     }
 
     current_music = Mix_LoadMUS(local_path.c_str());
 
     if (!current_music) {
-        last_error = "Failed to load music: " + std::string(Mix_GetError());
+        setError("Failed to load music: " + std::string(Mix_GetError()));
         return false;
     }
 
     if (Mix_PlayMusic(current_music, 0) == -1) {
-        last_error = "Failed to play music: " + std::string(Mix_GetError());
+        setError("Failed to play music: " + std::string(Mix_GetError()));
         Mix_FreeMusic(current_music);
         current_music = nullptr;
         return false;
@@ -86,7 +84,7 @@ bool MixPlayer::playMix(const std::string& local_path) {
 
 bool MixPlayer::togglePause() {
     if (!playing) {
-        last_error = "No music is currently playing";
+        setError("No music is currently playing");
         return false;
     }
 
@@ -164,7 +162,7 @@ int MixPlayer::getDuration() const {
 }
 
 std::string MixPlayer::getLastError() const {
-    return last_error;
+    return ErrorHandler::getLastError();
 }
 
 }  // namespace Audio

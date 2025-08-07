@@ -6,6 +6,7 @@
 
 #include "base_metadata.hpp"
 #include "datetime_utils.hpp"
+#include "error_handler.hpp"
 #include "uuid_utils.hpp"
 
 namespace AutoVibez {
@@ -20,7 +21,7 @@ struct MP3Metadata : public Data::BaseMetadata {
     std::string url;
 };
 
-class MP3Analyzer {
+class MP3Analyzer : public ::AutoVibez::Utils::ErrorHandler {
 public:
     MP3Analyzer();
     ~MP3Analyzer();
@@ -34,7 +35,6 @@ public:
     }
 
 private:
-    std::string last_error;
     bool _verbose = false;
 };
 

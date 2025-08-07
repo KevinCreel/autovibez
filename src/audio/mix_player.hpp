@@ -6,6 +6,7 @@
 #include <string>
 
 #include "audio_utils.hpp"
+#include "error_handler.hpp"
 #include "mix_metadata.hpp"
 
 namespace AutoVibez {
@@ -14,7 +15,7 @@ namespace Audio {
 /**
  * @brief Handles audio playback of mix files
  */
-class MixPlayer {
+class MixPlayer : public ::AutoVibez::Utils::ErrorHandler {
 public:
     MixPlayer();
     ~MixPlayer();
@@ -93,7 +94,6 @@ public:
     }
 
 private:
-    std::string last_error;
     bool playing;
     int current_position;
     int duration;
