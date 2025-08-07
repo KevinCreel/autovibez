@@ -173,6 +173,13 @@ private:
     std::string db_path;
 
     /**
+     * @brief Validate mix data before database operations
+     * @param mix Mix to validate
+     * @return True if valid, false otherwise
+     */
+    bool validateMixData(const Mix& mix);
+
+    /**
      * @brief Create database tables
      * @return True if successful, false otherwise
      */

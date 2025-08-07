@@ -60,8 +60,8 @@ bool MixDatabase::createTables() {
     return executeQuery(sql);
 }
 
-bool MixDatabase::addMix(const Mix& mix) {
-    // Validate mix data before insertion
+bool MixDatabase::validateMixData(const Mix& mix) {
+    // Validate mix data before database operations
     if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
         setError("Invalid mix data: missing required fields (id, title, artist, genre)");
         return false;
@@ -82,6 +82,15 @@ bool MixDatabase::addMix(const Mix& mix) {
     // Validate duration
     if (mix.duration_seconds <= 0) {
         setError("Invalid mix data: duration must be greater than 0");
+        return false;
+    }
+
+    return true;
+}
+
+bool MixDatabase::addMix(const Mix& mix) {
+    // Validate mix data before insertion
+    if (!validateMixData(mix)) {
         return false;
     }
 
@@ -135,26 +144,7 @@ bool MixDatabase::addMix(const Mix& mix) {
 
 bool MixDatabase::updateMix(const Mix& mix) {
     // Validate mix data before update
-    if (mix.id.empty() || mix.title.empty() || mix.artist.empty() || mix.genre.empty()) {
-        setError("Invalid mix data: missing required fields (id, title, artist, genre)");
-        return false;
-    }
-
-    // Prevent corrupted entries where title equals id
-    if (mix.title == mix.id) {
-        setError("Invalid mix data: title cannot be the same as id");
-        return false;
-    }
-
-    // Prevent "Unknown Artist" entries
-    if (mix.artist == "Unknown Artist" || mix.artist.empty()) {
-        setError("Invalid mix data: artist cannot be 'Unknown Artist' or empty");
-        return false;
-    }
-
-    // Validate duration
-    if (mix.duration_seconds <= 0) {
-        setError("Invalid mix data: duration must be greater than 0");
+    if (!validateMixData(mix)) {
         return false;
     }
 
