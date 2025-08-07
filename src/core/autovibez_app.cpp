@@ -184,41 +184,7 @@ void AutoVibezApp::toggleFullScreen() {
     }
 }
 
-void AutoVibezApp::scrollHandler(const SDL_Event* sdl_evt)
-{
-    // handle mouse scroll wheel - up++
-    if (sdl_evt->wheel.y > 0)
-    {
-        _manualPresetChange = true;
-        projectm_playlist_play_previous(_playlist, true);
-        // Previous preset
-        if (_playlist) {
-            projectm_playlist_play_previous(_playlist, true);
-            std::string preset_name = getActivePresetName();
-            size_t last_slash = preset_name.find_last_of('/');
-            if (last_slash != std::string::npos) {
-                preset_name = preset_name.substr(last_slash + 1);
-            }
-            // Preset change notification removed - help overlay shows current preset
-        }
-    }
-    // handle mouse scroll wheel - down--
-    if (sdl_evt->wheel.y < 0)
-    {
-        _manualPresetChange = true;
-        projectm_playlist_play_next(_playlist, true);
-        // Next preset
-        if (_playlist) {
-            projectm_playlist_play_next(_playlist, true);
-            std::string preset_name = getActivePresetName();
-            size_t last_slash = preset_name.find_last_of('/');
-            if (last_slash != std::string::npos) {
-                preset_name = preset_name.substr(last_slash + 1);
-            }
-            // Preset change notification removed - help overlay shows current preset
-        }
-    }
-}
+// Mouse wheel scroll handler removed
 
 void AutoVibezApp::keyHandler(SDL_Event* sdl_evt)
 {
@@ -434,9 +400,7 @@ void AutoVibezApp::pollEvents() {
             case SDL_WINDOWEVENT:
                 handleWindowEvent(evt);
                 break;
-            case SDL_MOUSEWHEEL:
-                handleMouseWheelEvent(evt);
-                break;
+            // Mouse wheel handling removed
             case SDL_KEYDOWN:
                 handleKeyDownEvent(evt);
                 break;
@@ -473,9 +437,7 @@ void AutoVibezApp::handleWindowEvent(const SDL_Event& evt) {
     }
 }
 
-void AutoVibezApp::handleMouseWheelEvent(const SDL_Event& evt) {
-    scrollHandler(&evt);
-}
+// Mouse wheel event handler removed
 
 void AutoVibezApp::handleKeyDownEvent(const SDL_Event& evt) {
     keyHandler(const_cast<SDL_Event*>(&evt));

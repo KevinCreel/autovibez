@@ -188,7 +188,7 @@ private:
 
     void UpdateWindowTitle();
 
-    void scrollHandler(const SDL_Event*);
+    // Mouse wheel function declarations removed
     void keyHandler(SDL_Event*);
 
     projectm_handle _projectM{nullptr};
@@ -226,7 +226,7 @@ private:
     std::atomic<bool> _backgroundTaskRunning{false};
 
     void handleWindowEvent(const SDL_Event& evt);
-    void handleMouseWheelEvent(const SDL_Event& evt);
+    // Mouse wheel event handler removed
     void handleKeyDownEvent(const SDL_Event& evt);
     void handleKeyUpEvent(const SDL_Event& evt);
     void handleMouseButtonDownEvent(const SDL_Event& evt);

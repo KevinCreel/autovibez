@@ -384,7 +384,6 @@ void HelpOverlay::render() {
     renderKeyBinding("  R           ", "Load random preset");
     renderKeyBinding("  [ / ]       ", "Previous/Next preset");
     renderKeyBinding("  B / J       ", "Increase/Decrease beat sensitivity");
-    renderKeyBinding("  Mouse Wheel ", "Next/Prev preset");
     ImGui::PopStyleColor();
     
     ImGui::Spacing();
