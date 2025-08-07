@@ -6,6 +6,7 @@
 #include "mp3_analyzer.hpp"
 #include "path_manager.hpp"
 #include "constants.hpp"
+#include "uuid_utils.hpp"
 #include <iostream>
 #include <filesystem>
 #include <random>
@@ -282,7 +283,7 @@ bool MixManager::playMix(const Mix& mix) {
     }
     
     // Validate that the file is actually a valid MP3 before attempting playback
-    if (!player->isValidMP3File(local_path)) {
+    if (!AutoVibez::Utils::AudioUtils::isValidMP3File(local_path)) {
         last_error = "Mix file is corrupted or invalid: " + mix.title;
         // Corrupted file notification removed - too verbose for normal operation
         
@@ -954,7 +955,7 @@ bool MixManager::cleanupInconsistentIds() {
         // Check if this mix has a URL (should always have one)
         if (!mix.url.empty()) {
             // Generate the correct ID from URL
-            std::string correct_id = mp3_analyzer->generateIdFromUrl(mix.url);
+            std::string correct_id = AutoVibez::Utils::UuidUtils::generateIdFromUrl(mix.url);
             
             // If the current ID doesn't match the correct one, update it
             if (mix.id != correct_id) {

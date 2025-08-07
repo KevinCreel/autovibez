@@ -24,7 +24,7 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
     return size * nmemb;
 }
 
-MixMetadata::MixMetadata() : success(true) {
+MixMetadata::MixMetadata() {
     // Initialize CURL
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
@@ -35,8 +35,7 @@ MixMetadata::~MixMetadata() {
 }
 
 std::vector<Mix> MixMetadata::loadFromYaml(const std::string& yaml_url) {
-    success = true;
-    last_error.clear();
+    clearError();
     
     // Check if it's a URL or local file
     if (yaml_url.substr(0, 7) == "http://" || yaml_url.substr(0, 8) == "https://") {
@@ -47,16 +46,14 @@ std::vector<Mix> MixMetadata::loadFromYaml(const std::string& yaml_url) {
 }
 
 std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
-    success = true;
-    last_error.clear();
+    clearError();
     std::vector<Mix> mixes;
     
     try {
         // Check if file exists and is readable
         std::ifstream file(file_path);
         if (!file.is_open()) {
-            last_error = "Cannot open file: " + file_path;
-            success = false;
+            setError("Cannot open file: " + file_path);
             return mixes;
         }
         
@@ -65,30 +62,26 @@ std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
         file.close();
         
         if (content.empty()) {
-            last_error = "File is empty: " + file_path;
-            success = false;
+            setError("File is empty: " + file_path);
             return mixes;
         }
         
         // Check for basic YAML structure
         if (content.find("mixes:") == std::string::npos) {
-            last_error = "No 'mixes:' section found in file";
-            success = false;
+            setError("No 'mixes:' section found in file");
             return mixes;
         }
         
         YAML::Node config = YAML::Load(content);
         
         if (!config["mixes"]) {
-            last_error = "No 'mixes' section found in YAML file";
-            success = false;
+            setError("No 'mixes' section found in YAML file");
             return mixes;
         }
         
         YAML::Node mixes_node = config["mixes"];
         if (!mixes_node.IsSequence()) {
-            last_error = "Invalid 'mixes' section - expected sequence";
-            success = false;
+            setError("Invalid 'mixes' section - expected sequence");
             return mixes;
         }
         
@@ -106,25 +99,22 @@ std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
         
         return mixes;
     } catch (const YAML::Exception& e) {
-        last_error = "YAML parsing error: " + std::string(e.what());
+        setError("YAML parsing error: " + std::string(e.what()));
         return std::vector<Mix>();
     } catch (const std::exception& e) {
-        last_error = "File reading error: " + std::string(e.what());
-        success = false;
+        setError("File reading error: " + std::string(e.what()));
     }
     
     return mixes;
 }
 
 std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
-    success = true;
-    last_error.clear();
+    clearError();
     std::vector<Mix> mixes;
     
     CURL* curl = curl_easy_init();
     if (!curl) {
-        last_error = "Failed to initialize CURL";
-        success = false;
+        setError("Failed to initialize CURL");
         return mixes;
     }
     
@@ -142,15 +132,13 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        last_error = "HTTP request failed: " + std::string(curl_easy_strerror(res));
-        success = false;
+        setError("HTTP request failed: " + std::string(curl_easy_strerror(res)));
         return mixes;
     }
     
     // Check if response is empty or too small
     if (response.empty() || response.length() < 10) {
-        last_error = "Empty or invalid response from server";
-        success = false;
+        setError("Empty or invalid response from server");
         return mixes;
     }
     
@@ -158,15 +146,13 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
         YAML::Node config = YAML::Load(response);
         
         if (!config["mixes"]) {
-            last_error = "No 'mixes' section found in YAML response";
-            success = false;
+            setError("No 'mixes' section found in YAML response");
             return mixes;
         }
         
         YAML::Node mixes_node = config["mixes"];
         if (!mixes_node.IsSequence()) {
-            last_error = "Invalid 'mixes' section - expected sequence";
-            success = false;
+            setError("Invalid 'mixes' section - expected sequence");
             return mixes;
         }
         
@@ -184,11 +170,9 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
         
         return mixes;
     } catch (const YAML::Exception& e) {
-        last_error = "YAML parsing error: " + std::string(e.what());
-        success = false;
+        setError("YAML parsing error: " + std::string(e.what()));
     } catch (const std::exception& e) {
-        last_error = "Response parsing error: " + std::string(e.what());
-        success = false;
+        setError("Response parsing error: " + std::string(e.what()));
     }
     
     return mixes;
@@ -202,7 +186,7 @@ Mix MixMetadata::parseMixFromYaml(const YAML::Node& mix_node) {
         // Simple URL string format
         mix.url = mix_node.as<std::string>();
         // Generate ID from URL
-        mix.id = generateIdFromUrl(mix.url);
+        mix.id = AutoVibez::Utils::UuidUtils::generateIdFromUrl(mix.url);
         // Extract original filename from URL
         mix.original_filename = extractFilenameFromUrl(mix.url);
     } else {
@@ -251,36 +235,7 @@ Mix MixMetadata::parseMixFromYaml(const YAML::Node& mix_node) {
     return mix;
 }
 
-std::string MixMetadata::generateIdFromUrl(const std::string& url) {
-    // Generate a deterministic UUID v5 based on URL hash (consistent with MP3Analyzer)
-    std::hash<std::string> hasher;
-    size_t hash = hasher(url);
-    
-    // Use the hash to generate a deterministic UUID v5 (name-based)
-    unsigned char uuid_bytes[16];
-    
-    // Use first 16 bytes of hash (or repeat if shorter)
-    for (int i = 0; i < 16; i++) {
-        uuid_bytes[i] = (hash >> (i % 8 * 8)) & 0xFF;
-    }
-    
-    // Set version (5) and variant bits for deterministic UUID
-    uuid_bytes[6] = (uuid_bytes[6] & 0x0F) | 0x50;  // Version 5
-    uuid_bytes[8] = (uuid_bytes[8] & 0x3F) | 0x80;  // Variant 1
-    
-    // Convert to UUID string format
-    std::stringstream ss;
-    ss << std::hex << std::setfill('0');
-    
-    for (int i = 0; i < 16; i++) {
-        if (i == 4 || i == 6 || i == 8 || i == 10) {
-            ss << "-";
-        }
-        ss << std::setw(2) << static_cast<int>(uuid_bytes[i]);
-    }
-    
-    return ss.str();
-}
+
 
 std::string MixMetadata::extractFilenameFromUrl(const std::string& url) {
     if (url.empty()) {
@@ -316,7 +271,7 @@ std::string MixMetadata::extractFilenameFromUrl(const std::string& url) {
 bool MixMetadata::validateMix(const Mix& mix) {
     // For minimal YAML format, only URL is required
     if (mix.url.empty()) {
-        last_error = "Mix missing required field: url";
+        setError("Mix missing required field: url");
         return false;
     }
     

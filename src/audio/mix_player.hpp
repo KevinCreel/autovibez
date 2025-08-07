@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mix_metadata.hpp"
+#include "audio_utils.hpp"
 #include <SDL2/SDL_mixer.h>
 #include <string>
 #include <memory>
@@ -93,12 +94,7 @@ public:
      */
     std::string getLastError() const;
 
-    /**
-     * @brief Check if a file is a valid MP3
-     * @param file_path Path to the file to check
-     * @return True if valid MP3, false otherwise
-     */
-    bool isValidMP3File(const std::string& file_path);
+
 
     void setVerbose(bool verbose) { _verbose = verbose; }
 

@@ -153,6 +153,11 @@ add_executable(autovibez
     
     # General utilities
     src/utils/constants.hpp
+    src/utils/uuid_utils.cpp
+    src/utils/uuid_utils.hpp
+    src/utils/error_handler.hpp
+    src/utils/audio_utils.cpp
+    src/utils/audio_utils.hpp
 )
 
 # Link libraries
@@ -338,6 +343,11 @@ set(AUTOVIBEZ_TEST_SOURCES
     
     # General utilities
     src/utils/constants.hpp
+    src/utils/uuid_utils.cpp
+    src/utils/uuid_utils.hpp
+    src/utils/error_handler.hpp
+    src/utils/audio_utils.cpp
+    src/utils/audio_utils.hpp
     
     # Test fixtures
     tests/fixtures/test_fixtures.cpp
@@ -359,6 +369,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/constants_test.cpp
     tests/unit/help_overlay_test.cpp
     tests/unit/preset_manager_test.cpp
+    tests/unit/uuid_utils_test.cpp
+    tests/unit/audio_utils_test.cpp
     
     # Integration tests
     tests/integration/mix_manager_test.cpp

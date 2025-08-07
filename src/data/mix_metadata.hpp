@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
+#include "uuid_utils.hpp"
+#include "error_handler.hpp"
 // Mix struct is defined in this file
 
 namespace AutoVibez {
@@ -34,7 +36,7 @@ struct Mix {
 /**
  * @brief Manages loading and parsing of mix metadata from YAML
  */
-class MixMetadata {
+class MixMetadata : public AutoVibez::Utils::ErrorHandler {
 public:
     MixMetadata();
     ~MixMetadata();
@@ -60,21 +62,9 @@ public:
      */
     std::vector<Mix> loadFromRemoteFile(const std::string& url);
     
-    /**
-     * @brief Get the last error message
-     * @return Error message string
-     */
-    std::string getLastError() const { return last_error; }
-    
-    /**
-     * @brief Check if the last operation was successful
-     * @return True if successful, false otherwise
-     */
-    bool isSuccess() const { return success; }
+
 
 private:
-    std::string last_error;
-    bool success;
     
     /**
      * @brief Parse a single mix from YAML node
@@ -90,8 +80,6 @@ private:
      */
     bool validateMix(const Mix& mix);
 
-    std::string generateIdFromUrl(const std::string& url);
-    
     /**
      * @brief Extract filename from URL
      * @param url URL to extract filename from

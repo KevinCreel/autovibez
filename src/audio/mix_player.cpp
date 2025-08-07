@@ -58,7 +58,7 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
     }
     
     // Validate that the file is actually an MP3
-    if (!isValidMP3File(local_path)) {
+    if (!AutoVibez::Utils::AudioUtils::isValidMP3File(local_path)) {
         last_error = "File is not a valid MP3: " + local_path;
         return false;
     }
@@ -199,30 +199,7 @@ std::string MixPlayer::getLastError() const {
     return last_error;
 }
 
-bool MixPlayer::isValidMP3File(const std::string& file_path) {
-    std::ifstream file(file_path, std::ios::binary);
-    if (!file.is_open()) {
-        return false;
-    }
-    
-    char header[10];
-    file.read(header, 10);
-    
-    if (file.gcount() < 10) {
-        return false;
-    }
-    
-    if ((header[0] & 0xFF) == 0xFF && 
-        ((header[1] & 0xE0) == 0xE0 || (header[1] & 0xF0) == 0xF0)) {
-        return true;
-    }
-    
-    if (header[0] == 'I' && header[1] == 'D' && header[2] == '3') {
-        return true;
-    }
-    
-    return false;
-}
+
 
 } // namespace Audio
 } // namespace AutoVibez 

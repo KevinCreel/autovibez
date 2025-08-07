@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include "uuid_utils.hpp"
 
 namespace AutoVibez {
 namespace Audio {
@@ -35,8 +36,6 @@ public:
     ~MP3Analyzer();
     
     MP3Metadata analyzeFile(const std::string& file_path);
-    std::string generateIdFromFilename(const std::string& file_path);
-    std::string generateIdFromUrl(const std::string& url);
     std::string getCurrentDateTime();
     std::string getLastError() const { return last_error; }
     void setVerbose(bool verbose) { _verbose = verbose; }
