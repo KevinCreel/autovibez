@@ -50,6 +50,14 @@ using AutoVibez::Data::MixDownloader;
 using AutoVibez::Data::MixManager;
 using AutoVibez::Data::MixMetadata;
 
+// Helper function to execute code only if mix manager is initialized
+template <typename Func>
+static void executeIfMixManagerInitialized(AutoVibez::Core::AutoVibezApp* app, Func&& func) {
+    if (app->isMixManagerInitialized()) {
+        func();
+    }
+}
+
 static int mainLoop(void* userData) {
     std::unique_ptr<AutoVibez::Core::AutoVibezApp>* appRef =
         static_cast<std::unique_ptr<AutoVibez::Core::AutoVibezApp>*>(userData);
@@ -71,7 +79,7 @@ static int mainLoop(void* userData) {
 
         processLoopbackFrame(app);
 
-        if (app->isMixManagerInitialized()) {
+        executeIfMixManagerInitialized(app, [&]() {
             if (app->getMixManager()->hasFinished()) {
                 app->checkAndAutoPlayNext();
             }
@@ -85,15 +93,11 @@ static int mainLoop(void* userData) {
 
                 last_check = current_time;
             }
-        }
+        });
 
-        if (app->isMixManagerInitialized()) {
-            app->getMixManager()->updateCrossfade();
-        }
+        executeIfMixManagerInitialized(app, [&]() { app->getMixManager()->updateCrossfade(); });
 
-        if (app->isMixManagerInitialized()) {
-            app->getMixManager()->cleanupCompletedDownloads();
-        }
+        executeIfMixManagerInitialized(app, [&]() { app->getMixManager()->cleanupCompletedDownloads(); });
 
         app->pollEvents();
         Uint32 elapsed = SDL_GetTicks() - last_time;

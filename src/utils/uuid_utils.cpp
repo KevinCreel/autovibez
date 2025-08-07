@@ -25,8 +25,8 @@ std::string UuidUtils::generateUuidFromHash(size_t hash) {
     }
 
     // Set version (5) and variant bits for deterministic UUID
-    uuid_bytes[6] = (uuid_bytes[6] & 0x0F) | 0x50;  // Version 5
-    uuid_bytes[8] = (uuid_bytes[8] & 0x3F) | 0x80;  // Variant 1
+    uuid_bytes[6] = (uuid_bytes[6] & Constants::UUID_VERSION_MASK) | Constants::UUID_VERSION_5;  // Version 5
+    uuid_bytes[8] = (uuid_bytes[8] & Constants::UUID_VARIANT_MASK) | Constants::UUID_VARIANT_1;  // Variant 1
 
     // Convert to UUID string format
     std::stringstream ss;

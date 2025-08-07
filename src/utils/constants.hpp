@@ -39,6 +39,19 @@ constexpr int UUID_POSITION_4 = 10;
 // Time/Duration
 constexpr int SECONDS_PER_MINUTE = 60;
 
+// HTTP/Network
+constexpr int HTTP_TIMEOUT_SECONDS = 30;
+constexpr int HTTP_CONNECT_TIMEOUT_SECONDS = 10;
+
+// Volume control
+constexpr int VOLUME_STEP_SIZE = 10;
+
+// UUID version constants
+constexpr int UUID_VERSION_5 = 0x50;
+constexpr int UUID_VARIANT_1 = 0x80;
+constexpr int UUID_VERSION_MASK = 0x0F;
+constexpr int UUID_VARIANT_MASK = 0x3F;
+
 // Time formatting
 constexpr int TIME_FORMAT_PADDING = 10;  // For "0" padding in time display
 constexpr int PROGRESS_PERCENTAGE_MAX = 100;

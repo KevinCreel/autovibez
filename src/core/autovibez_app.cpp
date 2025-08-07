@@ -710,7 +710,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
             // ↑: Volume up
             {
                 int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume + 10, true);
+                _mixManager->setVolume(currentVolume + Constants::VOLUME_STEP_SIZE, true);
                 _volumeKeyPressed = true;
             }
             return;
@@ -719,7 +719,7 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
             // ↓: Volume down
             {
                 int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume - 10, true);
+                _mixManager->setVolume(currentVolume - Constants::VOLUME_STEP_SIZE, true);
                 _volumeKeyPressed = true;
             }
             return;
