@@ -214,7 +214,7 @@ private:
     bool _hadMixesOnStartup;
     bool _volumeKeyPressed{false}; // Track if volume key is being held
     bool _manualPresetChange{false}; // Track if preset change was manual
-    int _previousVolume{100}; // Store volume before mute
+    int _previousVolume{Constants::MAX_VOLUME}; // Store volume before mute
     
     // Help Overlay
     std::unique_ptr<AutoVibez::UI::HelpOverlay> _helpOverlay;

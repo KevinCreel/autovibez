@@ -248,7 +248,7 @@ void MixManager::updateCrossfade() {
     if (elapsed >= static_cast<Uint32>(_crossfade_duration_ms)) {
         // Crossfade complete
         _crossfade_active = false;
-        _crossfade_progress = 100;
+        _crossfade_progress = Constants::MAX_VOLUME;
         
         // Ensure final volumes are correct
         player->setVolume(_new_volume, true);
@@ -256,11 +256,11 @@ void MixManager::updateCrossfade() {
         return;
     }
     
-    // Calculate progress (0-100)
-    _crossfade_progress = (elapsed * 100) / _crossfade_duration_ms;
+            // Calculate progress (0-100)
+        _crossfade_progress = (elapsed * Constants::MAX_VOLUME) / _crossfade_duration_ms;
     
     // Calculate new volume level
-    int new_volume = (_new_volume * _crossfade_progress / 100);
+            int new_volume = (_new_volume * _crossfade_progress / Constants::MAX_VOLUME);
     
     // Apply volume with suppressed output
     player->setVolume(new_volume, true);

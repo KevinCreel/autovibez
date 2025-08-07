@@ -14,10 +14,10 @@ namespace AutoVibez {
 namespace Audio {
 
 MixPlayer::MixPlayer()
-    : playing(false), current_position(0), duration(0), volume(100), current_music(nullptr) {
+    : playing(false), current_position(0), duration(0), volume(Constants::MAX_VOLUME), current_music(nullptr) {
     
     // Initialize SDL_mixer
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+    if (Mix_OpenAudio(Constants::DEFAULT_SAMPLE_RATE, MIX_DEFAULT_FORMAT, Constants::DEFAULT_CHANNELS, Constants::DEFAULT_BUFFER_SIZE) < 0) {
         last_error = "Failed to initialize SDL_mixer: " + std::string(Mix_GetError());
         return;
     }
@@ -101,7 +101,7 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
         return false;
     }
     
-    Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / 100);
+    Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / Constants::MAX_VOLUME);
     
     playing = true;
     current_position = 0;
@@ -150,11 +150,11 @@ bool MixPlayer::setVolume(int new_volume) {
 }
 
 bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
-    if (new_volume < 0) new_volume = 0;
-    if (new_volume > 100) new_volume = 100;
+    if (new_volume < Constants::MIN_VOLUME) new_volume = Constants::MIN_VOLUME;
+    if (new_volume > Constants::MAX_VOLUME) new_volume = Constants::MAX_VOLUME;
     
     volume = new_volume;
-    Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / 100);
+    Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / Constants::MAX_VOLUME);
     
     // Volume notification removed - help overlay shows current volume
     return true;

@@ -1,4 +1,5 @@
 #include "audio_utils.hpp"
+#include "constants.hpp"
 #include <filesystem>
 #include <fstream>
 #include <algorithm>
@@ -28,7 +29,7 @@ bool AudioUtils::isValidMP3File(const std::string& file_path) {
     }
     
     // Check file size (must be at least 1KB to be a valid MP3)
-    if (std::filesystem::file_size(path) < 1024) {
+    if (std::filesystem::file_size(path) < Constants::MIN_MP3_FILE_SIZE) {
         return false;
     }
     

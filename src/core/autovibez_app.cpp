@@ -29,6 +29,7 @@
 */
 
 #include "autovibez_app.hpp"
+#include "constants.hpp"
 #include "setup.hpp"
 #include "mix_manager.hpp"
 #include "mix_metadata.hpp"

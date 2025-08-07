@@ -5,6 +5,7 @@
 #include "mix_downloader.hpp"
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
+#include "constants.hpp"
 #include <future>
 #include <string>
 #include <vector>
@@ -99,7 +100,7 @@ public:
 
     
     // Crossfade functionality
-    bool startCrossfade(const Mix& new_mix, int crossfade_duration_ms = 3000);
+    bool startCrossfade(const Mix& new_mix, int crossfade_duration_ms = Constants::DEFAULT_CROSSFADE_DURATION_MS);
     void updateCrossfade();
     bool isCrossfading() const { return _crossfade_active; }
     int getCrossfadeProgress() const { return _crossfade_progress; }
@@ -169,7 +170,7 @@ private:
     // Crossfade state
     bool _crossfade_enabled{false};
     bool _crossfade_active{false};
-    int _crossfade_duration_ms{3000};
+    int _crossfade_duration_ms{Constants::DEFAULT_CROSSFADE_DURATION_MS};
     int _crossfade_progress{0};
     Mix _crossfade_new_mix;
     Mix _crossfade_old_mix;

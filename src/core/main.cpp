@@ -32,6 +32,7 @@
  */
 
 #include "autovibez_app.hpp"
+#include "constants.hpp"
 using AutoVibez::Core::AutoVibezApp;
 #include "setup.hpp"
 #include "mix_metadata.hpp"
@@ -60,7 +61,7 @@ static int mainLoop(void* userData) {
     if (fps <= 0) {
         fps = 60;
     }
-    const Uint32 frame_delay = 1000/fps;
+    const Uint32 frame_delay = Constants::FRAME_DELAY_MS;
     Uint32 last_time = SDL_GetTicks();
     
     // Initialize mix manager on startup

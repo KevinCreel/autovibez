@@ -1,7 +1,7 @@
 #include "mix_database.hpp"
 #include "mix_metadata.hpp"
-#include "path_manager.hpp"
 #include "constants.hpp"
+#include "path_manager.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -454,8 +454,8 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
     }
     
     // Calculate probability: prioritize preferred genre, then favorites, then random
-    bool prefer_genre = !preferred_genre.empty() && (preferred_genre_mixes > 0) && (rand() % 100 < 80);
-    bool prefer_favorites = !prefer_genre && (favorite_mixes > 0) && (rand() % 100 < 70);
+    bool prefer_genre = !preferred_genre.empty() && (preferred_genre_mixes > 0) && (rand() % 100 < Constants::PREFERRED_GENRE_PROBABILITY);
+    bool prefer_favorites = !prefer_genre && (favorite_mixes > 0) && (rand() % 100 < Constants::FAVORITE_MIX_PROBABILITY);
     
     if (prefer_genre) {
         // Get a mix from preferred genre with smart prioritization (excluding current, preferring downloaded)

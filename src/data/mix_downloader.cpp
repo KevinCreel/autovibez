@@ -1,4 +1,5 @@
 #include "mix_downloader.hpp"
+#include "constants.hpp"
 #include "mix_metadata.hpp"
 #include "path_manager.hpp"
 #include "constants.hpp"
@@ -23,7 +24,7 @@ static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
     (void)clientp; (void)ultotal; (void)ulnow; // Parameters not used in current implementation
     // Update progress
     if (dltotal > 0) {
-        int progress = static_cast<int>((dlnow * 100) / dltotal);
+        int progress = static_cast<int>((dlnow * Constants::MAX_VOLUME) / dltotal);
         // Download progress notification removed - too verbose for normal operation
     }
     return 0;
@@ -90,7 +91,7 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, nullptr);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 300L); // 5 minutes timeout
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000L); // 1KB/s minimum
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC); // 1KB/s minimum
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L); // 60 seconds
     
     CURLcode res = curl_easy_perform(curl);
@@ -237,7 +238,7 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, nullptr);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 300L); // 5 minutes timeout
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000L); // 1KB/s minimum
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC); // 1KB/s minimum
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L); // 60 seconds
     
     CURLcode res = curl_easy_perform(curl);
