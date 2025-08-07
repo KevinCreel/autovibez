@@ -35,44 +35,45 @@ public:
     // Callback for first mix added
     void setFirstMixAddedCallback(FirstMixAddedCallback callback) { _first_mix_callback = callback; }
     
-    // Mix retrieval
-    Mix getRandomMix();
-    Mix getRandomMix(const std::string& exclude_mix_id);
-    Mix getSmartRandomMix();
-    Mix getSmartRandomMix(const std::string& exclude_mix_id);
-    Mix getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre);
-    
-    /**
-     * @brief Get the next mix in database order
-     * @param current_mix_id ID of current mix (empty for first mix)
-     * @return Next mix in database, or first mix if current is empty
-     */
-    Mix getNextMix(const std::string& current_mix_id = "");
-    
-    /**
-     * @brief Get the previous mix in database order
-     * @param current_mix_id ID of current mix (empty for last mix)
-     * @return Previous mix in database, or last mix if current is empty
-     */
-    Mix getPreviousMix(const std::string& current_mix_id = "");
-    
-    /**
-     * @brief Get a random mix by genre
-     * @param genre Genre to filter by
-     * @return Random mix in the genre, or empty mix if none available
-     */
-    Mix getRandomMixByGenre(const std::string& genre);
-    Mix getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
-    Mix getRandomMixByArtist(const std::string& artist);
-    Mix getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id);
-    Mix getRandomFavoriteMix();
-    Mix getRandomFavoriteMix(const std::string& exclude_mix_id);
+    // Mix retrieval - direct database access
     Mix getMixById(const std::string& id);
     std::vector<Mix> getAllMixes();
     std::vector<Mix> getMixesByGenre(const std::string& genre);
     std::vector<Mix> getMixesByArtist(const std::string& artist);
     std::vector<Mix> getDownloadedMixes();
     std::vector<Mix> getFavoriteMixes();
+    
+    // High-level mix selection with smart logic
+    Mix getSmartRandomMix();
+    Mix getSmartRandomMix(const std::string& exclude_mix_id);
+    Mix getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre);
+    
+    // Convenience methods for common operations
+    Mix getRandomMix();
+    Mix getRandomMix(const std::string& exclude_mix_id);
+    Mix getRandomMixByGenre(const std::string& genre);
+    Mix getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
+    Mix getRandomMixByArtist(const std::string& artist);
+    Mix getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id);
+    Mix getRandomFavoriteMix();
+    Mix getRandomFavoriteMix(const std::string& exclude_mix_id);
+    Mix getNextMix(const std::string& current_mix_id = "");
+    Mix getPreviousMix(const std::string& current_mix_id = "");
+    
+    // Audio control methods
+    bool setVolume(int volume);
+    bool setVolume(int volume, bool suppress_output);
+    int getVolume() const;
+    bool isPlaying() const;
+    bool isPaused() const;
+    bool hasFinished();
+    int getCurrentPosition() const;
+    int getDuration() const;
+    
+    // User data update methods
+    bool toggleFavorite(const std::string& mix_id);
+    bool updatePlayStats(const std::string& mix_id);
+    bool setLocalPath(const std::string& mix_id, const std::string& local_path);
     
     // Available mixes (not yet downloaded)
     Mix getRandomAvailableMix();
@@ -81,11 +82,7 @@ public:
     Mix getRandomAvailableMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
     std::vector<Mix> getAvailableMixes();
     
-    // User data updates
 
-    bool toggleFavorite(const std::string& mix_id);
-    bool updatePlayStats(const std::string& mix_id);
-    bool setLocalPath(const std::string& mix_id, const std::string& local_path);
     
     // Audio functionality
     bool downloadAndPlayMix(const Mix& mix);
@@ -97,39 +94,9 @@ public:
      */
     bool stop();
     
-    /**
-     * @brief Set volume
-     * @param volume Volume (0-100)
-     * @return True if successful, false otherwise
-     */
-    bool setVolume(int volume);
-    bool setVolume(int volume, bool suppress_output);
+
     
-    /**
-     * @brief Get current volume
-     * @return Current volume (0-100)
-     */
-    int getVolume() const;
-    
-    /**
-     * @brief Check if playing
-     * @return True if playing, false otherwise
-     */
-    bool isPlaying() const;
-    
-    /**
-     * @brief Check if paused
-     * @return True if paused, false otherwise
-     */
-    bool isPaused() const;
-    
-    /**
-     * @brief Check if music has finished and update state
-     * @return True if music has finished, false otherwise
-     */
-    bool hasFinished();
-    int getCurrentPosition() const;
-    int getDuration() const;
+
     
     // Crossfade functionality
     bool startCrossfade(const Mix& new_mix, int crossfade_duration_ms = 3000);

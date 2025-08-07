@@ -325,44 +325,7 @@ bool MixManager::stop() {
     return player->stop();
 }
 
-bool MixManager::setVolume(int volume) {
-    return setVolume(volume, false);
-}
 
-bool MixManager::setVolume(int volume, bool suppress_output) {
-    if (!player) {
-        last_error = "Player not initialized";
-        return false;
-    }
-    
-    bool result = player->setVolume(volume, suppress_output);
-    
-    return result;
-}
-
-int MixManager::getVolume() const {
-    return player ? player->getVolume() : 0;
-}
-
-bool MixManager::isPlaying() const {
-    return player && player->isPlaying();
-}
-
-bool MixManager::isPaused() const {
-    return player && player->isPaused();
-}
-
-bool MixManager::hasFinished() {
-    return player && player->hasFinished();
-}
-
-int MixManager::getCurrentPosition() const {
-    return player ? player->getCurrentPosition() : 0;
-}
-
-int MixManager::getDuration() const {
-    return player ? player->getDuration() : 0;
-}
 
 // Mix files management
 bool MixManager::clearMixFiles() {
@@ -523,7 +486,8 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
     return true;
 }
 
-// Database delegation methods
+
+// Convenience methods for common operations
 Mix MixManager::getRandomMix() {
     return database ? database->getRandomMix() : Mix();
 }
@@ -532,6 +496,87 @@ Mix MixManager::getRandomMix(const std::string& exclude_mix_id) {
     return database ? database->getRandomMix(exclude_mix_id) : Mix();
 }
 
+Mix MixManager::getRandomMixByGenre(const std::string& genre) {
+    return database ? database->getRandomMixByGenre(genre) : Mix();
+}
+
+Mix MixManager::getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id) {
+    return database ? database->getRandomMixByGenre(genre, exclude_mix_id) : Mix();
+}
+
+// Audio control methods
+bool MixManager::setVolume(int volume) {
+    return setVolume(volume, false);
+}
+
+bool MixManager::setVolume(int volume, bool suppress_output) {
+    if (!player) {
+        last_error = "Player not initialized";
+        return false;
+    }
+    
+    bool result = player->setVolume(volume, suppress_output);
+    
+    return result;
+}
+
+int MixManager::getVolume() const {
+    return player ? player->getVolume() : 0;
+}
+
+bool MixManager::isPlaying() const {
+    return player && player->isPlaying();
+}
+
+bool MixManager::isPaused() const {
+    return player && player->isPaused();
+}
+
+bool MixManager::hasFinished() {
+    return player && player->hasFinished();
+}
+
+int MixManager::getCurrentPosition() const {
+    return player ? player->getCurrentPosition() : 0;
+}
+
+int MixManager::getDuration() const {
+    return player ? player->getDuration() : 0;
+}
+
+// User data update methods
+bool MixManager::toggleFavorite(const std::string& mix_id) {
+    return database ? database->toggleFavorite(mix_id) : false;
+}
+
+bool MixManager::updatePlayStats(const std::string& mix_id) {
+    return database ? database->updatePlayStats(mix_id) : false;
+}
+
+bool MixManager::setLocalPath(const std::string& mix_id, const std::string& local_path) {
+    return database ? database->setLocalPath(mix_id, local_path) : false;
+}
+
+// Additional convenience methods
+Mix MixManager::getRandomMixByArtist(const std::string& artist) {
+    return database ? database->getRandomMixByArtist(artist) : Mix();
+}
+
+Mix MixManager::getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id) {
+    return database ? database->getRandomMixByArtist(artist, exclude_mix_id) : Mix();
+}
+
+
+
+Mix MixManager::getNextMix(const std::string& current_mix_id) {
+    return database ? database->getNextMix(current_mix_id) : Mix();
+}
+
+Mix MixManager::getPreviousMix(const std::string& current_mix_id) {
+    return database ? database->getPreviousMix(current_mix_id) : Mix();
+}
+
+// Smart random mix methods
 Mix MixManager::getSmartRandomMix() {
     return database ? database->getSmartRandomMix() : Mix();
 }
@@ -542,14 +587,6 @@ Mix MixManager::getSmartRandomMix(const std::string& exclude_mix_id) {
 
 Mix MixManager::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
     return database ? database->getSmartRandomMix(exclude_mix_id, preferred_genre) : Mix();
-}
-
-Mix MixManager::getNextMix(const std::string& current_mix_id) {
-    return database ? database->getNextMix(current_mix_id) : Mix();
-}
-
-Mix MixManager::getPreviousMix(const std::string& current_mix_id) {
-    return database ? database->getPreviousMix(current_mix_id) : Mix();
 }
 
 Mix MixManager::getRandomAvailableMix() {
@@ -658,39 +695,7 @@ std::vector<Mix> MixManager::getAvailableMixes() {
     return available_mixes;
 }
 
-Mix MixManager::getRandomMixByGenre(const std::string& genre) {
-    if (!database) {
-        last_error = "Database not initialized";
-        return Mix();
-    }
-    
-    return database->getRandomMixByGenre(genre);
-}
 
-Mix MixManager::getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id) {
-    if (!database) {
-        last_error = "Database not initialized";
-        return Mix();
-    }
-    
-    return database->getRandomMixByGenre(genre, exclude_mix_id);
-}
-
-Mix MixManager::getRandomMixByArtist(const std::string& artist) {
-    if (!database) {
-        last_error = "Database not initialized";
-        return Mix();
-    }
-    return database->getRandomMixByArtist(artist);
-}
-
-Mix MixManager::getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id) {
-    if (!database) {
-        last_error = "Database not initialized";
-        return Mix();
-    }
-    return database->getRandomMixByArtist(artist, exclude_mix_id);
-}
 
 Mix MixManager::getMixById(const std::string& id) {
     if (!database) {
@@ -765,17 +770,7 @@ Mix MixManager::getRandomFavoriteMix(const std::string& exclude_mix_id) {
 }
 
 
-bool MixManager::toggleFavorite(const std::string& mix_id) {
-    return database ? database->toggleFavorite(mix_id) : false;
-}
 
-bool MixManager::updatePlayStats(const std::string& mix_id) {
-    return database ? database->updatePlayStats(mix_id) : false;
-}
-
-bool MixManager::setLocalPath(const std::string& mix_id, const std::string& local_path) {
-    return database ? database->setLocalPath(mix_id, local_path) : false;
-}
 
 bool MixManager::downloadMixBackground(const Mix& mix) {
     // Launch download in background thread
