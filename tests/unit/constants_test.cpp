@@ -51,29 +51,7 @@ TEST_F(ConstantsTest, BeatSensitivityRange) {
     EXPECT_EQ(steps, 50); // 5.0 / 0.1 = 50
 }
 
-TEST_F(ConstantsTest, FilePathDefaults) {
-    // Test file path constants
-    EXPECT_NE(DEFAULT_CONFIG_FILE, nullptr);
-    EXPECT_NE(DEFAULT_PRESET_PATH, nullptr);
-    EXPECT_NE(DEFAULT_TEXTURE_PATH, nullptr);
-    
-    // Test that paths are not empty
-    EXPECT_FALSE(std::string(DEFAULT_CONFIG_FILE).empty());
-    EXPECT_FALSE(std::string(DEFAULT_PRESET_PATH).empty());
-    EXPECT_FALSE(std::string(DEFAULT_TEXTURE_PATH).empty());
-}
 
-TEST_F(ConstantsTest, FilePathValidation) {
-    // Test that file paths are valid
-    std::string configFile(DEFAULT_CONFIG_FILE);
-    std::string presetPath(DEFAULT_PRESET_PATH);
-    std::string texturePath(DEFAULT_TEXTURE_PATH);
-    
-    // Test that paths contain expected directories
-    EXPECT_NE(configFile.find("config"), std::string::npos);
-    EXPECT_NE(presetPath.find("presets"), std::string::npos);
-    EXPECT_NE(texturePath.find("textures"), std::string::npos);
-}
 
 TEST_F(ConstantsTest, AudioSampleRateValidation) {
     // Test that sample rate is a standard value

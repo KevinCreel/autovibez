@@ -263,7 +263,7 @@ std::vector<std::string> PathManager::getConfigFileSearchPaths() {
     }
     
     // 4. Local config directory
-    paths.push_back(Constants::DEFAULT_CONFIG_FILE);
+    paths.push_back("config/config.inp");
     
     return paths;
 }
@@ -288,7 +288,7 @@ std::vector<std::string> PathManager::getPresetSearchPaths() {
     }
     
     // 3. Local assets
-    paths.push_back(Constants::DEFAULT_PRESET_PATH);
+    paths.push_back("assets/presets");
     
     return paths;
 }
@@ -313,7 +313,7 @@ std::vector<std::string> PathManager::getTextureSearchPaths() {
     }
     
     // 3. Local assets
-    paths.push_back(Constants::DEFAULT_TEXTURE_PATH);
+    paths.push_back("assets/textures");
     
     return paths;
 }
