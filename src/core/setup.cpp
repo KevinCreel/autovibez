@@ -345,7 +345,7 @@ AutoVibezApp *setupSDLApp() {
         int configWidth = config.read<uint32_t>("Window Width", 512);
         int configHeight = config.read<uint32_t>("Window Height", 512);
         SDL_SetWindowSize(win, configWidth, configHeight);
-        projectm_set_soft_cut_duration(projectMHandle, config.read<double>("Smooth Preset Duration", config.read<int>("Smooth Transition Duration", 3)));
+        projectm_set_soft_cut_duration(projectMHandle, config.read<double>("Smooth Preset Duration", 3));
         projectm_set_preset_duration(projectMHandle, config.read<double>("Preset Duration", 30));
         projectm_set_easter_egg(projectMHandle, config.read<float>("Easter Egg Parameter", 0.0));
         projectm_set_hard_cut_enabled(projectMHandle,  config.read<bool>("hard_cuts_enabled", false));

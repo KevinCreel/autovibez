@@ -3,7 +3,6 @@
 # Mix Management Settings
 mixes_url = https://pub-af2c65ff0bca4aeaac767cae359e589b.r2.dev/mixes.yaml
 auto_download = true
-cache_size_gb = 5
 
 # Genre Settings
 preferred_genre =
@@ -25,3 +24,17 @@ fullscreen = true
 beat_sensitivity = 1.0
 hard_cut_sensitivity = 1.0
 hard_cuts_enabled = false
+
+# ProjectM Core Settings
+Mesh X = 32
+Mesh Y = 24
+Window Width = 1024
+Window Height = 768
+FPS = 60
+Aspect Correction = true
+
+# ProjectM Preset Settings
+Preset Duration = 30
+Smooth Preset Duration = 3
+Hard Cut Duration = 60
+Easter Egg Parameter = 0.0
