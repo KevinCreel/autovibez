@@ -628,10 +628,6 @@ void AutoVibezApp::initMixManager() {
 
         // Show current audio device
         int audioDeviceIndex = config.getAudioDeviceIndex();
-        const char* deviceName = SDL_GetAudioDeviceName(audioDeviceIndex, SDL_TRUE);
-        if (deviceName) {
-        } else {
-        }
 
         // Get YAML URL
         yaml_url = config.getMixesUrl();
