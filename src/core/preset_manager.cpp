@@ -1,6 +1,5 @@
 #include "preset_manager.hpp"
 
-#include <iostream>
 #include <random>  // Added for random preset selection
 
 #include "autovibez_app.hpp"

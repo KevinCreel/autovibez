@@ -30,10 +30,8 @@
 
 #include "autovibez_app.hpp"
 
-#include <array>
 #include <cstdlib>
 #include <filesystem>
-#include <random>
 #include <set>
 #include <thread>
 #include <vector>
@@ -184,8 +182,6 @@ void AutoVibezApp::toggleFullScreen() {
     }
 }
 
-// Mouse wheel scroll handler removed
-
 void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
     if (!_mixManagerInitialized) {
         initMixManager();
@@ -250,11 +246,13 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
 
         case SDLK_UP:
             if (_mixManagerInitialized && _mixManager->isPlaying()) {
+                // Volume up handled in handleMixControls
             }
             break;
 
         case SDLK_DOWN:
             if (_mixManagerInitialized && _mixManager->isPlaying()) {
+                // Volume down handled in handleMixControls
             }
             break;
 
@@ -366,7 +364,6 @@ void AutoVibezApp::pollEvents() {
             case SDL_WINDOWEVENT:
                 handleWindowEvent(evt);
                 break;
-            // Mouse wheel handling removed
             case SDL_KEYDOWN:
                 handleKeyDownEvent(evt);
                 break;
@@ -386,7 +383,6 @@ void AutoVibezApp::pollEvents() {
                 break;
         }
     }
-    handleMouseDragEvent();
 }
 
 // --- Private event handlers ---
@@ -402,8 +398,6 @@ void AutoVibezApp::handleWindowEvent(const SDL_Event& evt) {
             break;
     }
 }
-
-// Mouse wheel event handler removed
 
 void AutoVibezApp::handleKeyDownEvent(const SDL_Event& evt) {
     keyHandler(const_cast<SDL_Event*>(&evt));
@@ -435,10 +429,6 @@ void AutoVibezApp::handleMouseButtonUpEvent(const SDL_Event& evt) {
 
 void AutoVibezApp::handleQuitEvent(const SDL_Event&) {
     done = true;
-}
-
-void AutoVibezApp::handleMouseDragEvent() {
-    // Mouse drag handling removed - touch functionality disabled
 }
 
 void AutoVibezApp::renderFrame() {

@@ -8,7 +8,6 @@ using AutoVibez::Core::AutoVibezApp;
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_hints.h>
 
-#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
