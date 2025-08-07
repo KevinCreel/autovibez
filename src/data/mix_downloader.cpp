@@ -29,7 +29,6 @@ static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
     // Update progress
     if (dltotal > 0) {
         int progress = static_cast<int>((dlnow * Constants::MAX_VOLUME) / dltotal);
-        // Download progress notification removed - too verbose for normal operation
     }
     return 0;
 }
@@ -68,7 +67,6 @@ bool MixDownloader::downloadMix(const Mix& mix) {
         std::string source_path = mix.url.substr(7);
         // Copy local file
         if (std::filesystem::copy_file(source_path, local_path, std::filesystem::copy_options::overwrite_existing)) {
-            // Local file copy notification removed - too verbose for normal operation
             return true;
         }
     }

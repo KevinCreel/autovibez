@@ -275,7 +275,6 @@ AutoVibezApp* setupSDLApp() {
 
     std::string configFilePath = findConfigFile();
     if (configFilePath.empty()) {
-        // Config file notification removed - too verbose for normal operation
         // Continue with defaults instead of returning early
     }
 

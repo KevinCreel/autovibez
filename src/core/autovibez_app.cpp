@@ -271,7 +271,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
             if (newSensitivity < 0.0f)
                 newSensitivity = 0.0f;
             setBeatSensitivity(newSensitivity);
-            // Beat sensitivity notification removed - help overlay shows current sensitivity
         } break;
 
         case SDLK_F11:
@@ -302,7 +301,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
             // [: Previous preset
             _manualPresetChange = true;
             projectm_playlist_play_previous(_playlist, true);
-            // Preset change notification removed - help overlay shows current preset
             break;
 
         case SDLK_RIGHTBRACKET:
@@ -315,7 +313,6 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
                 if (last_slash != std::string::npos) {
                     preset_name = preset_name.substr(last_slash + 1);
                 }
-                // Preset change notification removed - help overlay shows current preset
             }
             break;
 
@@ -326,15 +323,12 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
                 if (sdl_mod & KMOD_LSHIFT || sdl_mod & KMOD_RSHIFT) {
                     // Shift+G: Switch to random genre
                     std::string newGenre = _mixManager->getRandomGenre();
-                    // Genre change notification removed - help overlay shows current genre
 
                     // Play a random mix in the new genre
                     Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
                     if (!genreMix.id.empty()) {
                         _mixManager->downloadAndPlayMix(genreMix);
                         _currentMix = genreMix;
-                    } else {
-                        // Genre switch notification removed - too verbose for normal operation
                     }
                 } else {
                     // G: Random mix in current mix's genre
@@ -343,11 +337,7 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
                         if (!genreMix.id.empty()) {
                             _mixManager->downloadAndPlayMix(genreMix);
                             _currentMix = genreMix;
-                        } else {
-                            // Genre switch notification removed - too verbose for normal operation
                         }
-                    } else {
-                        // Genre switch notification removed - too verbose for normal operation
                     }
                 }
             }
@@ -421,7 +411,6 @@ void AutoVibezApp::handleKeyDownEvent(const SDL_Event& evt) {
 
 void AutoVibezApp::handleKeyUpEvent(const SDL_Event& evt) {
     if (_volumeKeyPressed && (evt.key.keysym.sym == SDLK_UP || evt.key.keysym.sym == SDLK_DOWN)) {
-        // Volume notification removed - help overlay shows current volume
         _volumeKeyPressed = false;
     }
 }
@@ -553,35 +542,18 @@ std::string AutoVibezApp::getActivePresetName() {
 }
 
 void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void* context) {
-    auto app = reinterpret_cast<AutoVibezApp*>(context);
-    auto presetName = projectm_playlist_item(app->_playlist, index);
-
-    app->_presetName = presetName;
-
-    // Only output for automatic changes (not manual ones)
-    if (!app->_manualPresetChange) {
-        // Extract just the filename for display
-        std::string preset_name = presetName;
-        size_t last_slash = preset_name.find_last_of('/');
-        if (last_slash != std::string::npos) {
-            preset_name = preset_name.substr(last_slash + 1);
-        }
-
-        // Use complete reinitialization for automatic changes to ensure clean state
-        if (app->_helpOverlay) {
-            app->_helpOverlay->reinitializeImGui();
-        }
-    } else {
-        // Use immediate texture rebind for manual changes
-        if (app->_helpOverlay) {
-            app->_helpOverlay->triggerTextureRebind();
-        }
+    AutoVibezApp* app = static_cast<AutoVibezApp*>(context);
+    if (!app) {
+        return;
     }
 
-    app->_manualPresetChange = false;
-
-    projectm_playlist_free_string(presetName);
-    app->UpdateWindowTitle();
+    // Get the current preset name
+    const char* presetName = projectm_playlist_item(app->_playlist, index);
+    if (presetName) {
+        std::string presetNameString(presetName);
+        app->_presetName = presetNameString;
+        projectm_playlist_free_string(const_cast<char*>(presetName));
+    }
 }
 
 projectm_handle AutoVibezApp::projectM() {
@@ -672,9 +644,7 @@ void AutoVibezApp::initMixManager() {
         int audioDeviceIndex = config.getAudioDeviceIndex();
         const char* deviceName = SDL_GetAudioDeviceName(audioDeviceIndex, SDL_TRUE);
         if (deviceName) {
-            // Audio device notification removed - help overlay shows current device
         } else {
-            // Audio device notification removed - help overlay shows current device
         }
 
         // Get YAML URL
@@ -834,7 +804,6 @@ void AutoVibezApp::checkAndAutoPlayNext() {
         // Music has ended or stopped, play next random mix
         Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
         if (!nextMix.id.empty()) {
-            // Auto-play next mix notification removed - too verbose for normal operation
             if (_mixManager->downloadAndPlayMix(nextMix)) {
                 _currentMix = nextMix;
             } else {
@@ -860,7 +829,6 @@ void AutoVibezApp::checkAndAutoPlayNext() {
 
 void AutoVibezApp::autoPlayFromLocalDatabase() {
     if (!_mixManagerInitialized) {
-        // Auto-play initialization error notification removed - too verbose for normal operation
         return;
     }
 
@@ -870,7 +838,6 @@ void AutoVibezApp::autoPlayFromLocalDatabase() {
     if (!randomMix.id.empty()) {
         if (_mixManager->playMix(randomMix)) {
             _currentMix = randomMix;
-            // Auto-play success notification removed - too verbose for normal operation
         } else {
             // Play failed, try another mix
             randomMix = _mixManager->getSmartRandomMix(randomMix.id, _mixManager->getCurrentGenre());

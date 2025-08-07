@@ -64,31 +64,7 @@ bool MixPlayer::playMix(const std::string& local_path, const std::string& title)
         return false;
     }
 
-    // Temporarily redirect stderr to suppress SDL_mixer warnings
-    std::streambuf* original_stderr = nullptr;
-    std::ofstream null_stream;
-    FILE* original_stderr_file = nullptr;
-
-    if (!_verbose) {
-#ifndef _WIN32
-        // On Unix-like systems, redirect stderr to /dev/null
-        original_stderr_file = freopen("/dev/null", "w", stderr);
-        if (!original_stderr_file) {
-            null_stream.open("/dev/null");
-            if (!null_stream.is_open()) {
-            }
-        }
-#endif
-    }
-
     current_music = Mix_LoadMUS(local_path.c_str());
-
-    if (!_verbose) {
-#ifndef _WIN32
-        if (freopen("/dev/stderr", "w", stderr) == nullptr) {
-        }
-#endif
-    }
 
     if (!current_music) {
         last_error = "Failed to load music: " + std::string(Mix_GetError());
@@ -120,10 +96,8 @@ bool MixPlayer::togglePause() {
 
     if (Mix_PausedMusic()) {
         Mix_ResumeMusic();
-        // Playback resume notification removed - help overlay shows current state
     } else {
         Mix_PauseMusic();
-        // Playback pause notification removed - help overlay shows current state
     }
 
     return true;
@@ -141,7 +115,6 @@ bool MixPlayer::stop() {
     }
     playing = false;
     current_position = 0;
-    // Playback stop notification removed - help overlay shows current state
 
     return true;
 }
@@ -159,7 +132,6 @@ bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
     volume = new_volume;
     Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / Constants::MAX_VOLUME);
 
-    // Volume notification removed - help overlay shows current volume
     return true;
 }
 

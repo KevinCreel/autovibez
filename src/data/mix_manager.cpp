@@ -180,8 +180,6 @@ bool MixManager::checkForNewMixes(const std::string& yaml_url) {
     }
 
     if (!new_mixes_to_add.empty()) {
-        // Mix manager status notification removed - too verbose for normal operation
-
         // Add new mixes to available_mixes for background download
         available_mixes.insert(available_mixes.end(), new_mixes_to_add.begin(), new_mixes_to_add.end());
 
@@ -289,14 +287,11 @@ bool MixManager::playMix(const Mix& mix) {
     // Validate that the file is actually a valid MP3 before attempting playback
     if (!AutoVibez::Utils::AudioUtils::isValidMP3File(local_path)) {
         last_error = "Mix file is corrupted or invalid: " + mix.title;
-        // Corrupted file notification removed - too verbose for normal operation
 
         // Clean up the corrupted file
         try {
             std::filesystem::remove(local_path);
-            // Corrupted file removal notification removed - too verbose for normal operation
         } catch (const std::exception& e) {
-            // Corrupted file removal error notification removed - too verbose for normal operation
         }
 
         return false;
@@ -338,7 +333,6 @@ bool MixManager::clearMixFiles() {
     try {
         std::filesystem::remove_all(data_dir);
         std::filesystem::create_directories(data_dir);
-        // Mix files clear notification removed - too verbose for normal operation
         return true;
     } catch (const std::exception& e) {
         last_error = "Failed to clear mix files: " + std::string(e.what());
@@ -398,13 +392,8 @@ bool MixManager::cleanupCorruptedMixFiles() {
                 // Not a valid MP3, remove it
                 std::filesystem::remove(file_path);
                 cleaned_count++;
-                // Corrupted file notification removed - too verbose for normal operation
             }
         }
-    }
-
-    if (cleaned_count > 0) {
-        // Cleanup notification removed - too verbose for normal operation
     }
 
     return true;
@@ -415,7 +404,6 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
     // Check if already in database
     Mix existing_mix = database->getMixById(mix.id);
     if (!existing_mix.id.empty()) {
-        // Mix already exists notification removed - too verbose for normal operation
         return true;
     }
 
@@ -479,10 +467,7 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
             _first_mix_callback(updated_mix);
         }
 
-        // Analysis success notification removed - too verbose for normal operation
     }
-
-    // Analysis success notification removed - too verbose for normal operation
 
     return true;
 }
@@ -955,11 +940,6 @@ bool MixManager::cleanupInconsistentIds() {
         }
     }
 
-    if (cleaned_count > 0) {
-        // LOG_INFO_CONTEXT("MixManager", "cleanupInconsistentIds",
-        //                 "Cleaned up " + std::to_string(cleaned_count) + " inconsistent IDs");
-    }
-
     return true;
 }
 
@@ -982,10 +962,6 @@ bool MixManager::cleanupMissingFiles() {
                 }
             }
         }
-    }
-
-    if (removed_count > 0) {
-        // Missing files cleanup notification removed - too verbose for normal operation
     }
 
     return true;
