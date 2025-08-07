@@ -5,7 +5,6 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
-#include <cstring>
 #include <iomanip>
 
 #include "constants.hpp"
