@@ -1,6 +1,5 @@
 #include "uuid_utils.hpp"
 
-#include <functional>
 #include <iomanip>
 #include <sstream>
 

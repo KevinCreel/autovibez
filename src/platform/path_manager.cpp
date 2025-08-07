@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "constants.hpp"
 #include "path_constants.hpp"
 
 #ifdef _WIN32

@@ -1,6 +1,5 @@
 #include "mix_database.hpp"
 
-#include <algorithm>
 #include <chrono>
 #include <random>
 #include <sstream>

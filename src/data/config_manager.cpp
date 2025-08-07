@@ -1,6 +1,6 @@
 #include "config_manager.hpp"
 
-#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
