@@ -6,6 +6,11 @@
 #include <algorithm>
 #include <filesystem>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <shlobj.h>
+#endif
+
 std::string PathManager::getConfigDirectory() {
     std::string config_dir;
     
@@ -253,7 +258,7 @@ std::vector<std::string> PathManager::getConfigFileSearchPaths() {
     // 3. Platform-specific system-wide fallback
     if (isWindows()) {
         // Windows: Use system-wide installation if available
-        paths.push_back(joinPath(joinPath("C:/ProgramData", PathConstants::APP_NAME), PathConstants::CONFIG_FILE));
+        paths.push_back(joinPath(joinPath(getWindowsProgramData(), PathConstants::APP_NAME), PathConstants::CONFIG_FILE));
     } else if (isMacOS()) {
         // macOS: Use system-wide installation if available
         paths.push_back(joinPath(joinPath("/Library/Application Support", PathConstants::APP_NAME), PathConstants::CONFIG_FILE));
@@ -280,7 +285,7 @@ std::vector<std::string> PathManager::getPresetSearchPaths() {
     // 2. Platform-specific system-wide fallback
     if (isWindows()) {
         // Windows: Use system-wide installation if available
-        paths.push_back(joinPath(joinPath("C:/ProgramData", PathConstants::APP_NAME), PathConstants::PRESETS_DIR));
+        paths.push_back(joinPath(joinPath(getWindowsProgramData(), PathConstants::APP_NAME), PathConstants::PRESETS_DIR));
     } else if (isMacOS()) {
         // macOS: Use system-wide installation if available
         paths.push_back(joinPath(joinPath("/Library/Application Support", PathConstants::APP_NAME), PathConstants::PRESETS_DIR));
@@ -307,7 +312,7 @@ std::vector<std::string> PathManager::getTextureSearchPaths() {
     // 2. Platform-specific system-wide fallback
     if (isWindows()) {
         // Windows: Use system-wide installation if available
-        paths.push_back(joinPath(joinPath("C:/ProgramData", PathConstants::APP_NAME), PathConstants::TEXTURES_DIR));
+        paths.push_back(joinPath(joinPath(getWindowsProgramData(), PathConstants::APP_NAME), PathConstants::TEXTURES_DIR));
     } else if (isMacOS()) {
         // macOS: Use system-wide installation if available
         paths.push_back(joinPath(joinPath("/Library/Application Support", PathConstants::APP_NAME), PathConstants::TEXTURES_DIR));
@@ -413,8 +418,8 @@ std::vector<std::string> PathManager::getXDGDataDirectories() {
         // Platform-specific default data directories
         if (isWindows()) {
             // Windows: Use ProgramData and Program Files
-            directories.push_back("C:/ProgramData");
-            directories.push_back(joinPath("C:/Program Files", PathConstants::APP_NAME));
+            directories.push_back(getWindowsProgramData());
+            directories.push_back(joinPath(getWindowsProgramFiles(), PathConstants::APP_NAME));
         } else if (isMacOS()) {
             // macOS: Use system-wide Application Support
             directories.push_back("/Library/Application Support");
@@ -455,6 +460,36 @@ std::string PathManager::getMacOSCaches() {
     } else {
         return ""; // Fallback handled by caller
     }
+}
+
+std::string PathManager::getWindowsProgramData() {
+#ifdef _WIN32
+    char buffer[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, buffer))) {
+        return std::string(buffer);
+    }
+    // Fallback to environment variable
+    const char* programdata = std::getenv("PROGRAMDATA");
+    if (programdata) {
+        return std::string(programdata);
+    }
+#endif
+    return "C:/ProgramData"; // Last resort fallback
+}
+
+std::string PathManager::getWindowsProgramFiles() {
+#ifdef _WIN32
+    char buffer[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer))) {
+        return std::string(buffer);
+    }
+    // Fallback to environment variable
+    const char* programfiles = std::getenv("PROGRAMFILES");
+    if (programfiles) {
+        return std::string(programfiles);
+    }
+#endif
+    return "C:/Program Files"; // Last resort fallback
 }
 
 // ===== Internal Utilities =====

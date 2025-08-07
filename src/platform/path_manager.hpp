@@ -168,6 +168,16 @@ private:
      */
     static std::string getMacOSCaches();
     
+    /**
+     * Get Windows ProgramData directory (dynamic)
+     */
+    static std::string getWindowsProgramData();
+    
+    /**
+     * Get Windows Program Files directory (dynamic)
+     */
+    static std::string getWindowsProgramFiles();
+    
     // ===== Internal Utilities =====
     
     /**
