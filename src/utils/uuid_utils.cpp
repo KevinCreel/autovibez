@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include "constants.hpp"
+
 namespace AutoVibez {
 namespace Utils {
 
@@ -16,10 +18,10 @@ std::string UuidUtils::generateIdFromUrl(const std::string& url) {
 
 std::string UuidUtils::generateUuidFromHash(size_t hash) {
     // Use the hash to generate a deterministic UUID v5 (name-based)
-    unsigned char uuid_bytes[16];
+    unsigned char uuid_bytes[Constants::UUID_BYTE_LENGTH];
 
     // Use first 16 bytes of hash (or repeat if shorter)
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < Constants::UUID_BYTE_LENGTH; i++) {
         uuid_bytes[i] = (hash >> (i % 8 * 8)) & 0xFF;
     }
 
@@ -31,7 +33,7 @@ std::string UuidUtils::generateUuidFromHash(size_t hash) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
 
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < Constants::UUID_BYTE_LENGTH; i++) {
         if (i == 4 || i == 6 || i == 8 || i == 10) {
             ss << "-";
         }

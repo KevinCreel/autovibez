@@ -38,9 +38,9 @@ void HelpOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
     _glContext = glContext;
 
     // Create a blank cursor (1x1 transparent pixel)
-    Uint8 blankData[4] = {0, 0, 0, 0};  // Transparent
-    Uint8 blankMask[4] = {0, 0, 0, 0};  // Transparent
-    _blankCursor = SDL_CreateCursor(blankData, blankMask, 1, 1, 0, 0);
+    Uint8 blankData[Constants::BLANK_CURSOR_SIZE] = {0, 0, 0, 0};  // Transparent
+    Uint8 blankMask[Constants::BLANK_CURSOR_SIZE] = {0, 0, 0, 0};  // Transparent
+    _blankCursor = SDL_CreateCursor(blankData, blankMask, Constants::CURSOR_DIMENSIONS, Constants::CURSOR_DIMENSIONS, Constants::CURSOR_HOTSPOT, Constants::CURSOR_HOTSPOT);
 
     // Store the original cursor
     _originalCursor = SDL_GetCursor();
@@ -306,7 +306,7 @@ void HelpOverlay::render() {
         }
 
         // Add some padding to each column
-        float padding = 40.0f;  // Increased from 20.0f to 40.0f for more spacing
+        float padding = Constants::UI_PADDING;  // Increased from 20.0f to 40.0f for more spacing
         artistWidth += padding;
         titleWidth += padding;
         genreWidth += padding;

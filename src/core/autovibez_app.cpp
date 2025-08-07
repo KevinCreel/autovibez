@@ -528,7 +528,7 @@ void AutoVibezApp::updateHelpOverlayInfo() {
         _helpOverlay->setAudioDevice(deviceName);
     } else {
         // Show default device indicator
-        _helpOverlay->setAudioDevice("Default Device");
+        _helpOverlay->setAudioDevice(StringConstants::DEFAULT_AUDIO_DEVICE);
     }
 
     // Update beat sensitivity
@@ -597,9 +597,9 @@ void AutoVibezApp::setBeatSensitivity(float sensitivity) {
 }
 
 void AutoVibezApp::UpdateWindowTitle() {
-    std::string title = "AutoVibez";
+    std::string title = StringConstants::APP_TITLE;
     if (projectm_get_preset_locked(_projectM)) {
-        title.append(" [locked]");
+        title.append(StringConstants::LOCKED_INDICATOR);
     }
 
     SDL_SetWindowTitle(_sdlWindow, title.c_str());

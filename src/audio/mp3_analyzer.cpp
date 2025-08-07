@@ -138,11 +138,11 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     }
 
     if (metadata.artist.empty()) {
-        metadata.artist = "Unknown Artist";
+        metadata.artist = StringConstants::UNKNOWN_ARTIST;
     }
 
     if (metadata.genre.empty()) {
-        metadata.genre = "Electronic";
+        metadata.genre = StringConstants::DEFAULT_GENRE;
     }
 
     // Get audio properties for duration and format info
@@ -158,7 +158,7 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     std::filesystem::path path(file_path);
     metadata.file_size = std::filesystem::file_size(path);
 
-    metadata.format = "MP3";
+            metadata.format = StringConstants::MP3_FORMAT;
     metadata.date_added = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();
 
     // Restore original error state if no new errors occurred

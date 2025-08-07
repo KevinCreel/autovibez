@@ -4,6 +4,8 @@
 #include <cctype>
 #include <regex>
 
+#include "constants.hpp"
+
 namespace AutoVibez {
 namespace Utils {
 
@@ -84,7 +86,7 @@ bool UrlUtils::isValidUrl(const std::string& url) {
     }
 
     // Basic URL validation regex
-    std::regex url_regex(R"((https?|ftp)://[^\s/$.?#].[^\s]*)");
+    std::regex url_regex(StringConstants::URL_REGEX_PATTERN);
     return std::regex_match(url, url_regex);
 }
 

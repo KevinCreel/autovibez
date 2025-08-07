@@ -64,7 +64,7 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     std::filesystem::create_directories(mixes_dir);
 
     // Handle local file URLs
-    if (mix.url.substr(0, 7) == "file://") {
+    if (mix.url.substr(0, 7) == StringConstants::FILE_PROTOCOL) {
         std::string source_path = mix.url.substr(7);
         // Copy local file
         if (std::filesystem::copy_file(source_path, local_path, std::filesystem::copy_options::overwrite_existing)) {
@@ -94,9 +94,9 @@ bool MixDownloader::downloadMix(const Mix& mix) {
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, nullptr);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 300L);                                                 // 5 minutes timeout
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, Constants::DOWNLOAD_TIMEOUT_SECONDS);
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC);  // 1KB/s minimum
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);                                           // 60 seconds
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, Constants::DOWNLOAD_LOW_SPEED_TIME_SECONDS);
 
     CURLcode res = curl_easy_perform(curl);
 
@@ -161,7 +161,7 @@ std::string MixDownloader::getLocalPath(const std::string& mix_id) {
     }
 
     // Fall back to hash-based naming
-    return mixes_dir + "/" + mix_id + ".mp3";
+    return mixes_dir + "/" + mix_id + StringConstants::MP3_EXTENSION;
 }
 
 std::string MixDownloader::getTemporaryPath(const std::string& mix_id) {
@@ -200,7 +200,7 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     std::filesystem::create_directories(mixes_dir);
 
     // Handle local file URLs
-    if (mix.url.substr(0, 7) == "file://") {
+    if (mix.url.substr(0, 7) == StringConstants::FILE_PROTOCOL) {
         std::string source_path = mix.url.substr(7);
         // Copy local file to temp location
         if (std::filesystem::copy_file(source_path, temp_path, std::filesystem::copy_options::overwrite_existing)) {
@@ -241,9 +241,9 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, nullptr);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 300L);                                                 // 5 minutes timeout
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, Constants::DOWNLOAD_TIMEOUT_SECONDS);
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, Constants::MIN_DOWNLOAD_SPEED_BYTES_PER_SEC);  // 1KB/s minimum
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);                                           // 60 seconds
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, Constants::DOWNLOAD_LOW_SPEED_TIME_SECONDS);
 
     CURLcode res = curl_easy_perform(curl);
 
@@ -261,13 +261,13 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     if (!mp3_metadata.title.empty()) {
         // Create a safe filename from the title
         std::string safe_title = createSafeFilename(mp3_metadata.title);
-        final_path = mixes_dir + "/" + safe_title + ".mp3";
+        final_path = mixes_dir + "/" + safe_title + StringConstants::MP3_EXTENSION;
 
         // Save the mapping for future reference
         std::string mapping_file = PathManager::getFileMappingsPath();
         std::ofstream mapping(mapping_file, std::ios::app);
         if (mapping.is_open()) {
-            mapping << mix.id << ":" << safe_title << ".mp3" << std::endl;
+            mapping << mix.id << ":" << safe_title << StringConstants::MP3_EXTENSION << std::endl;
             mapping.close();
         }
     }
@@ -299,8 +299,8 @@ std::string MixDownloader::createSafeFilename(const std::string& title) {
     }
 
     // Limit length to avoid filesystem issues
-    if (safe_filename.length() > 200) {
-        safe_filename = safe_filename.substr(0, 200);
+    if (safe_filename.length() > Constants::MAX_FILENAME_LENGTH) {
+        safe_filename = safe_filename.substr(0, Constants::MAX_FILENAME_LENGTH);
     }
 
     return safe_filename;

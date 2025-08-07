@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "constants.hpp"
+
 using AutoVibez::Data::ConfigFile;
 using std::string;
 
@@ -134,7 +136,7 @@ std::istream& operator>>(std::istream& is, ConfigFile& cf) {
 }
 
 int ConfigFile::getCrossfadeDuration() const {
-    return read<int>("crossfade_duration_ms", 3000);
+    return read<int>(StringConstants::CROSSFADE_DURATION_KEY, Constants::DEFAULT_CROSSFADE_DURATION_MS);
 }
 
 bool ConfigFile::getCrossfadeEnabled() const {

@@ -41,11 +41,11 @@ bool AudioUtils::isValidMP3File(const std::string& file_path) {
         return false;
     }
 
-    char buffer[10];
-    file.read(buffer, 10);
+    char buffer[Constants::ID3V2_HEADER_SIZE];
+    file.read(buffer, Constants::ID3V2_HEADER_SIZE);
     file.close();
 
-    if (file.gcount() < 10) {
+    if (file.gcount() < Constants::ID3V2_HEADER_SIZE) {
         return false;
     }
 

@@ -4,6 +4,8 @@
 #include <regex>
 #include <sstream>
 
+#include "constants.hpp"
+
 namespace AutoVibez {
 namespace Utils {
 
@@ -17,7 +19,7 @@ std::string DateTimeUtils::formatDateTime(const std::chrono::system_clock::time_
     auto tm = *std::localtime(&time_t);
 
     std::stringstream ss;
-    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    ss << std::put_time(&tm, StringConstants::DATETIME_FORMAT);
     return ss.str();
 }
 
@@ -27,7 +29,7 @@ std::string DateTimeUtils::getCurrentDate() {
     auto tm = *std::localtime(&time_t);
 
     std::stringstream ss;
-    ss << std::put_time(&tm, "%Y-%m-%d");
+    ss << std::put_time(&tm, StringConstants::DATE_FORMAT);
     return ss.str();
 }
 
@@ -37,7 +39,7 @@ std::string DateTimeUtils::getCurrentTime() {
     auto tm = *std::localtime(&time_t);
 
     std::stringstream ss;
-    ss << std::put_time(&tm, "%H:%M:%S");
+    ss << std::put_time(&tm, StringConstants::TIME_FORMAT);
     return ss.str();
 }
 
@@ -48,7 +50,7 @@ std::chrono::system_clock::time_point DateTimeUtils::parseDateTime(const std::st
 
     std::tm tm = {};
     std::istringstream ss(datetime_str);
-    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    ss >> std::get_time(&tm, StringConstants::DATETIME_FORMAT);
 
     if (ss.fail()) {
         return std::chrono::system_clock::now();
@@ -60,12 +62,12 @@ std::chrono::system_clock::time_point DateTimeUtils::parseDateTime(const std::st
 
 bool DateTimeUtils::isValidDateTime(const std::string& datetime_str) {
     // Check if string matches "YYYY-MM-DD HH:MM:SS" format
-    std::regex datetime_regex(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})");
+    std::regex datetime_regex(StringConstants::DATETIME_REGEX_PATTERN);
     return std::regex_match(datetime_str, datetime_regex);
 }
 
 std::string DateTimeUtils::getDefaultFormat() {
-    return "%Y-%m-%d %H:%M:%S";
+    return StringConstants::DATETIME_FORMAT;
 }
 
 }  // namespace Utils

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+
+#include "constants.hpp"
 #include <vector>
 
 namespace AutoVibez {
@@ -81,7 +83,7 @@ struct BaseMetadata {
      * @return Title if available, otherwise "Unknown Track"
      */
     std::string getDisplayName() const {
-        return hasValidTitle() ? title : "Unknown Track";
+        return hasValidTitle() ? title : StringConstants::UNKNOWN_TRACK;
     }
 
     /**
@@ -89,7 +91,7 @@ struct BaseMetadata {
      * @return Artist if available, otherwise "Unknown Artist"
      */
     std::string getDisplayArtist() const {
-        return !artist.empty() ? artist : "Unknown Artist";
+        return !artist.empty() ? artist : StringConstants::UNKNOWN_ARTIST;
     }
 
     /**
