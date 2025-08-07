@@ -1,19 +1,19 @@
 #include "mix_metadata.hpp"
 
 #include <curl/curl.h>
+#include <filesystem>
+#include <fstream>
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
 #include <cstring>
-#include <fstream>
 #include <functional>
 #include <iomanip>
-#include <iostream>
 #include <random>
-#include <sstream>
 
 #include "constants.hpp"
 #include "path_manager.hpp"
+#include "url_utils.hpp"
 
 using AutoVibez::Data::Mix;
 using AutoVibez::Data::MixMetadata;

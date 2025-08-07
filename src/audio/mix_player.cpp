@@ -2,10 +2,8 @@
 
 #include <SDL2/SDL_mixer.h>
 
-#include <cstdio>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 
 #include "constants.hpp"
 #include "mix_metadata.hpp"

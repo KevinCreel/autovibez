@@ -4,8 +4,6 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <imgui.h>
 
-#include <iostream>
-
 #include "constants.hpp"
 #include "setup.hpp"
 

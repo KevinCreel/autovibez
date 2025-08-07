@@ -1,10 +1,8 @@
 #include "mix_downloader.hpp"
 
 #include <curl/curl.h>
-
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 
 #include "constants.hpp"
 #include "mix_metadata.hpp"
@@ -23,11 +21,7 @@ static size_t WriteFileCallback(void* contents, size_t size, size_t nmemb, FILE*
 }
 
 static int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-    (void)clientp;
-    (void)ultotal;
-    (void)ulnow;
-    (void)dltotal;
-    (void)dlnow;
+    (void)clientp, (void)ultotal, (void)ulnow, (void)dltotal, (void)dlnow;
     return 0;
 }
 

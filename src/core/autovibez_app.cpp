@@ -30,7 +30,6 @@
 
 #include "autovibez_app.hpp"
 
-#include <cstdlib>
 #include <filesystem>
 #include <set>
 #include <thread>
