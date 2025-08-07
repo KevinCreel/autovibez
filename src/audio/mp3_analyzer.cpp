@@ -7,15 +7,12 @@
 #include <taglib/textidentificationframe.h>
 
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <random>
-#include <sstream>
 
 #include "constants.hpp"
 #include "mix_metadata.hpp"

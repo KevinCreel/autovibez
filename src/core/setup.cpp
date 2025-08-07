@@ -11,7 +11,7 @@ using AutoVibez::Core::AutoVibezApp;
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
-#include <iostream>
+#include <fstream>
 
 using AutoVibez::Audio::configureLoopback;
 using AutoVibez::Audio::initLoopback;

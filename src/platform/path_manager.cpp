@@ -5,7 +5,6 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <sstream>
 
 #include "constants.hpp"
 #include "path_constants.hpp"
