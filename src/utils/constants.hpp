@@ -25,8 +25,8 @@ constexpr int DEFAULT_TIMEOUT_SECONDS = 30;
 
 // Download
 constexpr int MIN_DOWNLOAD_SPEED_BYTES_PER_SEC = 1000;  // 1KB/s minimum
-constexpr int DOWNLOAD_TIMEOUT_SECONDS = 300;        // 5 minutes timeout
-constexpr int DOWNLOAD_LOW_SPEED_TIME_SECONDS = 60;  // 60 seconds
+constexpr int DOWNLOAD_TIMEOUT_SECONDS = 300;           // 5 minutes timeout
+constexpr int DOWNLOAD_LOW_SPEED_TIME_SECONDS = 60;     // 60 seconds
 constexpr int MAX_FILENAME_LENGTH = 200;
 
 // UUID

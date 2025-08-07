@@ -26,6 +26,10 @@ using AutoVibez::Audio::MP3Metadata;
 namespace AutoVibez {
 namespace Data {
 
+// Static member definitions
+std::random_device MixManager::_random_device;
+std::mt19937 MixManager::_random_generator(MixManager::_random_device());
+
 MixManager::MixManager(const std::string& db_path, const std::string& data_dir)
     : db_path(db_path), data_dir(data_dir), success(true) {}
 
@@ -524,11 +528,8 @@ Mix MixManager::getRandomAvailableMix() {
     }
 
     // Use a simple random selection
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, available_mixes.size() - 1);
-
-    return available_mixes[dis(gen)];
+    size_t random_index = getRandomIndex(available_mixes.size());
+    return available_mixes[random_index];
 }
 
 Mix MixManager::getRandomAvailableMix(const std::string& exclude_mix_id) {
@@ -549,11 +550,8 @@ Mix MixManager::getRandomAvailableMix(const std::string& exclude_mix_id) {
     }
 
     // Use a simple random selection
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, filtered_mixes.size() - 1);
-
-    return filtered_mixes[dis(gen)];
+    size_t random_index = getRandomIndex(filtered_mixes.size());
+    return filtered_mixes[random_index];
 }
 
 Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre) {
@@ -581,11 +579,8 @@ Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre) {
     }
 
     // Use a simple random selection from genre mixes
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, genre_mixes.size() - 1);
-
-    return genre_mixes[dis(gen)];
+    size_t random_index = getRandomIndex(genre_mixes.size());
+    return genre_mixes[random_index];
 }
 
 Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre, const std::string& exclude_mix_id) {
@@ -613,11 +608,8 @@ Mix MixManager::getRandomAvailableMixByGenre(const std::string& genre, const std
     }
 
     // Use a simple random selection from genre mixes
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, genre_mixes.size() - 1);
-
-    return genre_mixes[dis(gen)];
+    size_t random_index = getRandomIndex(genre_mixes.size());
+    return genre_mixes[random_index];
 }
 
 std::vector<Mix> MixManager::getAvailableMixes() {
@@ -662,10 +654,8 @@ Mix MixManager::getRandomFavoriteMix() {
         return Mix();
     }
 
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, favorite_mixes.size() - 1);
-    return favorite_mixes[dis(gen)];
+    size_t random_index = getRandomIndex(favorite_mixes.size());
+    return favorite_mixes[random_index];
 }
 
 Mix MixManager::getRandomFavoriteMix(const std::string& exclude_mix_id) {
@@ -690,10 +680,8 @@ Mix MixManager::getRandomFavoriteMix(const std::string& exclude_mix_id) {
         return Mix();
     }
 
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, filtered_mixes.size() - 1);
-    return filtered_mixes[dis(gen)];
+    size_t random_index = getRandomIndex(filtered_mixes.size());
+    return filtered_mixes[random_index];
 }
 
 bool MixManager::downloadMixBackground(const Mix& mix) {
@@ -816,11 +804,8 @@ std::string MixManager::getRandomGenre() {
     }
 
     // Pick random genre from the filtered list
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, other_genres.size() - 1);
-
-    _current_genre = other_genres[dis(gen)];
+    size_t random_index = getRandomIndex(other_genres.size());
+    _current_genre = other_genres[random_index];
     return _current_genre;
 }
 
@@ -980,6 +965,14 @@ bool MixManager::downloadMissingMixesBackground() {
     }
 
     return true;
+}
+
+size_t MixManager::getRandomIndex(size_t max_index) const {
+    if (max_index == 0) {
+        return 0;
+    }
+    std::uniform_int_distribution<size_t> dis(0, max_index - 1);
+    return dis(_random_generator);
 }
 
 }  // namespace Data

@@ -3,6 +3,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -179,6 +180,8 @@ private:
     std::vector<Mix> available_mixes;
     std::vector<std::future<bool>> _download_futures;
     std::string _current_genre;
+    std::vector<std::string> _available_genres;
+    FirstMixAddedCallback _first_mix_callback;
 
     // Crossfade state
     bool _crossfade_enabled{false};
@@ -192,11 +195,12 @@ private:
     int _new_volume{0};
     bool _suppress_volume_output{false};
 
-    // Genre management
-    std::vector<std::string> _available_genres;
+    // Static random number generator to eliminate code duplication
+    static std::random_device _random_device;
+    static std::mt19937 _random_generator;
 
-    // Callback for first mix added
-    FirstMixAddedCallback _first_mix_callback;
+    // Helper method for random selection
+    size_t getRandomIndex(size_t max_index) const;
 };
 
 }  // namespace Data
