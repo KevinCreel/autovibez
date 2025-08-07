@@ -500,7 +500,7 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
 
     updated_mix.play_count = 0;
     updated_mix.is_favorite = false;
-    updated_mix.date_added = mp3_analyzer->getCurrentDateTime();
+            updated_mix.date_added = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();
     updated_mix.last_played = "";
     
     // Step 5: Add the mix to the database with complete metadata

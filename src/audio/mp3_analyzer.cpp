@@ -36,15 +36,7 @@ MP3Analyzer::~MP3Analyzer() {
 
 
 
-std::string MP3Analyzer::getCurrentDateTime() {
-    auto now = std::chrono::system_clock::now();
-    auto time_t = std::chrono::system_clock::to_time_t(now);
-    auto tm = *std::localtime(&time_t);
-    
-    std::stringstream ss;
-    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return ss.str();
-}
+
 
 MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     MP3Metadata metadata;
@@ -169,7 +161,7 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     metadata.file_size = std::filesystem::file_size(path);
     
     metadata.format = "MP3";
-    metadata.date_added = getCurrentDateTime();
+            metadata.date_added = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();
     
     // Restore original error state if no new errors occurred
     if (last_error.empty()) {

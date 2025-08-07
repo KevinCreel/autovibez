@@ -158,6 +158,11 @@ add_executable(autovibez
     src/utils/error_handler.hpp
     src/utils/audio_utils.cpp
     src/utils/audio_utils.hpp
+    src/utils/datetime_utils.cpp
+    src/utils/datetime_utils.hpp
+    src/utils/url_utils.cpp
+    src/utils/url_utils.hpp
+    src/data/base_metadata.hpp
 )
 
 # Link libraries
@@ -348,6 +353,11 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/error_handler.hpp
     src/utils/audio_utils.cpp
     src/utils/audio_utils.hpp
+    src/utils/datetime_utils.cpp
+    src/utils/datetime_utils.hpp
+    src/utils/url_utils.cpp
+    src/utils/url_utils.hpp
+    src/data/base_metadata.hpp
     
     # Test fixtures
     tests/fixtures/test_fixtures.cpp
@@ -371,6 +381,9 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/preset_manager_test.cpp
     tests/unit/uuid_utils_test.cpp
     tests/unit/audio_utils_test.cpp
+    tests/unit/datetime_utils_test.cpp
+    tests/unit/url_utils_test.cpp
+    tests/unit/base_metadata_test.cpp
     
     # Integration tests
     tests/integration/mix_manager_test.cpp

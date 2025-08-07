@@ -5,29 +5,19 @@
 #include <vector>
 #include <chrono>
 #include "uuid_utils.hpp"
+#include "datetime_utils.hpp"
+#include "base_metadata.hpp"
 
 namespace AutoVibez {
 namespace Audio {
 
-struct MP3Metadata {
-    std::string id;
-    std::string title;
-    std::string artist;
-    std::string genre;
-    std::string description;
-    std::vector<std::string> tags;
-    std::string url;
-    std::string local_path;
-    int duration_seconds = 0;
+struct MP3Metadata : public Data::BaseMetadata {
     int bitrate = 0;
     int sample_rate = 0;
     int channels = 0;
     long file_size = 0;
     std::string format;
-    std::string date_added;
-    std::string last_played;
-    int play_count = 0;
-    bool is_favorite = false;
+    std::string url;
 };
 
 class MP3Analyzer {
@@ -36,7 +26,6 @@ public:
     ~MP3Analyzer();
     
     MP3Metadata analyzeFile(const std::string& file_path);
-    std::string getCurrentDateTime();
     std::string getLastError() const { return last_error; }
     void setVerbose(bool verbose) { _verbose = verbose; }
     
