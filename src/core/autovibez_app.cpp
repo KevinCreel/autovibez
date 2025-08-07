@@ -375,7 +375,7 @@ void AutoVibezApp::pollEvents() {
                 handleMouseButtonUpEvent(evt);
                 break;
             case SDL_QUIT:
-                handleQuitEvent(evt);
+                handleQuitEvent();
                 break;
             default:
                 break;
@@ -425,7 +425,7 @@ void AutoVibezApp::handleMouseButtonUpEvent(const SDL_Event& evt) {
     mouseDown = false;
 }
 
-void AutoVibezApp::handleQuitEvent(const SDL_Event&) {
+void AutoVibezApp::handleQuitEvent() {
     done = true;
 }
 

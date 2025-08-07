@@ -234,7 +234,7 @@ private:
     void handleKeyUpEvent(const SDL_Event& evt);
     void handleMouseButtonDownEvent(const SDL_Event& evt);
     void handleMouseButtonUpEvent(const SDL_Event& evt);
-    void handleQuitEvent(const SDL_Event& evt);
+    void handleQuitEvent();
 };
 
 }  // namespace Core

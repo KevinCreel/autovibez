@@ -45,9 +45,7 @@ std::string expandTilde(const std::string& path) {
 }
 
 #if OGL_DEBUG
-void debugGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message,
-             const void* userParam) {
-}
+void debugGL() {}
 #endif
 
 std::string getConfigFilePath(const std::string& datadir_path) {

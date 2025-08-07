@@ -10,8 +10,7 @@ class AutoVibezApp;
 }
 }  // namespace AutoVibez
 
-void debugGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
-             const void *userParam);
+void debugGL();
 
 std::string getConfigDirectory();
 std::string getConfigFilePath(std::string datadir_path);
