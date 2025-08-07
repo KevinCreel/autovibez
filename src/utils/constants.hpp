@@ -38,35 +38,24 @@ constexpr int MAX_FILENAME_LENGTH = 200;
 
 // UUID
 constexpr int UUID_BYTE_LENGTH = 16;
-constexpr int UUID_FORMAT_POSITIONS[] = {4, 6, 8, 10};
+constexpr int UUID_POSITION_1 = 4;
+constexpr int UUID_POSITION_2 = 6;
+constexpr int UUID_POSITION_3 = 8;
+constexpr int UUID_POSITION_4 = 10;
 
 // Time/Duration
 constexpr int SECONDS_PER_HOUR = 3600;
 constexpr int SECONDS_PER_MINUTE = 60;
 constexpr int MINUTES_PER_HOUR = 60;
-constexpr int MINUTES_PER_SECOND = 60;
-constexpr int HOURS_PER_DAY = 24;
-constexpr int DAYS_PER_WEEK = 7;
 
 // Time formatting
 constexpr int TIME_FORMAT_PADDING = 10;  // For "0" padding in time display
 constexpr int PROGRESS_PERCENTAGE_MAX = 100;
 
-// Database
-constexpr int SQLITE_BIND_START_INDEX = 1;
-constexpr int SQLITE_COLUMN_START_INDEX = 0;
-constexpr int SQLITE_TEXT_BINDING = -1;
-
 // Audio/Media
 constexpr int HEX_BASE = 16;
 constexpr int HEX_ALPHA_OFFSET = 10;
-constexpr int BITS_PER_BYTE = 8;
 constexpr int MIN_RESPONSE_LENGTH = 10;
-
-// Test constants
-constexpr int DEFAULT_CACHE_SIZE_MB = 100;
-constexpr int TEST_PLAY_COUNT_SMALL = 10;
-constexpr int TEST_PLAY_COUNT_LARGE = 20;
 
 // UI/Window
 constexpr int DEFAULT_WINDOW_SIZE = 512;
@@ -77,17 +66,8 @@ constexpr int DEFAULT_HARD_CUT_DURATION = 60;
 constexpr int DEFAULT_FPS_VALUE = 60;
 constexpr int DEFAULT_CHECK_INTERVAL_MS = 5000;
 
-// UUID formatting positions
-constexpr int UUID_POSITION_1 = 4;
-constexpr int UUID_POSITION_2 = 6;
-constexpr int UUID_POSITION_3 = 8;
-constexpr int UUID_POSITION_4 = 10;
-
 // UI/Display
-constexpr int DEFAULT_WINDOW_WIDTH = 1024;
-constexpr int DEFAULT_WINDOW_HEIGHT = 768;
-constexpr int DEFAULT_FPS = 60;
-constexpr int FRAME_DELAY_MS = 1000 / DEFAULT_FPS;  // ~16.67ms
+constexpr int FRAME_DELAY_MS = 1000 / DEFAULT_FPS_VALUE;  // ~16.67ms
 constexpr float UI_PADDING = 40.0f;
 constexpr int BLANK_CURSOR_SIZE = 4;
 constexpr int CURSOR_DIMENSIONS = 1;
@@ -96,15 +76,6 @@ constexpr int CURSOR_HOTSPOT = 0;
 // Smart selection probabilities (percentages)
 constexpr int PREFERRED_GENRE_PROBABILITY = 80;  // 80% chance to prefer genre
 constexpr int FAVORITE_MIX_PROBABILITY = 70;     // 70% chance to prefer favorites
-
-// Configuration defaults
-constexpr int DEFAULT_SEEK_INCREMENT_SECONDS = 60;
-constexpr int DEFAULT_VOLUME_STEP_PERCENT = 10;
-
-// Test constants
-constexpr int TEST_ITERATIONS = 1000;
-constexpr int TEST_SLEEP_MS = 100;
-constexpr int TEST_CACHE_SIZE_MB = 100;
 }  // namespace Constants
 
 // String constants
@@ -122,7 +93,6 @@ constexpr const char* JSON_EXTENSION = ".json";
 constexpr const char* HTTP_PROTOCOL = "http://";
 constexpr const char* HTTPS_PROTOCOL = "https://";
 constexpr const char* FILE_PROTOCOL = "file://";
-constexpr const char* FTP_PROTOCOL = "ftp://";
 
 // Error messages
 constexpr const char* UNKNOWN_ARTIST = "Unknown Artist";
@@ -141,11 +111,6 @@ constexpr const char* CROSSFADE_DURATION_KEY = "crossfade_duration_ms";
 constexpr const char* CROSSFADE_ENABLED_KEY = "crossfade_enabled";
 constexpr const char* PREFERRED_GENRE_KEY = "preferred_genre";
 constexpr const char* MIXES_URL_KEY = "mixes_url";
-
-// System paths
-constexpr const char* DEV_NULL = "/dev/null";
-constexpr const char* DEV_STDERR = "/dev/stderr";
-constexpr const char* PROGRAM_DATA_PATH = "C:/ProgramData";
 
 // Configuration keys
 constexpr const char* MESH_X_KEY = "Mesh X";

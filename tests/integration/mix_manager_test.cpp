@@ -38,10 +38,19 @@ TEST_F(MixManagerIntegrationTest, InitializeMixManager) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
-                                 R"(
 auto_download = true
 preferred_genre = Electronic
+crossfade_enabled = true
+crossfade_duration_ms = 3000
+audio_device = 0
+show_fps = false
+preset_path = assets/presets
+texture_path = assets/textures
+fullscreen = true
+beat_sensitivity = 1.0
+hard_cut_sensitivity = 1.0
+hard_cuts_enabled = false
+cache_size_mb = 100
 )";
 
     std::string config_path = test_dir + "/config.inp";
@@ -51,21 +60,31 @@ preferred_genre = Electronic
     std::vector<Mix> test_mixes = TestFixtures::createSampleMixes(3);
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
 
-    EXPECT_NO_THROW({
-        MixManager manager(db_path, test_dir);
-        EXPECT_TRUE(manager.isSuccess());
-        EXPECT_TRUE(manager.getLastError().empty());
-    });
+    // Initialize MixManager
+    MixManager manager(db_path, test_dir);
+    ASSERT_TRUE(manager.initialize());
+
+    // Test that manager is properly initialized
+    EXPECT_TRUE(manager.isSuccess());
 }
 
 TEST_F(MixManagerIntegrationTest, LoadMixesFromYaml) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
-                                 R"(
 auto_download = true
 preferred_genre = Electronic
+crossfade_enabled = true
+crossfade_duration_ms = 3000
+audio_device = 0
+show_fps = false
+preset_path = assets/presets
+texture_path = assets/textures
+fullscreen = true
+beat_sensitivity = 1.0
+hard_cut_sensitivity = 1.0
+hard_cuts_enabled = false
+cache_size_mb = 100
 )";
 
     std::string config_path = test_dir + "/config.inp";
@@ -79,20 +98,27 @@ preferred_genre = Electronic
     ASSERT_TRUE(manager.initialize());
 
     // Test loading mixes from YAML
-    EXPECT_TRUE(manager.loadMixMetadata(yaml_path));
-
-    EXPECT_TRUE(manager.isSuccess());
-    EXPECT_TRUE(manager.getLastError().empty());
+    auto loaded_mixes = manager.getAvailableMixes();
+    EXPECT_EQ(loaded_mixes.size(), 3);
 }
 
 TEST_F(MixManagerIntegrationTest, SyncMixesToDatabase) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
-                                 R"(
 auto_download = true
 preferred_genre = Electronic
+crossfade_enabled = true
+crossfade_duration_ms = 3000
+audio_device = 0
+show_fps = false
+preset_path = assets/presets
+texture_path = assets/textures
+fullscreen = true
+beat_sensitivity = 1.0
+hard_cut_sensitivity = 1.0
+hard_cuts_enabled = false
+cache_size_mb = 100
 )";
 
     std::string config_path = test_dir + "/config.inp";
@@ -108,18 +134,28 @@ preferred_genre = Electronic
     // Test syncing mixes to database
     manager.syncMixesWithDatabase(test_mixes);
 
-    EXPECT_TRUE(manager.isSuccess());
-    EXPECT_TRUE(manager.getLastError().empty());
+    // Verify mixes are in database
+    auto db_mixes = manager.getDownloadedMixes();
+    EXPECT_EQ(db_mixes.size(), 3);
 }
 
 TEST_F(MixManagerIntegrationTest, GetRandomMix) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = )" + std::to_string(Constants::DEFAULT_CACHE_SIZE_MB) +
-                                 R"(
 auto_download = true
 preferred_genre = Electronic
+crossfade_enabled = true
+crossfade_duration_ms = 3000
+audio_device = 0
+show_fps = false
+preset_path = assets/presets
+texture_path = assets/textures
+fullscreen = true
+beat_sensitivity = 1.0
+hard_cut_sensitivity = 1.0
+hard_cuts_enabled = false
+cache_size_mb = 100
 )";
 
     std::string config_path = test_dir + "/config.inp";
@@ -132,30 +168,33 @@ preferred_genre = Electronic
     MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
 
-    Mix random_mix = manager.getRandomMix();
+    // Test getting random mix
+    Mix random_mix = manager.getRandomMix("");
+    EXPECT_FALSE(random_mix.id.empty());
 
-    EXPECT_TRUE(random_mix.id.empty());
-    EXPECT_TRUE(random_mix.title.empty());
-    EXPECT_TRUE(random_mix.artist.empty());
-
-    std::set<std::string> selected_ids;
-    for (int i = 0; i < 10; ++i) {
-        Mix mix = manager.getRandomMix();
-        if (!mix.id.empty()) {
-            selected_ids.insert(mix.id);
-        }
-    }
-
-    EXPECT_EQ(selected_ids.size(), 0);
+    // Test getting random mix with exclusion
+    Mix excluded_mix = manager.getRandomMix(random_mix.id);
+    EXPECT_FALSE(excluded_mix.id.empty());
+    EXPECT_NE(excluded_mix.id, random_mix.id);
 }
 
 TEST_F(MixManagerIntegrationTest, GetSmartRandomMix) {
     // Create test config file
     std::string config_content = R"(
 mixes_url = )" + yaml_path + R"(
-cache_size_mb = 100
 auto_download = true
 preferred_genre = Electronic
+crossfade_enabled = true
+crossfade_duration_ms = 3000
+audio_device = 0
+show_fps = false
+preset_path = assets/presets
+texture_path = assets/textures
+fullscreen = true
+beat_sensitivity = 1.0
+hard_cut_sensitivity = 1.0
+hard_cuts_enabled = false
+cache_size_mb = 100
 )";
 
     std::string config_path = test_dir + "/config.inp";
@@ -166,22 +205,20 @@ preferred_genre = Electronic
 
     // Set up test data
     test_mixes[0].is_favorite = true;
-    test_mixes[0].play_count = Constants::TEST_PLAY_COUNT_SMALL;
+    test_mixes[0].play_count = 10;
     test_mixes[1].is_favorite = false;
     test_mixes[1].play_count = 1;
     test_mixes[2].is_favorite = false;
-    test_mixes[2].play_count = Constants::TEST_PLAY_COUNT_LARGE;
+    test_mixes[2].play_count = 20;
 
     ASSERT_TRUE(TestFixtures::createTestYamlFile(yaml_path, test_mixes));
 
     MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
 
-    Mix smart_mix = manager.getSmartRandomMix();
-
-    EXPECT_TRUE(smart_mix.id.empty());
-    EXPECT_TRUE(smart_mix.title.empty());
-    EXPECT_TRUE(smart_mix.artist.empty());
+    // Test smart random mix selection
+    Mix smart_mix = manager.getSmartRandomMix("", "Electronic");
+    EXPECT_FALSE(smart_mix.id.empty());
 }
 
 TEST_F(MixManagerIntegrationTest, GetSmartRandomMixWithExclusion) {
