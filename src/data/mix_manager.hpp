@@ -48,12 +48,9 @@ public:
     std::vector<Mix> getFavoriteMixes();
 
     // High-level mix selection with smart logic
-    Mix getSmartRandomMix();
-    Mix getSmartRandomMix(const std::string& exclude_mix_id);
     Mix getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre);
 
     // Convenience methods for common operations
-    Mix getRandomMix();
     Mix getRandomMix(const std::string& exclude_mix_id);
     Mix getRandomMixByGenre(const std::string& genre);
     Mix getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id);

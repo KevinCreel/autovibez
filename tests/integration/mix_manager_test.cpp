@@ -240,7 +240,7 @@ preferred_genre = Electronic
     MixManager manager(db_path, test_dir);
     ASSERT_TRUE(manager.initialize());
 
-    Mix smart_mix = manager.getSmartRandomMix("test_mix_0");
+    Mix smart_mix = manager.getSmartRandomMix("test_mix_0", "");
 
     EXPECT_TRUE(smart_mix.id.empty());
 }
@@ -584,7 +584,7 @@ preferred_genre = Electronic
 
     if (available_mixes.size() > 1) {
         Mix excluded_mix = available_mixes[0];
-        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
+        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id, "");
         // This is expected behavior for testing
     }
 }
@@ -628,7 +628,7 @@ preferred_genre = Electronic
 
     if (available_mixes.size() > 1) {
         Mix excluded_mix = available_mixes[0];
-        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
+        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id, "");
         // This is expected behavior for testing
     }
 }
@@ -670,7 +670,7 @@ preferred_genre = Electronic
 
     if (available_mixes.size() > 1) {
         Mix excluded_mix = available_mixes[0];
-        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id);
+        Mix smart_mix = manager.getSmartRandomMix(excluded_mix.id, "");
         // This is expected behavior for testing
     }
 }

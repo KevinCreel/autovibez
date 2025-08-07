@@ -201,7 +201,7 @@ TEST_F(MixDatabaseTest, GetRandomMix) {
     // Test multiple random selections
     std::set<std::string> selected_ids;
     for (int i = 0; i < 10; ++i) {
-        Mix random_mix = db.getRandomMix();
+        Mix random_mix = db.getRandomMix("");
         EXPECT_FALSE(random_mix.id.empty());
         selected_ids.insert(random_mix.id);
     }
@@ -214,7 +214,7 @@ TEST_F(MixDatabaseTest, GetRandomMixEmptyDatabase) {
     MixDatabase db(db_path);
     ASSERT_TRUE(db.initialize());
 
-    Mix random_mix = db.getRandomMix();
+    Mix random_mix = db.getRandomMix("");
 
     EXPECT_TRUE(random_mix.id.empty());
     EXPECT_TRUE(random_mix.title.empty());
@@ -243,7 +243,7 @@ TEST_F(MixDatabaseTest, GetSmartRandomMix) {
     ASSERT_TRUE(db.addMix(high_play_mix));
 
     // Test smart random mix (should prioritize favorites, then least played)
-    Mix smart_mix = db.getSmartRandomMix();
+    Mix smart_mix = db.getSmartRandomMix("", "");
 
     EXPECT_FALSE(smart_mix.id.empty());
     // In a real test, we'd verify the prioritization logic
@@ -265,7 +265,7 @@ TEST_F(MixDatabaseTest, GetSmartRandomMixWithExclusion) {
     }
 
     // Test smart random mix with exclusion
-    Mix smart_mix = db.getSmartRandomMix("test_mix_0");
+    Mix smart_mix = db.getSmartRandomMix("test_mix_0", "");
 
     EXPECT_FALSE(smart_mix.id.empty());
     EXPECT_NE(smart_mix.id, "test_mix_0");

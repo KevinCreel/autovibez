@@ -344,20 +344,6 @@ std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
     return mixes;
 }
 
-Mix MixDatabase::getRandomMix() {
-    // First try to get a random mix that's actually downloaded
-    const char* sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' ORDER BY RANDOM() LIMIT 1";
-    Mix downloaded_mix = executeQueryForSingleMix(sql);
-
-    // If no downloaded mixes found, fall back to any mix
-    if (downloaded_mix.id.empty()) {
-        sql = "SELECT * FROM mixes ORDER BY RANDOM() LIMIT 1";
-        return executeQueryForSingleMix(sql);
-    }
-
-    return downloaded_mix;
-}
-
 Mix MixDatabase::getRandomMix(const std::string& exclude_mix_id) {
     // First try to get a random mix that's actually downloaded (excluding current mix)
     std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != ''";
@@ -406,14 +392,6 @@ Mix MixDatabase::getRandomMix(const std::string& exclude_mix_id) {
     return Mix();
 }
 
-Mix MixDatabase::getSmartRandomMix() {
-    return getSmartRandomMix("");
-}
-
-Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id) {
-    return getSmartRandomMix(exclude_mix_id, "");
-}
-
 Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
     // Get total counts for weighted selection (excluding current mix and preferring downloaded)
     int total_mixes = 0;
@@ -451,7 +429,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
 
     // If no downloaded mixes found, fall back to any mix
     if (total_mixes == 0) {
-        return getRandomMix();
+        return getRandomMix("");
     }
 
     // Calculate probability: prioritize preferred genre, then favorites, then random

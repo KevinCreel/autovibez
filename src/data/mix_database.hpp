@@ -77,10 +77,7 @@ public:
      * @brief Get a random mix
      * @return Random mix, or empty mix if none available
      */
-    Mix getRandomMix();
     Mix getRandomMix(const std::string& exclude_mix_id);
-    Mix getSmartRandomMix();
-    Mix getSmartRandomMix(const std::string& exclude_mix_id);
     Mix getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre);
 
     /**

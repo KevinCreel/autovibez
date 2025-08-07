@@ -26,43 +26,6 @@ using AutoVibez::Audio::MP3Metadata;
 namespace AutoVibez {
 namespace Data {
 
-// URL decode function
-std::string urlDecode(const std::string& encoded) {
-    std::string result;
-    for (size_t i = 0; i < encoded.length(); ++i) {
-        if (encoded[i] == '%' && i + 2 < encoded.length()) {
-            int value;
-            std::string hex = encoded.substr(i + 1, 2);
-            std::istringstream iss(hex);
-            iss >> std::hex >> value;
-            result += static_cast<char>(value);
-            i += 2;
-        } else if (encoded[i] == '+') {
-            result += ' ';
-        } else {
-            result += encoded[i];
-        }
-    }
-    return result;
-}
-
-// Convert seconds to human-readable format (HH:MM:SS)
-std::string formatDuration(int seconds) {
-    int hours = seconds / Constants::SECONDS_PER_HOUR;
-    int minutes = (seconds % Constants::SECONDS_PER_HOUR) / Constants::SECONDS_PER_MINUTE;
-    int secs = seconds % Constants::SECONDS_PER_MINUTE;
-
-    if (hours > 0) {
-        return std::to_string(hours) + StringConstants::TIME_SEPARATOR +
-               (minutes < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") +
-               std::to_string(minutes) + StringConstants::TIME_SEPARATOR +
-               (secs < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") + std::to_string(secs);
-    } else {
-        return std::to_string(minutes) + StringConstants::TIME_SEPARATOR +
-               (secs < Constants::TIME_FORMAT_PADDING ? StringConstants::TIME_PADDING : "") + std::to_string(secs);
-    }
-}
-
 MixManager::MixManager(const std::string& db_path, const std::string& data_dir)
     : db_path(db_path), data_dir(data_dir), success(true) {}
 
@@ -471,10 +434,6 @@ bool MixManager::downloadAndAnalyzeMix(const Mix& mix) {
 }
 
 // Convenience methods for common operations
-Mix MixManager::getRandomMix() {
-    return database ? database->getRandomMix() : Mix();
-}
-
 Mix MixManager::getRandomMix(const std::string& exclude_mix_id) {
     return database ? database->getRandomMix(exclude_mix_id) : Mix();
 }
@@ -555,14 +514,6 @@ Mix MixManager::getPreviousMix(const std::string& current_mix_id) {
 }
 
 // Smart random mix methods
-Mix MixManager::getSmartRandomMix() {
-    return database ? database->getSmartRandomMix() : Mix();
-}
-
-Mix MixManager::getSmartRandomMix(const std::string& exclude_mix_id) {
-    return database ? database->getSmartRandomMix(exclude_mix_id) : Mix();
-}
-
 Mix MixManager::getSmartRandomMix(const std::string& exclude_mix_id, const std::string& preferred_genre) {
     return database ? database->getSmartRandomMix(exclude_mix_id, preferred_genre) : Mix();
 }
