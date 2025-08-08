@@ -78,7 +78,7 @@ bool UrlUtils::isValidUrl(const std::string& url) {
         return false;
     }
 
-    std::regex url_regex(StringConstants::URL_REGEX_PATTERN);
+    static const std::regex url_regex(StringConstants::URL_REGEX_PATTERN);
     return std::regex_match(url, url_regex);
 }
 
