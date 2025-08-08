@@ -32,13 +32,46 @@ MP3Analyzer::~MP3Analyzer() {}
 
 MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     MP3Metadata metadata;
+    clearError();
+
+    // Check if file exists
+    if (!std::filesystem::exists(file_path)) {
+        setError("File does not exist: " + file_path);
+        return metadata;
+    }
+
+    // Check if file is empty or too small to be a valid MP3
+    std::filesystem::path path(file_path);
+    if (std::filesystem::file_size(path) < Constants::MIN_MP3_FILE_SIZE) {
+        setError("File is too small to be a valid MP3: " + file_path);
+        return metadata;
+    }
 
     // Use TagLib to extract metadata
     TagLib::MPEG::File f(file_path.c_str());
     if (!f.isValid()) {
-        setError("Failed to open MP3 file: " + file_path);
+        setError("Invalid or corrupted MP3 file: " + file_path);
         return metadata;
     }
+
+    // Get audio properties to validate it's actually an MP3
+    TagLib::AudioProperties* properties = f.audioProperties();
+    if (!properties) {
+        setError("Unable to read audio properties from file: " + file_path);
+        return metadata;
+    }
+
+    // Basic validation that this is actually an MP3
+    if (properties->length() <= 0) {
+        setError("Invalid MP3 file - no audio data found: " + file_path);
+        return metadata;
+    }
+
+    // Extract audio properties for duration and format info
+    metadata.duration_seconds = properties->length();
+    metadata.bitrate = properties->bitrate();
+    metadata.sample_rate = properties->sampleRate();
+    metadata.channels = properties->channels();
 
     // Get ID3v2 tag (preferred)
     TagLib::ID3v2::Tag* tag = f.ID3v2Tag();
@@ -108,15 +141,6 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
 
     if (metadata.genre.empty()) {
         metadata.genre = StringConstants::DEFAULT_GENRE;
-    }
-
-    // Get audio properties for duration and format info
-    TagLib::AudioProperties* properties = f.audioProperties();
-    if (properties) {
-        metadata.duration_seconds = properties->length();
-        metadata.bitrate = properties->bitrate();
-        metadata.sample_rate = properties->sampleRate();
-        metadata.channels = properties->channels();
     }
 
     // Get file size
