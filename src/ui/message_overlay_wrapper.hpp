@@ -67,6 +67,21 @@ public:
      */
     void setColorTransition(bool enabled);
 
+    /**
+     * @brief Rebuild the font atlas (for ProjectM preset changes)
+     */
+    void rebuildFontAtlas();
+
+    /**
+     * @brief Trigger texture rebinding (for ProjectM preset changes)
+     */
+    void triggerTextureRebind();
+
+    /**
+     * @brief Trigger deferred texture rebinding (for ProjectM preset changes)
+     */
+    void triggerDeferredTextureRebind();
+
 private:
     std::unique_ptr<MessageOverlay> _messageOverlay;
     bool _initialized = false;

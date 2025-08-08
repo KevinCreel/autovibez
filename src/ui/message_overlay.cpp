@@ -59,6 +59,25 @@ void MessageOverlay::render() {
         initializeImGui();
     }
 
+    // Save current OpenGL state and isolate ImGui rendering
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushMatrix();
+
+    // Completely isolate ImGui's texture state
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Use a very simple rendering approach
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Force texture rebinding if needed
+    if (_needsTextureRebind) {
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+        _needsTextureRebind = false;
+    }
+
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -70,6 +89,10 @@ void MessageOverlay::render() {
     // Render ImGui
     ImGui::Render();
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+
+    // Restore OpenGL state
+    glPopMatrix();
+    glPopAttrib();
 }
 
 void MessageOverlay::showMessage(const std::string& content, std::chrono::milliseconds duration) {
@@ -112,6 +135,24 @@ bool MessageOverlay::isTemporarilyHidden() const {
 
 void MessageOverlay::setColorTransition(bool enabled) {
     _useColorTransition = enabled;
+}
+
+void MessageOverlay::rebuildFontAtlas() {
+    if (_imguiReady) {
+        // Ensure we have the OpenGL context
+        SDL_GL_MakeCurrent(_window, _glContext);
+
+        // Rebuild the font atlas using the helper method
+        rebuildFontAtlasInternal();
+    }
+}
+
+void MessageOverlay::triggerTextureRebind() {
+    _needsTextureRebind = true;
+}
+
+void MessageOverlay::triggerDeferredTextureRebind() {
+    _needsDeferredTextureRebind = true;
 }
 
 bool MessageOverlay::isVisible() const {
@@ -235,6 +276,22 @@ ImVec4 MessageOverlay::calculateColorTransition() {
     float b = 0.5f + 0.5f * std::sin(cycle * 2.0f * M_PI + 4.0f * M_PI / 3.0f);
 
     return ImVec4(r, g, b, 1.0f);
+}
+
+void MessageOverlay::rebuildFontAtlasInternal() {
+    // Rebuild the font atlas
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+    io.Fonts->AddFontDefault();
+
+    // Build the font atlas
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+    // This forces ImGui to recreate its font texture
+    ImGui_ImplOpenGL2_DestroyFontsTexture();
+    ImGui_ImplOpenGL2_CreateFontsTexture();
 }
 
 void MessageOverlay::renderMessageBox() {

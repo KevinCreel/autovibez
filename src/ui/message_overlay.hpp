@@ -96,6 +96,21 @@ public:
     void setColorTransition(bool enabled);
 
     /**
+     * @brief Rebuild the font atlas (for ProjectM preset changes)
+     */
+    void rebuildFontAtlas();
+
+    /**
+     * @brief Trigger texture rebinding (for ProjectM preset changes)
+     */
+    void triggerTextureRebind();
+
+    /**
+     * @brief Trigger deferred texture rebinding (for ProjectM preset changes)
+     */
+    void triggerDeferredTextureRebind();
+
+    /**
      * @brief Check if a message is currently visible
      * @return true if message is visible
      */
@@ -171,10 +186,15 @@ private:
     std::chrono::steady_clock::time_point _colorStartTime;
     bool _useColorTransition = false;
 
+    // Texture rebinding for ProjectM preset changes
+    bool _needsTextureRebind = false;          // Add flag for texture rebinding
+    bool _needsDeferredTextureRebind = false;  // Add flag for deferred texture rebinding
+
     void initializeImGui();
     void updateAnimation();
     float calculateCurrentAlpha();
     ImVec4 calculateColorTransition();
+    void rebuildFontAtlasInternal();
     void renderMessageBox();
     ImVec2 calculateMessagePosition();
 };
