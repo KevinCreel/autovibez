@@ -56,16 +56,7 @@ void HelpOverlay::render() {
         // For now, we'll leave it empty and let the app handle it
     }
 
-    // Handle deferred texture rebinding at the start of render cycle
-    if (_needsDeferredTextureRebind) {
-        // Execute the texture rebind
-        if (_imguiReady) {
-            ImGui_ImplOpenGL2_DestroyFontsTexture();
-            ImGui_ImplOpenGL2_CreateFontsTexture();
-        }
 
-        _needsDeferredTextureRebind = false;
-    }
 
     // Lazy initialize ImGui on first render
     if (!_imguiReady) {
@@ -83,13 +74,6 @@ void HelpOverlay::render() {
     // Use a very simple rendering approach
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Force texture rebinding if needed
-    if (_needsTextureRebind) {
-        ImGui_ImplOpenGL2_DestroyFontsTexture();
-        ImGui_ImplOpenGL2_CreateFontsTexture();
-        _needsTextureRebind = false;
-    }
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL2_NewFrame();
@@ -468,24 +452,6 @@ void HelpOverlay::setCursorVisibility(bool visible) {
     }
 }
 
-void HelpOverlay::rebuildFontAtlas() {
-    if (_imguiReady) {
-        // Ensure we have the OpenGL context
-        SDL_GL_MakeCurrent(_window, _glContext);
-
-        // Rebuild the font atlas using the helper method
-        rebuildFontAtlasInternal();
-    }
-}
-
-void HelpOverlay::triggerTextureRebind() {
-    _needsTextureRebind = true;
-}
-
-void HelpOverlay::triggerDeferredTextureRebind() {
-    _needsDeferredTextureRebind = true;
-}
-
 // Dynamic information methods
 void HelpOverlay::setCurrentPreset(const std::string& preset) {
     _currentPreset = preset;
@@ -561,22 +527,6 @@ void HelpOverlay::initializeImGui() {
 
         _imguiReady = true;
     }
-}
-
-void HelpOverlay::rebuildFontAtlasInternal() {
-    // Rebuild the font atlas
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->Clear();
-    io.Fonts->AddFontDefault();
-
-    // Build the font atlas
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-    // This forces ImGui to recreate its font texture
-    ImGui_ImplOpenGL2_DestroyFontsTexture();
-    ImGui_ImplOpenGL2_CreateFontsTexture();
 }
 
 void HelpOverlay::renderStatusLabel(const std::string& label, const std::string& value, const ImVec4& valueColor,

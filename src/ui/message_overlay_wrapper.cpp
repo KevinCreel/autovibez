@@ -58,23 +58,5 @@ void MessageOverlayWrapper::setColorTransition(bool enabled) {
     }
 }
 
-void MessageOverlayWrapper::rebuildFontAtlas() {
-    if (_messageOverlay) {
-        _messageOverlay->rebuildFontAtlas();
-    }
-}
-
-void MessageOverlayWrapper::triggerTextureRebind() {
-    if (_messageOverlay) {
-        _messageOverlay->triggerTextureRebind();
-    }
-}
-
-void MessageOverlayWrapper::triggerDeferredTextureRebind() {
-    if (_messageOverlay) {
-        _messageOverlay->triggerDeferredTextureRebind();
-    }
-}
-
 }  // namespace UI
 }  // namespace AutoVibez

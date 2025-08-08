@@ -33,9 +33,6 @@ public:
     }
     void setCursorVisibility(bool visible);
     void setFullscreenState(bool isFullscreen);
-    void rebuildFontAtlas();              // Add method to rebuild font atlas
-    void triggerTextureRebind();          // Add method to trigger texture rebinding
-    void triggerDeferredTextureRebind();  // Add method for deferred texture rebinding
 
     // Dynamic information methods
     void setCurrentPreset(const std::string& preset);
@@ -59,8 +56,7 @@ private:
     bool _isFullscreen = false;
     bool _initialized = false;
     bool _imguiReady = false;
-    bool _needsTextureRebind = false;          // Add flag for texture rebinding
-    bool _needsDeferredTextureRebind = false;  // Add flag for deferred texture rebinding
+
     SDL_Cursor* _originalCursor = nullptr;
     SDL_Cursor* _blankCursor = nullptr;
 
@@ -97,7 +93,6 @@ private:
     void renderStatusLabel(const std::string& label, const std::string& value, const ImVec4& valueColor,
                            float maxLabelWidth);
     void initializeImGui();
-    void rebuildFontAtlasInternal();
 };
 
 }  // namespace UI
