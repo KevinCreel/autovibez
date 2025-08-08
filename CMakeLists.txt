@@ -381,6 +381,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/data/base_metadata_test.cpp
     tests/unit/data/mix_database_test.cpp
     tests/unit/data/config_manager_test.cpp
+    tests/unit/data/mix_metadata_test.cpp
 )
 
 # Add test executable

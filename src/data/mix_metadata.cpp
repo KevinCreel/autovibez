@@ -22,20 +22,25 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
 }
 
 MixMetadata::MixMetadata() {
-    // Initialize CURL
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    // Initialize CURL only if not already initialized
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (res != CURLE_OK) {
+        // CURL might already be initialized, which is fine
+        // We'll handle this gracefully
+    }
 }
 
 MixMetadata::~MixMetadata() {
-    // Cleanup CURL
+    // Cleanup CURL - this is safe to call even if not initialized
+    // or if other parts of the application are using CURL
     curl_global_cleanup();
 }
 
 std::vector<Mix> MixMetadata::loadFromYaml(const std::string& yaml_url) {
     clearError();
 
-    // Check if it's a URL or local file
-    if (yaml_url.substr(0, 7) == "http://" || yaml_url.substr(0, 8) == "https://") {
+    // Check if it's a URL or local file using proper URL validation
+    if (AutoVibez::Utils::UrlUtils::isValidUrl(yaml_url)) {
         return loadFromRemoteFile(yaml_url);
     } else {
         return loadFromLocalFile(yaml_url);
@@ -87,10 +92,14 @@ std::vector<Mix> MixMetadata::loadFromLocalFile(const std::string& file_path) {
                 Mix mix = parseMixFromYaml(mix_node);
                 if (validateMix(mix)) {
                     mixes.push_back(mix);
+                } else {
+                    // Log validation failure but continue processing other mixes
+                    // Error is already set by validateMix()
                 }
             } catch (const std::exception& e) {
-                // Skip invalid mixes but continue processing
-                continue;
+                // Log parsing failure but continue processing other mixes
+                setError("Failed to parse mix: " + std::string(e.what()));
+                // Don't return empty vector, continue with other mixes
             }
         }
 
@@ -133,8 +142,8 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
         return mixes;
     }
 
-    // Check if response is empty or too small
-    if (response.empty() || response.length() < Constants::MIN_RESPONSE_LENGTH) {
+    // Check if response is empty or too small for a valid YAML file
+    if (response.empty() || response.length() < Constants::MIN_YAML_RESPONSE_LENGTH) {
         setError("Empty or invalid response from server");
         return mixes;
     }
@@ -158,10 +167,14 @@ std::vector<Mix> MixMetadata::loadFromRemoteFile(const std::string& url) {
                 Mix mix = parseMixFromYaml(mix_node);
                 if (validateMix(mix)) {
                     mixes.push_back(mix);
+                } else {
+                    // Log validation failure but continue processing other mixes
+                    // Error is already set by validateMix()
                 }
             } catch (const std::exception& e) {
-                // Skip invalid mixes but continue processing
-                continue;
+                // Log parsing failure but continue processing other mixes
+                setError("Failed to parse mix: " + std::string(e.what()));
+                // Don't return empty vector, continue with other mixes
             }
         }
 

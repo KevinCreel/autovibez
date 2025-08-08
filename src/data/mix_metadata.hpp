@@ -61,12 +61,15 @@ private:
      */
     Mix parseMixFromYaml(const YAML::Node& mix_node);
 
+public:
     /**
      * @brief Validate a mix object
      * @param mix Mix to validate
      * @return True if valid, false otherwise
      */
     bool validateMix(const Mix& mix);
+
+private:
 };
 
 }  // namespace Data

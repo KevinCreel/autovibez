@@ -60,6 +60,7 @@ constexpr int PROGRESS_PERCENTAGE_MAX = 100;
 constexpr int HEX_BASE = 16;
 constexpr int HEX_ALPHA_OFFSET = 10;
 constexpr int MIN_RESPONSE_LENGTH = 10;
+constexpr int MIN_YAML_RESPONSE_LENGTH = 50;  // Minimum valid YAML file size
 
 // UI/Window
 constexpr int DEFAULT_WINDOW_SIZE = 512;
