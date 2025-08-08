@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "imgui_manager.hpp"
+
 namespace AutoVibez {
 namespace UI {
 

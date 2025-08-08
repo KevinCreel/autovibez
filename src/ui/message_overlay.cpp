@@ -57,18 +57,6 @@ void MessageOverlay::render() {
         initializeImGui();
     }
 
-    // Save current OpenGL state and isolate ImGui rendering
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glPushMatrix();
-
-    // Completely isolate ImGui's texture state
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Use a very simple rendering approach
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -80,10 +68,6 @@ void MessageOverlay::render() {
     // Render ImGui
     ImGui::Render();
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-
-    // Restore OpenGL state
-    glPopMatrix();
-    glPopAttrib();
 }
 
 void MessageOverlay::showMessage(const std::string& content, std::chrono::milliseconds duration) {
@@ -170,25 +154,24 @@ void MessageOverlay::initializeImGui() {
         return;
     }
 
-    // Initialize ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    // Use centralized ImGui initialization
+    if (AutoVibez::UI::ImGuiManager::initialize(_window, _glContext)) {
+        // Configure ImGui for this overlay
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
-    ImGui_ImplOpenGL2_Init();
+        // Add default font
+        io.Fonts->AddFontDefault();
+        io.FontGlobalScale = 1.0f;
 
-    // Set up ImGui style
-    ImGui::StyleColorsDark();
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = 8.0f;
-    style.FrameRounding = 4.0f;
-    style.GrabRounding = 4.0f;
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
 
-    _imguiReady = true;
+        // Explicitly create the font texture
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+
+        _imguiReady = true;
+    }
 }
 
 void MessageOverlay::updateAnimation() {

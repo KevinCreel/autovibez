@@ -48,6 +48,7 @@
 // Mix management
 #include "config_manager.hpp"
 #include "help_overlay.hpp"
+#include "imgui_manager.hpp"
 #include "message_overlay_wrapper.hpp"
 #include "mix_downloader.hpp"
 #include "mix_manager.hpp"

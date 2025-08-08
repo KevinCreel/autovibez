@@ -464,30 +464,6 @@ void HelpOverlay::rebuildFontAtlas() {
     }
 }
 
-void HelpOverlay::reinitializeImGui() {
-    // Ensure we have the OpenGL context
-    SDL_GL_MakeCurrent(_window, _glContext);
-
-    // Save current OpenGL state
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glPushMatrix();
-
-    // Shutdown existing ImGui if it exists
-    if (_imguiReady) {
-        ImGui_ImplOpenGL2_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        ImGui::DestroyContext();
-        _imguiReady = false;
-    }
-
-    // Initialize ImGui using the helper method
-    initializeImGui();
-
-    // Restore OpenGL state
-    glPopMatrix();
-    glPopAttrib();
-}
-
 void HelpOverlay::triggerTextureRebind() {
     _needsTextureRebind = true;
 }
@@ -541,42 +517,36 @@ float HelpOverlay::calculateMaxKeyWidth(const std::vector<KeyBinding>& bindings)
 }
 
 void HelpOverlay::initializeImGui() {
-    // Ensure we have the OpenGL context
-    SDL_GL_MakeCurrent(_window, _glContext);
+    // Use centralized ImGui initialization
+    if (AutoVibez::UI::ImGuiManager::initialize(_window, _glContext)) {
+        // Configure ImGui for this overlay
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup Dear ImGui context with minimal configuration
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        // Add default font with explicit atlas building
+        io.Fonts->AddFontDefault();
+        io.FontGlobalScale = 1.0f;
 
-    // Add default font with explicit atlas building
-    io.Fonts->AddFontDefault();
-    io.FontGlobalScale = 1.0f;
+        // Explicitly build the font atlas
+        unsigned char* pixels;
+        int width, height;
+        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    // Explicitly build the font atlas
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+        // Set INI file path to user config directory
+        std::string configDir = getConfigDirectory();
+        if (!configDir.empty()) {
+            std::string iniPath = configDir + "/imgui.ini";
+            io.IniFilename = strdup(iniPath.c_str());
+        }
 
-    // Set INI file path to user config directory
-    std::string configDir = getConfigDirectory();
-    if (!configDir.empty()) {
-        std::string iniPath = configDir + "/imgui.ini";
-        io.IniFilename = strdup(iniPath.c_str());
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+
+        // Explicitly create the font texture
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+
+        _imguiReady = true;
     }
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(_window, _glContext);
-    ImGui_ImplOpenGL2_Init();
-
-    // Explicitly create the font texture
-    ImGui_ImplOpenGL2_CreateFontsTexture();
-
-    _imguiReady = true;
 }
 
 void HelpOverlay::rebuildFontAtlasInternal() {

@@ -268,7 +268,6 @@ bool MixManager::playMix(const Mix& mix) {
         updatePlayStats(mix.id);
         setLocalPath(mix.id, local_path);
 
-        // Show success message with mix info
         if (_messageOverlay) {
             std::string message = mix.artist + " - " + mix.title;
             _messageOverlay->showMessage(message, std::chrono::milliseconds(20000));

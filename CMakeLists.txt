@@ -154,6 +154,8 @@ add_executable(autovibez
     src/core/preset_manager.hpp
     src/ui/help_overlay.cpp
     src/ui/help_overlay.hpp
+    src/ui/imgui_manager.cpp
+    src/ui/imgui_manager.hpp
     src/ui/message_overlay.cpp
     src/ui/message_overlay.hpp
     src/ui/message_overlay_wrapper.cpp
@@ -445,6 +447,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/ui/message_overlay_test.cpp
     
     # Source files needed for tests (autovibez_app.cpp depends on these)
+    src/ui/imgui_manager.cpp
+    src/ui/imgui_manager.hpp
     src/ui/message_overlay.cpp
     src/ui/message_overlay.hpp
     src/ui/message_overlay_wrapper.cpp

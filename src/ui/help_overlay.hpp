@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "imgui_manager.hpp"
 #include "mix_metadata.hpp"
 
 namespace AutoVibez {
@@ -29,8 +30,7 @@ public:
     }
     void setCursorVisibility(bool visible);
     void setFullscreenState(bool isFullscreen);
-    void rebuildFontAtlas();              // Add method to rebuild font atlas
-    void reinitializeImGui();             // Add method to completely reinitialize ImGui
+    void rebuildFontAtlas();  // Add method to rebuild font atlas
     void triggerTextureRebind();          // Add method to trigger texture rebinding
     void triggerDeferredTextureRebind();  // Add method for deferred texture rebinding
 
