@@ -261,4 +261,3 @@ void ConfigFile::add(string key, const T& value) {
 
 }  // namespace Data
 }  // namespace AutoVibez
-

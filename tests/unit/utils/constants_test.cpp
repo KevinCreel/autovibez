@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "utils/constants.hpp"
+
+#include <gtest/gtest.h>
 
 TEST(ConstantsTest, AudioConstants) {
     // Test critical audio constants

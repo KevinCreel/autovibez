@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "utils/string_utils.hpp"
+
+#include <gtest/gtest.h>
 
 TEST(StringUtilsTest, TrimRemovesWhitespace) {
     // Test basic trimming
