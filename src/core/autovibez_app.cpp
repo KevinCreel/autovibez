@@ -358,7 +358,10 @@ void AutoVibezApp::handleWindowEvent(const SDL_Event& evt) {
     switch (evt.window.event) {
         case SDL_WINDOWEVENT_RESIZED:
         case SDL_WINDOWEVENT_SIZE_CHANGED:
-            resizeWindow(w, h);
+            // Ensure positive values before casting to unsigned
+            if (w > 0 && h > 0) {
+                resizeWindow(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
+            }
             break;
         default:
             break;
