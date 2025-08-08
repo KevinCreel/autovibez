@@ -1,13 +1,14 @@
 #pragma once
 
-#include <sqlite3.h>
-
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "database_interfaces.hpp"
 #include "error_handler.hpp"
 #include "mix_metadata.hpp"
+#include "mix_validator.hpp"
+#include "smart_mix_selector.hpp"
 
 namespace AutoVibez {
 namespace Data {
@@ -18,6 +19,7 @@ namespace Data {
 class MixDatabase : public AutoVibez::Utils::ErrorHandler {
 public:
     explicit MixDatabase(const std::string& db_path);
+    explicit MixDatabase(std::shared_ptr<IDatabaseConnection> connection);
     ~MixDatabase();
 
     /**
@@ -104,12 +106,6 @@ public:
     Mix getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
     Mix getRandomMixByArtist(const std::string& artist);
     Mix getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id);
-    Mix getRandomFavoriteMix();
-    Mix getRandomFavoriteMix(const std::string& exclude_mix_id);
-    Mix getRandomAvailableMix();
-    Mix getRandomAvailableMix(const std::string& exclude_mix_id);
-    Mix getRandomAvailableMixByGenre(const std::string& genre);
-    Mix getRandomAvailableMixByGenre(const std::string& genre, const std::string& exclude_mix_id);
 
     /**
      * @brief Toggle favorite status for a mix
@@ -176,15 +172,10 @@ public:
     }
 
 private:
-    sqlite3* db;
-    std::string db_path;
-
-    /**
-     * @brief Validate mix data before database operations
-     * @param mix Mix to validate
-     * @return True if valid, false otherwise
-     */
-    bool validateMixData(const Mix& mix);
+    std::shared_ptr<IDatabaseConnection> connection_;
+    std::unique_ptr<MixValidator> validator_;
+    std::unique_ptr<SmartMixSelector> selector_;
+    std::string db_path_;
 
     /**
      * @brief Create database tables
@@ -193,39 +184,35 @@ private:
     bool createTables();
 
     /**
-     * @brief Convert a mix to database row
-     * @param mix Mix to convert
-     * @return SQL insert statement
-     */
-    std::string mixToInsertSql(const Mix& mix);
-
-    /**
      * @brief Convert database row to mix
-     * @param stmt SQLite statement
+     * @param stmt Database statement
      * @return Mix object
      */
-    Mix rowToMix(sqlite3_stmt* stmt);
+    Mix statementToMix(IStatement& stmt);
 
     /**
-     * @brief Execute a SQL query
-     * @param sql SQL query to execute
-     * @return True if successful, false otherwise
-     */
-    bool executeQuery(const std::string& sql);
-
-    /**
-     * @brief Execute a SQL query and return vector of mixes
-     * @param sql SQL query to execute
+     * @brief Execute a query and return vector of mixes
+     * @param query SQL query to execute
+     * @param parameters Query parameters
      * @return Vector of mixes
      */
-    std::vector<Mix> executeQueryForMixes(const char* sql);
+    std::vector<Mix> executeQueryForMixes(const std::string& query, const std::vector<std::string>& parameters = {});
 
     /**
-     * @brief Execute a SQL query and return single mix
-     * @param sql SQL query to execute
+     * @brief Execute a query and return single mix
+     * @param query SQL query to execute
+     * @param parameters Query parameters
      * @return Mix object
      */
-    Mix executeQueryForSingleMix(const char* sql);
+    Mix executeQueryForSingleMix(const std::string& query, const std::vector<std::string>& parameters = {});
+
+    /**
+     * @brief Bind mix data to prepared statement
+     * @param stmt Statement to bind to
+     * @param mix Mix data to bind
+     * @param include_id Whether to bind ID (for updates vs inserts)
+     */
+    void bindMixToStatement(IStatement& stmt, const Mix& mix, bool include_id = false);
 };
 
 }  // namespace Data

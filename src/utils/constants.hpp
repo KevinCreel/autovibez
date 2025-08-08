@@ -85,6 +85,24 @@ constexpr int CURSOR_HOTSPOT = 0;
 // Smart selection probabilities (percentages)
 constexpr int PREFERRED_GENRE_PROBABILITY = 80;  // 80% chance to prefer genre
 constexpr int FAVORITE_MIX_PROBABILITY = 70;     // 70% chance to prefer favorites
+
+// Database column indices (0-based)
+namespace DatabaseColumns {
+constexpr int MIX_ID = 0;
+constexpr int MIX_TITLE = 1;
+constexpr int MIX_ARTIST = 2;
+constexpr int MIX_GENRE = 3;
+constexpr int MIX_URL = 4;
+constexpr int MIX_LOCAL_PATH = 5;
+constexpr int MIX_DURATION_SECONDS = 6;
+constexpr int MIX_TAGS = 7;
+constexpr int MIX_DESCRIPTION = 8;
+constexpr int MIX_DATE_ADDED = 9;
+constexpr int MIX_LAST_PLAYED = 10;
+constexpr int MIX_PLAY_COUNT = 11;
+constexpr int MIX_IS_FAVORITE = 12;
+constexpr int MIX_IS_DELETED = 13;
+}  // namespace DatabaseColumns
 }  // namespace Constants
 
 // String constants
@@ -136,6 +154,64 @@ constexpr const char* TIME_PADDING = "0";
 constexpr const char* DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S";
 constexpr const char* DATE_FORMAT = "%Y-%m-%d";
 constexpr const char* TIME_FORMAT = "%H:%M:%S";
+
+// Database SQL queries
+constexpr const char* CREATE_MIXES_TABLE = R"(
+    CREATE TABLE IF NOT EXISTS mixes (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        artist TEXT NOT NULL,
+        genre TEXT NOT NULL,
+        url TEXT NOT NULL,
+        local_path TEXT,
+        duration_seconds INTEGER NOT NULL,
+        tags TEXT,
+        description TEXT,
+        date_added DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_played DATETIME,
+        play_count INTEGER DEFAULT 0,
+        is_favorite BOOLEAN DEFAULT 0,
+        is_deleted BOOLEAN DEFAULT 0
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_mixes_genre ON mixes(genre);
+    CREATE INDEX IF NOT EXISTS idx_mixes_artist ON mixes(artist);
+    CREATE INDEX IF NOT EXISTS idx_mixes_favorite ON mixes(is_favorite);
+    CREATE INDEX IF NOT EXISTS idx_mixes_last_played ON mixes(last_played);
+    CREATE INDEX IF NOT EXISTS idx_mixes_deleted ON mixes(is_deleted);
+)";
+
+constexpr const char* ALTER_ADD_IS_DELETED = "ALTER TABLE mixes ADD COLUMN is_deleted BOOLEAN DEFAULT 0;";
+
+constexpr const char* INSERT_OR_REPLACE_MIX = R"(
+    INSERT OR REPLACE INTO mixes 
+    (id, title, artist, genre, url, local_path, duration_seconds, tags, description, date_added, last_played, play_count, is_favorite, is_deleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+)";
+
+constexpr const char* UPDATE_MIX = R"(
+    UPDATE mixes SET title = ?, artist = ?, genre = ?, url = ?, local_path = ?, duration_seconds = ?, tags = ?, 
+    description = ?, date_added = ?, last_played = ?, play_count = ?, is_favorite = ?, is_deleted = ? WHERE id = ?
+)";
+
+constexpr const char* SELECT_MIX_BY_ID = "SELECT * FROM mixes WHERE id = ?";
+constexpr const char* SELECT_ALL_MIXES = "SELECT * FROM mixes WHERE is_deleted = 0 ORDER BY title";
+constexpr const char* SELECT_MIXES_BY_GENRE =
+    "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE AND is_deleted = 0 ORDER BY title";
+constexpr const char* SELECT_MIXES_BY_ARTIST = "SELECT * FROM mixes WHERE artist = ? AND is_deleted = 0 ORDER BY title";
+constexpr const char* SELECT_DOWNLOADED_MIXES =
+    "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' AND is_deleted = 0 ORDER BY title";
+constexpr const char* SELECT_FAVORITE_MIXES =
+    "SELECT * FROM mixes WHERE is_favorite = 1 AND is_deleted = 0 ORDER BY title";
+constexpr const char* SELECT_RECENTLY_PLAYED =
+    "SELECT * FROM mixes WHERE last_played IS NOT NULL AND is_deleted = 0 ORDER BY last_played DESC LIMIT ?";
+
+constexpr const char* DELETE_MIX = "DELETE FROM mixes WHERE id = ?";
+constexpr const char* SOFT_DELETE_MIX = "UPDATE mixes SET is_deleted = 1 WHERE id = ?";
+constexpr const char* TOGGLE_FAVORITE = "UPDATE mixes SET is_favorite = NOT is_favorite WHERE id = ?";
+constexpr const char* UPDATE_PLAY_STATS =
+    "UPDATE mixes SET play_count = play_count + 1, last_played = CURRENT_TIMESTAMP WHERE id = ?";
+constexpr const char* SET_LOCAL_PATH = "UPDATE mixes SET local_path = ? WHERE id = ?";
 
 // Regex patterns
 constexpr const char* URL_REGEX_PATTERN = R"((https?|ftp)://[^\s/$.?#].[^\s]*)";

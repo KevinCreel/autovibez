@@ -131,6 +131,7 @@ add_executable(autovibez
     # Data management
     src/data/config_manager.cpp
     src/data/config_manager.hpp
+    src/data/database_interfaces.hpp
     src/data/mix_database.cpp
     src/data/mix_database.hpp
     src/data/mix_downloader.cpp
@@ -139,6 +140,14 @@ add_executable(autovibez
     src/data/mix_manager.hpp
     src/data/mix_metadata.cpp
     src/data/mix_metadata.hpp
+    src/data/mix_query_builder.cpp
+    src/data/mix_query_builder.hpp
+    src/data/mix_validator.cpp
+    src/data/mix_validator.hpp
+    src/data/smart_mix_selector.cpp
+    src/data/smart_mix_selector.hpp
+    src/data/sqlite_connection.cpp
+    src/data/sqlite_connection.hpp
     
     # User interface
     src/core/preset_manager.cpp
@@ -166,6 +175,8 @@ add_executable(autovibez
     src/utils/path_utils.hpp
     src/utils/string_utils.cpp
     src/utils/string_utils.hpp
+    src/utils/json_utils.cpp
+    src/utils/json_utils.hpp
     src/data/base_metadata.hpp
 )
 
@@ -330,6 +341,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     # Data management
     src/data/config_manager.cpp
     src/data/config_manager.hpp
+    src/data/database_interfaces.hpp
     src/data/mix_database.cpp
     src/data/mix_database.hpp
     src/data/mix_downloader.cpp
@@ -338,6 +350,14 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/data/mix_manager.hpp
     src/data/mix_metadata.cpp
     src/data/mix_metadata.hpp
+    src/data/mix_query_builder.cpp
+    src/data/mix_query_builder.hpp
+    src/data/mix_validator.cpp
+    src/data/mix_validator.hpp
+    src/data/smart_mix_selector.cpp
+    src/data/smart_mix_selector.hpp
+    src/data/sqlite_connection.cpp
+    src/data/sqlite_connection.hpp
     
     # User interface
     src/core/preset_manager.cpp
@@ -365,6 +385,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/path_utils.hpp
     src/utils/string_utils.cpp
     src/utils/string_utils.hpp
+    src/utils/json_utils.cpp
+    src/utils/json_utils.hpp
     src/data/base_metadata.hpp
     
     # Unit tests - Utils
@@ -376,6 +398,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/utils/datetime_utils_test.cpp
     tests/unit/utils/constants_test.cpp
     tests/unit/utils/error_handler_test.cpp
+    tests/unit/utils/json_utils_test.cpp
     
     # Unit tests - Data
     tests/unit/data/base_metadata_test.cpp
@@ -384,6 +407,10 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/data/mix_metadata_test.cpp
     tests/unit/data/mix_downloader_test.cpp
     tests/unit/data/mix_manager_test.cpp
+    tests/unit/data/mix_validator_test.cpp
+    tests/unit/data/mix_query_builder_test.cpp
+    tests/unit/data/sqlite_connection_test.cpp
+    tests/unit/data/smart_mix_selector_test.cpp
     
     # Unit tests - Audio
     tests/unit/audio/mp3_analyzer_test.cpp

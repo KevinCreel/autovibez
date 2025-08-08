@@ -18,7 +18,8 @@ MixDatabase::MixDatabase(const std::string& db_path) : db_path_(db_path) {
     // Smart selector will be created after connection is initialized
 }
 
-MixDatabase::MixDatabase(std::shared_ptr<IDatabaseConnection> connection) : connection_(connection) {
+MixDatabase::MixDatabase(std::shared_ptr<IDatabaseConnection> connection) 
+    : connection_(connection) {
     validator_ = std::make_unique<MixValidator>();
     // Smart selector will be created after connection is initialized
 }
@@ -218,7 +219,7 @@ bool MixDatabase::softDeleteMix(const std::string& mix_id) {
     }
 
     stmt->bindText(1, mix_id);
-
+    
     if (!stmt->execute()) {
         setError("Failed to soft delete mix: " + connection_->getLastError());
         return false;
@@ -247,7 +248,7 @@ bool MixDatabase::setLocalPath(const std::string& mix_id, const std::string& loc
 
     stmt->bindText(1, local_path);
     stmt->bindText(2, mix_id);
-
+    
     return stmt->execute();
 }
 
@@ -283,9 +284,9 @@ std::vector<Mix> MixDatabase::getRecentlyPlayed(int limit) {
 
 Mix MixDatabase::statementToMix(IStatement& stmt) {
     Mix mix;
-
+    
     using namespace Constants::DatabaseColumns;
-
+    
     if (!stmt.isNull(MIX_ID)) {
         mix.id = stmt.getText(MIX_ID);
     }
@@ -304,14 +305,14 @@ Mix MixDatabase::statementToMix(IStatement& stmt) {
     if (!stmt.isNull(MIX_LOCAL_PATH)) {
         mix.local_path = stmt.getText(MIX_LOCAL_PATH);
     }
-
+    
     mix.duration_seconds = stmt.getInt(MIX_DURATION_SECONDS);
-
+    
     if (!stmt.isNull(MIX_TAGS)) {
         std::string tags_json = stmt.getText(MIX_TAGS);
         mix.tags = AutoVibez::Utils::JsonUtils::jsonArrayToVector(tags_json);
     }
-
+    
     if (!stmt.isNull(MIX_DESCRIPTION)) {
         mix.description = stmt.getText(MIX_DESCRIPTION);
     }
@@ -321,16 +322,15 @@ Mix MixDatabase::statementToMix(IStatement& stmt) {
     if (!stmt.isNull(MIX_LAST_PLAYED)) {
         mix.last_played = stmt.getText(MIX_LAST_PLAYED);
     }
-
+    
     mix.play_count = stmt.getInt(MIX_PLAY_COUNT);
     mix.is_favorite = stmt.getInt(MIX_IS_FAVORITE) != 0;
     mix.is_deleted = stmt.getInt(MIX_IS_DELETED) != 0;
-
+    
     return mix;
 }
 
-std::vector<Mix> MixDatabase::executeQueryForMixes(const std::string& query,
-                                                   const std::vector<std::string>& parameters) {
+std::vector<Mix> MixDatabase::executeQueryForMixes(const std::string& query, const std::vector<std::string>& parameters) {
     auto stmt = connection_->prepare(query);
     if (!stmt) {
         setError("Failed to prepare statement: " + connection_->getLastError());
@@ -376,14 +376,14 @@ Mix MixDatabase::executeQueryForSingleMix(const std::string& query, const std::v
 
 void MixDatabase::bindMixToStatement(IStatement& stmt, const Mix& mix, bool include_id) {
     std::string tags_json = AutoVibez::Utils::JsonUtils::vectorToJsonArray(mix.tags);
-
+    
     int param_index = 1;
-
+    
     if (!include_id) {
         // For INSERT statements, bind all fields
         stmt.bindText(param_index++, mix.id);
     }
-
+    
     stmt.bindText(param_index++, mix.title);
     stmt.bindText(param_index++, mix.artist);
     stmt.bindText(param_index++, mix.genre);
@@ -397,7 +397,7 @@ void MixDatabase::bindMixToStatement(IStatement& stmt, const Mix& mix, bool incl
     stmt.bindInt(param_index++, mix.play_count);
     stmt.bindInt(param_index++, mix.is_favorite ? 1 : 0);
     stmt.bindInt(param_index++, mix.is_deleted ? 1 : 0);
-
+    
     if (include_id) {
         // For UPDATE statements, bind ID at the end
         stmt.bindText(param_index, mix.id);
