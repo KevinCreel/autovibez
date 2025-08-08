@@ -313,48 +313,46 @@ int SmartMixSelector::getRandomPercentage() const {
 Mix SmartMixSelector::statementToMix(IStatement& stmt) const {
     Mix mix;
 
-    // Use the constants for column indices
-    using namespace Constants::DatabaseColumns;
-
-    if (!stmt.isNull(MIX_ID)) {
-        mix.id = stmt.getText(MIX_ID);
+    // Use column names instead of magic number indices
+    if (!stmt.isNull("id")) {
+        mix.id = stmt.getText("id");
     }
-    if (!stmt.isNull(MIX_TITLE)) {
-        mix.title = stmt.getText(MIX_TITLE);
+    if (!stmt.isNull("title")) {
+        mix.title = stmt.getText("title");
     }
-    if (!stmt.isNull(MIX_ARTIST)) {
-        mix.artist = stmt.getText(MIX_ARTIST);
+    if (!stmt.isNull("artist")) {
+        mix.artist = stmt.getText("artist");
     }
-    if (!stmt.isNull(MIX_GENRE)) {
-        mix.genre = stmt.getText(MIX_GENRE);
+    if (!stmt.isNull("genre")) {
+        mix.genre = stmt.getText("genre");
     }
-    if (!stmt.isNull(MIX_URL)) {
-        mix.url = stmt.getText(MIX_URL);
+    if (!stmt.isNull("url")) {
+        mix.url = stmt.getText("url");
     }
-    if (!stmt.isNull(MIX_LOCAL_PATH)) {
-        mix.local_path = stmt.getText(MIX_LOCAL_PATH);
+    if (!stmt.isNull("local_path")) {
+        mix.local_path = stmt.getText("local_path");
     }
 
-    mix.duration_seconds = stmt.getInt(MIX_DURATION_SECONDS);
+    mix.duration_seconds = stmt.getInt("duration_seconds");
 
-    if (!stmt.isNull(MIX_TAGS)) {
-        std::string tags_json = stmt.getText(MIX_TAGS);
+    if (!stmt.isNull("tags")) {
+        std::string tags_json = stmt.getText("tags");
         mix.tags = AutoVibez::Utils::JsonUtils::jsonArrayToVector(tags_json);
     }
 
-    if (!stmt.isNull(MIX_DESCRIPTION)) {
-        mix.description = stmt.getText(MIX_DESCRIPTION);
+    if (!stmt.isNull("description")) {
+        mix.description = stmt.getText("description");
     }
-    if (!stmt.isNull(MIX_DATE_ADDED)) {
-        mix.date_added = stmt.getText(MIX_DATE_ADDED);
+    if (!stmt.isNull("date_added")) {
+        mix.date_added = stmt.getText("date_added");
     }
-    if (!stmt.isNull(MIX_LAST_PLAYED)) {
-        mix.last_played = stmt.getText(MIX_LAST_PLAYED);
+    if (!stmt.isNull("last_played")) {
+        mix.last_played = stmt.getText("last_played");
     }
 
-    mix.play_count = stmt.getInt(MIX_PLAY_COUNT);
-    mix.is_favorite = stmt.getInt(MIX_IS_FAVORITE) != 0;
-    mix.is_deleted = stmt.getInt(MIX_IS_DELETED) != 0;
+    mix.play_count = stmt.getInt("play_count");
+    mix.is_favorite = stmt.getInt("is_favorite") != 0;
+    mix.is_deleted = stmt.getInt("is_deleted") != 0;
 
     return mix;
 }

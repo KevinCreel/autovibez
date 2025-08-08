@@ -76,10 +76,10 @@ protected:
 
 TEST_F(MixQueryBuilderTest, BasicSelectQueryReturnsAllMixes) {
     std::string query = builder->select().build();
-    
+
     // Query should be valid
     EXPECT_TRUE(canExecuteQuery(query));
-    
+
     // Basic select returns ALL mixes including deleted ones (4 total)
     EXPECT_EQ(countResults(query), 4);
 }
@@ -113,7 +113,7 @@ TEST_F(MixQueryBuilderTest, OrderByTitleSortsResultsAlphabetically) {
 
     std::vector<std::string> titles;
     while (stmt->step()) {
-        titles.push_back(stmt->getText(1));  // title column
+        titles.push_back(stmt->getText("title"));  // title column
     }
 
     // Should get results in alphabetical order
@@ -130,8 +130,8 @@ TEST_F(MixQueryBuilderTest, OrderByLastPlayedDescendingShowsRecentFirst) {
 
     std::vector<std::string> last_played_dates;
     while (stmt->step()) {
-        if (!stmt->isNull(10)) {  // last_played column
-            last_played_dates.push_back(stmt->getText(10));
+        if (!stmt->isNull("last_played")) {  // last_played column
+            last_played_dates.push_back(stmt->getText("last_played"));
         }
     }
 

@@ -67,16 +67,31 @@ std::string SqliteStatement::getText(int column) const {
     return text ? reinterpret_cast<const char*>(text) : "";
 }
 
+std::string SqliteStatement::getText(const std::string& columnName) const {
+    int column = getColumnIndex(columnName);
+    return column >= 0 ? getText(column) : "";
+}
+
 int SqliteStatement::getInt(int column) const {
     if (!stmt_ || !executed_)
         return 0;
     return sqlite3_column_int(stmt_, column);
 }
 
+int SqliteStatement::getInt(const std::string& columnName) const {
+    int column = getColumnIndex(columnName);
+    return column >= 0 ? getInt(column) : 0;
+}
+
 bool SqliteStatement::isNull(int column) const {
     if (!stmt_ || !executed_)
         return true;
     return sqlite3_column_type(stmt_, column) == SQLITE_NULL;
+}
+
+bool SqliteStatement::isNull(const std::string& columnName) const {
+    int column = getColumnIndex(columnName);
+    return column >= 0 ? isNull(column) : true;
 }
 
 int SqliteStatement::getChanges() const {
@@ -88,6 +103,22 @@ void SqliteStatement::cleanup() {
         sqlite3_finalize(stmt_);
         stmt_ = nullptr;
     }
+}
+
+int SqliteStatement::getColumnIndex(const std::string& columnName) const {
+    if (!stmt_) {
+        return -1;
+    }
+
+    int columnCount = sqlite3_column_count(stmt_);
+    for (int i = 0; i < columnCount; ++i) {
+        const char* name = sqlite3_column_name(stmt_, i);
+        if (name && columnName == name) {
+            return i;
+        }
+    }
+
+    return -1;  // Column not found
 }
 
 // SqliteConnection Implementation

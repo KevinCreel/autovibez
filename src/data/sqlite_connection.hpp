@@ -29,8 +29,11 @@ public:
     bool execute() override;
     bool step() override;
     std::string getText(int column) const override;
+    std::string getText(const std::string& columnName) const override;
     int getInt(int column) const override;
+    int getInt(const std::string& columnName) const override;
     bool isNull(int column) const override;
+    bool isNull(const std::string& columnName) const override;
     int getChanges() const override;
 
 private:
@@ -39,6 +42,7 @@ private:
     bool executed_;
 
     void cleanup();
+    int getColumnIndex(const std::string& columnName) const;
 };
 
 /**

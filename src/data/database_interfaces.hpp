@@ -41,25 +41,46 @@ public:
     virtual bool step() = 0;
 
     /**
-     * @brief Get text from current row
+     * @brief Get text from current row by column index
      * @param column Column index (0-based)
      * @return Text value or empty string if null
      */
     virtual std::string getText(int column) const = 0;
 
     /**
-     * @brief Get integer from current row
+     * @brief Get text from current row by column name
+     * @param columnName Column name
+     * @return Text value or empty string if null
+     */
+    virtual std::string getText(const std::string& columnName) const = 0;
+
+    /**
+     * @brief Get integer from current row by column index
      * @param column Column index (0-based)
      * @return Integer value or 0 if null
      */
     virtual int getInt(int column) const = 0;
 
     /**
-     * @brief Check if column value is null
+     * @brief Get integer from current row by column name
+     * @param columnName Column name
+     * @return Integer value or 0 if null
+     */
+    virtual int getInt(const std::string& columnName) const = 0;
+
+    /**
+     * @brief Check if column value is null by column index
      * @param column Column index (0-based)
      * @return True if null, false otherwise
      */
     virtual bool isNull(int column) const = 0;
+
+    /**
+     * @brief Check if column value is null by column name
+     * @param columnName Column name
+     * @return True if null, false otherwise
+     */
+    virtual bool isNull(const std::string& columnName) const = 0;
 
     /**
      * @brief Get number of rows affected by last operation

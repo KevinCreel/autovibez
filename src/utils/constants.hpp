@@ -86,23 +86,7 @@ constexpr int CURSOR_HOTSPOT = 0;
 constexpr int PREFERRED_GENRE_PROBABILITY = 80;  // 80% chance to prefer genre
 constexpr int FAVORITE_MIX_PROBABILITY = 70;     // 70% chance to prefer favorites
 
-// Database column indices (0-based)
-namespace DatabaseColumns {
-constexpr int MIX_ID = 0;
-constexpr int MIX_TITLE = 1;
-constexpr int MIX_ARTIST = 2;
-constexpr int MIX_GENRE = 3;
-constexpr int MIX_URL = 4;
-constexpr int MIX_LOCAL_PATH = 5;
-constexpr int MIX_DURATION_SECONDS = 6;
-constexpr int MIX_TAGS = 7;
-constexpr int MIX_DESCRIPTION = 8;
-constexpr int MIX_DATE_ADDED = 9;
-constexpr int MIX_LAST_PLAYED = 10;
-constexpr int MIX_PLAY_COUNT = 11;
-constexpr int MIX_IS_FAVORITE = 12;
-constexpr int MIX_IS_DELETED = 13;
-}  // namespace DatabaseColumns
+// DatabaseColumns constants removed - now using column name-based access
 }  // namespace Constants
 
 // String constants
