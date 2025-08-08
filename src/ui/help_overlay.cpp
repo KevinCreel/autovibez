@@ -194,20 +194,10 @@ void HelpOverlay::render() {
 
     ImGui::PopStyleColor();
 
+    // Mix Management Section
     ImGui::Spacing();
     ImGui::Spacing();
     ImGui::Spacing();
-
-    // Decorative line
-    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.0f, 1.0f, 0.8f, 0.6f));
-    ImGui::Separator();
-    ImGui::PopStyleColor();
-
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
-
-    // Mix Management Section with improved styling
     std::vector<KeyBinding> mixManagementBindings = {
         {"Left/Right", "Previous/Next mix"},   {"F", "Toggle favorite"},
         {"L", "Toggle favorites filter"},      {"G", "Play random mix in current genre"},
@@ -215,13 +205,19 @@ void HelpOverlay::render() {
     renderKeyBindingSection("MIX MANAGEMENT", mixManagementBindings, ImVec4(1.0f, 0.6f, 0.0f, 1.0f),
                             ImVec4(1.0f, 0.6f, 0.0f, 0.4f));
 
-    // Audio Controls Section with improved styling
+    // Audio Controls Section
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
     std::vector<KeyBinding> audioControlBindings = {
         {"M", "Mute/Unmute audio"}, {"Up/Down", "Volume up/down"}, {"Tab", "Cycle through audio devices"}};
     renderKeyBindingSection("AUDIO CONTROLS", audioControlBindings, ImVec4(0.4f, 0.8f, 1.0f, 1.0f),
                             ImVec4(0.4f, 0.8f, 1.0f, 0.4f));
 
-    // Visualizer Controls Section with improved styling
+    // Visualizer Controls Section
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
     std::vector<KeyBinding> visualizerControlBindings = {{"H", "Toggle this help overlay"},
                                                          {"F11", "Toggle fullscreen mode"},
                                                          {"R", "Load random preset"},
@@ -230,22 +226,16 @@ void HelpOverlay::render() {
     renderKeyBindingSection("VISUALIZER CONTROLS", visualizerControlBindings, ImVec4(0.8f, 0.4f, 1.0f, 1.0f),
                             ImVec4(0.8f, 0.4f, 1.0f, 0.4f));
 
-    // Application Section with improved styling
+    // Application Section
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
     std::vector<KeyBinding> applicationBindings = {{"Ctrl+Q", "Quit application"}};
     renderKeyBindingSection("APPLICATION", applicationBindings, ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
                             ImVec4(1.0f, 0.4f, 0.4f, 0.4f));
 
     // Mix Table Section (always shown if data is available)
     if (!_mixTableData.empty()) {
-        ImGui::Spacing();
-        ImGui::Spacing();
-        ImGui::Spacing();
-
-        // Decorative line
-        ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 0.4f, 0.4f, 0.6f));
-        ImGui::Separator();
-        ImGui::PopStyleColor();
-
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::Spacing();
@@ -662,15 +652,6 @@ void HelpOverlay::renderKeyBindingSection(const std::string& sectionTitle, const
     for (const auto& binding : bindings) {
         renderKeyBindingAligned(binding.key, binding.description, maxKeyWidth);
     }
-    ImGui::PopStyleColor();
-
-    ImGui::Spacing();
-    ImGui::Spacing();
-    ImGui::Spacing();
-
-    // Decorative line
-    ImGui::PushStyleColor(ImGuiCol_Separator, separatorColor);
-    ImGui::Separator();
     ImGui::PopStyleColor();
 
     ImGui::Spacing();
