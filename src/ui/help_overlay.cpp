@@ -197,10 +197,13 @@ void HelpOverlay::render() {
     ImGui::Spacing();
     ImGui::Spacing();
     ImGui::Spacing();
-    std::vector<KeyBinding> mixManagementBindings = {
-        {"Left/Right", "Previous/Next mix"},   {"F", "Toggle favorite"},
-        {"L", "Toggle favorites filter"},      {"G", "Play random mix in current genre"},
-        {"Shift+G", "Switch to random genre"}, {"SPACE", "Pause/Resume playback"}};
+    std::vector<KeyBinding> mixManagementBindings = {{"Left/Right", "Previous/Next mix"},
+                                                     {"F", "Toggle favorite"},
+                                                     {"D", "Delete current mix"},
+                                                     {"L", "Toggle favorites filter"},
+                                                     {"G", "Play random mix in current genre"},
+                                                     {"Shift+G", "Switch to random genre"},
+                                                     {"SPACE", "Pause/Resume playback"}};
     renderKeyBindingSection("MIX MANAGEMENT", mixManagementBindings, ImVec4(1.0f, 0.6f, 0.0f, 1.0f),
                             ImVec4(1.0f, 0.6f, 0.0f, 0.4f));
 

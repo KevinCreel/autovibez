@@ -119,6 +119,13 @@ public:
     bool toggleFavorite(const std::string& mix_id);
 
     /**
+     * @brief Soft delete a mix (mark as deleted without removing from database)
+     * @param mix_id Mix ID
+     * @return True if successful, false otherwise
+     */
+    bool softDeleteMix(const std::string& mix_id);
+
+    /**
      * @brief Update play count and last played time
      * @param mix_id Mix ID
      * @return True if successful, false otherwise

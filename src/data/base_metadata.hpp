@@ -27,11 +27,12 @@ struct BaseMetadata {
     std::string last_played;        ///< Date when last played
     int play_count;                 ///< Number of times played
     bool is_favorite;               ///< Whether track is marked as favorite
+    bool is_deleted;                ///< Whether track is soft deleted
 
     /**
      * @brief Default constructor initializes all fields
      */
-    BaseMetadata() : duration_seconds(0), play_count(0), is_favorite(false) {}
+    BaseMetadata() : duration_seconds(0), play_count(0), is_favorite(false), is_deleted(false) {}
 
     /**
      * @brief Virtual destructor for proper inheritance

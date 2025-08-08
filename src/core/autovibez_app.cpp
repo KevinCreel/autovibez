@@ -728,6 +728,19 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
             }
             return;
 
+        case SDLK_d:
+            // D: Soft delete current mix
+            if (!_currentMix.id.empty()) {
+                _mixManager->softDeleteMix(_currentMix.id);
+                // Skip to next mix since current one is now deleted
+                Mix nextMix = _mixManager->getNextMix(_currentMix.id);
+                if (!nextMix.id.empty()) {
+                    _mixManager->downloadAndPlayMix(nextMix);
+                    _currentMix = nextMix;
+                }
+            }
+            return;
+
         case SDLK_l:
             // L: Toggle mix table filter when help overlay is visible
             if (_helpOverlay && _helpOverlay->isVisible()) {

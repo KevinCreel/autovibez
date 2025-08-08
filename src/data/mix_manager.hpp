@@ -74,6 +74,7 @@ public:
 
     // User data update methods
     bool toggleFavorite(const std::string& mix_id);
+    bool softDeleteMix(const std::string& mix_id);
     bool updatePlayStats(const std::string& mix_id);
     bool setLocalPath(const std::string& mix_id, const std::string& local_path);
 

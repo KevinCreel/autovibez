@@ -491,6 +491,10 @@ bool MixManager::toggleFavorite(const std::string& mix_id) {
     return database ? database->toggleFavorite(mix_id) : false;
 }
 
+bool MixManager::softDeleteMix(const std::string& mix_id) {
+    return database ? database->softDeleteMix(mix_id) : false;
+}
+
 bool MixManager::updatePlayStats(const std::string& mix_id) {
     return database ? database->updatePlayStats(mix_id) : false;
 }

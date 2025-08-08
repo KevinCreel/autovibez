@@ -48,14 +48,24 @@ bool MixDatabase::createTables() {
             date_added DATETIME DEFAULT CURRENT_TIMESTAMP,
             last_played DATETIME,
             play_count INTEGER DEFAULT 0,
-            is_favorite BOOLEAN DEFAULT 0
+            is_favorite BOOLEAN DEFAULT 0,
+            is_deleted BOOLEAN DEFAULT 0
         );
         
         CREATE INDEX IF NOT EXISTS idx_mixes_genre ON mixes(genre);
         CREATE INDEX IF NOT EXISTS idx_mixes_artist ON mixes(artist);
         CREATE INDEX IF NOT EXISTS idx_mixes_favorite ON mixes(is_favorite);
         CREATE INDEX IF NOT EXISTS idx_mixes_last_played ON mixes(last_played);
+        CREATE INDEX IF NOT EXISTS idx_mixes_deleted ON mixes(is_deleted);
     )";
+
+    // Add the is_deleted column to existing tables if it doesn't exist
+    const char* alter_sql = R"(
+        ALTER TABLE mixes ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
+    )";
+
+    // Try to add the column (will fail silently if column already exists)
+    sqlite3_exec(db, alter_sql, nullptr, nullptr, nullptr);
 
     return executeQuery(sql);
 }
@@ -91,8 +101,8 @@ bool MixDatabase::addMix(const Mix& mix) {
 
     const char* sql = R"(
         INSERT OR REPLACE INTO mixes 
-        (id, title, artist, genre, url, local_path, duration_seconds, tags, description, date_added, last_played, play_count, is_favorite)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, title, artist, genre, url, local_path, duration_seconds, tags, description, date_added, last_played, play_count, is_favorite, is_deleted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     )";
 
     sqlite3_stmt* stmt;
@@ -124,6 +134,7 @@ bool MixDatabase::addMix(const Mix& mix) {
     sqlite3_bind_text(stmt, 11, mix.last_played.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 12, mix.play_count);
     sqlite3_bind_int(stmt, 13, mix.is_favorite ? 1 : 0);
+    sqlite3_bind_int(stmt, 14, mix.is_deleted ? 1 : 0);
 
     rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -143,7 +154,8 @@ bool MixDatabase::updateMix(const Mix& mix) {
 
     const char* sql =
         "UPDATE mixes SET title = ?, artist = ?, genre = ?, url = ?, local_path = ?, duration_seconds = ?, tags = ?, "
-        "description = ?, date_added = ?, last_played = ?, play_count = ?, is_favorite = ? WHERE id = ?";
+        "description = ?, date_added = ?, last_played = ?, play_count = ?, is_favorite = ?, is_deleted = ? WHERE id = "
+        "?";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
@@ -172,7 +184,8 @@ bool MixDatabase::updateMix(const Mix& mix) {
     sqlite3_bind_text(stmt, 10, mix.last_played.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 11, mix.play_count);
     sqlite3_bind_int(stmt, 12, mix.is_favorite ? 1 : 0);
-    sqlite3_bind_text(stmt, 13, mix.id.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 13, mix.is_deleted ? 1 : 0);
+    sqlite3_bind_text(stmt, 14, mix.id.c_str(), -1, SQLITE_STATIC);
 
     rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -241,7 +254,7 @@ Mix MixDatabase::getMixById(const std::string& id) {
 }
 
 std::vector<Mix> MixDatabase::getAllMixes() {
-    const char* sql = "SELECT * FROM mixes ORDER BY title";
+    const char* sql = "SELECT * FROM mixes WHERE is_deleted = 0 ORDER BY title";
     return executeQueryForMixes(sql);
 }
 
@@ -251,7 +264,8 @@ std::vector<Mix> MixDatabase::getMixesByGenre(const std::string& genre) {
         return std::vector<Mix>();
     }
 
-    const char* sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE ORDER BY title";
+    const char* sql =
+        "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE AND is_deleted = 0 ORDER BY title";
 
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -276,7 +290,7 @@ std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
         return std::vector<Mix>();
     }
 
-    const char* sql = "SELECT * FROM mixes WHERE artist = ? ORDER BY title";
+    const char* sql = "SELECT * FROM mixes WHERE artist = ? AND is_deleted = 0 ORDER BY title";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
@@ -298,7 +312,7 @@ std::vector<Mix> MixDatabase::getMixesByArtist(const std::string& artist) {
 
 Mix MixDatabase::getRandomMix(const std::string& exclude_mix_id) {
     // First try to get a random mix that's actually downloaded (excluding current mix)
-    std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != ''";
+    std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' AND is_deleted = 0";
     if (!exclude_mix_id.empty()) {
         sql += " AND id != ?";
     }
@@ -321,9 +335,9 @@ Mix MixDatabase::getRandomMix(const std::string& exclude_mix_id) {
         }
     }
 
-    sql = "SELECT * FROM mixes";
+    sql = "SELECT * FROM mixes WHERE is_deleted = 0";
     if (!exclude_mix_id.empty()) {
-        sql += " WHERE id != ?";
+        sql += " AND id != ?";
     }
     sql += " ORDER BY RANDOM() LIMIT 1";
 
@@ -352,7 +366,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
     if (!preferred_genre.empty()) {
         count_sql += ", SUM(CASE WHEN genre COLLATE NOCASE = ? COLLATE NOCASE THEN 1 ELSE 0 END) as preferred";
     }
-    count_sql += " FROM mixes WHERE local_path IS NOT NULL AND local_path != ''";
+    count_sql += " FROM mixes WHERE local_path IS NOT NULL AND local_path != '' AND is_deleted = 0";
     if (!exclude_mix_id.empty()) {
         count_sql += " AND id != ?";
     }
@@ -391,6 +405,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
             SELECT * FROM mixes 
             WHERE genre COLLATE NOCASE = ? COLLATE NOCASE
             AND local_path IS NOT NULL AND local_path != ''
+            AND is_deleted = 0
         )";
         if (!exclude_mix_id.empty()) {
             sql += " AND id != ?";
@@ -429,6 +444,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
             SELECT * FROM mixes 
             WHERE is_favorite = 1
             AND local_path IS NOT NULL AND local_path != ''
+            AND is_deleted = 0
         )";
         if (!exclude_mix_id.empty()) {
             sql += " AND id != ?";
@@ -460,7 +476,7 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
         }
     }
 
-    std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != ''";
+    std::string sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' AND is_deleted = 0";
     if (!exclude_mix_id.empty()) {
         sql += " AND id != ?";
     }
@@ -482,9 +498,9 @@ Mix MixDatabase::getSmartRandomMix(const std::string& exclude_mix_id, const std:
         }
     }
 
-    sql = "SELECT * FROM mixes";
+    sql = "SELECT * FROM mixes WHERE is_deleted = 0";
     if (!exclude_mix_id.empty()) {
-        sql += " WHERE id != ?";
+        sql += " AND id != ?";
     }
     sql += " ORDER BY RANDOM() LIMIT 1";
 
@@ -511,9 +527,9 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
 
     std::string sql;
     if (current_mix_id.empty()) {
-        sql = "SELECT * FROM mixes ORDER BY id LIMIT 1";
+        sql = "SELECT * FROM mixes WHERE is_deleted = 0 ORDER BY id LIMIT 1";
     } else {
-        sql = "SELECT * FROM mixes WHERE id > ? ORDER BY id LIMIT 1";
+        sql = "SELECT * FROM mixes WHERE id > ? AND is_deleted = 0 ORDER BY id LIMIT 1";
     }
 
     sqlite3_stmt* stmt;
@@ -531,7 +547,7 @@ Mix MixDatabase::getNextMix(const std::string& current_mix_id) {
         result = rowToMix(stmt);
     } else {
         sqlite3_finalize(stmt);
-        sql = "SELECT * FROM mixes ORDER BY id LIMIT 1";
+        sql = "SELECT * FROM mixes WHERE is_deleted = 0 ORDER BY id LIMIT 1";
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 result = rowToMix(stmt);
@@ -552,10 +568,10 @@ Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
     std::string sql;
     if (current_mix_id.empty()) {
         // Get last mix
-        sql = "SELECT * FROM mixes ORDER BY id DESC LIMIT 1";
+        sql = "SELECT * FROM mixes WHERE is_deleted = 0 ORDER BY id DESC LIMIT 1";
     } else {
         // Get previous mix before current
-        sql = "SELECT * FROM mixes WHERE id < ? ORDER BY id DESC LIMIT 1";
+        sql = "SELECT * FROM mixes WHERE id < ? AND is_deleted = 0 ORDER BY id DESC LIMIT 1";
     }
 
     sqlite3_stmt* stmt;
@@ -573,7 +589,7 @@ Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
         result = rowToMix(stmt);
     } else {
         sqlite3_finalize(stmt);
-        sql = "SELECT * FROM mixes ORDER BY id DESC LIMIT 1";
+        sql = "SELECT * FROM mixes WHERE is_deleted = 0 ORDER BY id DESC LIMIT 1";
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 result = rowToMix(stmt);
@@ -586,7 +602,9 @@ Mix MixDatabase::getPreviousMix(const std::string& current_mix_id) {
 }
 
 Mix MixDatabase::getRandomMixByGenre(const std::string& genre) {
-    const char* sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE ORDER BY RANDOM() LIMIT 1";
+    const char* sql =
+        "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE AND is_deleted = 0 ORDER BY RANDOM() LIMIT "
+        "1";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
@@ -604,7 +622,7 @@ Mix MixDatabase::getRandomMixByGenre(const std::string& genre) {
 }
 
 Mix MixDatabase::getRandomMixByGenre(const std::string& genre, const std::string& exclude_mix_id) {
-    std::string sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE";
+    std::string sql = "SELECT * FROM mixes WHERE genre COLLATE NOCASE = ? COLLATE NOCASE AND is_deleted = 0";
     if (!exclude_mix_id.empty()) {
         sql += " AND id != ?";
     }
@@ -630,7 +648,9 @@ Mix MixDatabase::getRandomMixByGenre(const std::string& genre, const std::string
 }
 
 Mix MixDatabase::getRandomMixByArtist(const std::string& artist) {
-    const char* sql = "SELECT * FROM mixes WHERE artist COLLATE NOCASE = ? COLLATE NOCASE ORDER BY RANDOM() LIMIT 1";
+    const char* sql =
+        "SELECT * FROM mixes WHERE artist COLLATE NOCASE = ? COLLATE NOCASE AND is_deleted = 0 ORDER BY RANDOM() LIMIT "
+        "1";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
@@ -648,7 +668,7 @@ Mix MixDatabase::getRandomMixByArtist(const std::string& artist) {
 }
 
 Mix MixDatabase::getRandomMixByArtist(const std::string& artist, const std::string& exclude_mix_id) {
-    std::string sql = "SELECT * FROM mixes WHERE artist COLLATE NOCASE = ? COLLATE NOCASE";
+    std::string sql = "SELECT * FROM mixes WHERE artist COLLATE NOCASE = ? COLLATE NOCASE AND is_deleted = 0";
     if (!exclude_mix_id.empty()) {
         sql += " AND id != ?";
     }
@@ -675,6 +695,24 @@ Mix MixDatabase::getRandomMixByArtist(const std::string& artist, const std::stri
 
 bool MixDatabase::toggleFavorite(const std::string& mix_id) {
     const char* sql = "UPDATE mixes SET is_favorite = NOT is_favorite WHERE id = ?";
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        setError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
+        return false;
+    }
+
+    sqlite3_bind_text(stmt, 1, mix_id.c_str(), -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    return rc == SQLITE_DONE;
+}
+
+bool MixDatabase::softDeleteMix(const std::string& mix_id) {
+    const char* sql = "UPDATE mixes SET is_deleted = 1 WHERE id = ?";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
@@ -729,17 +767,19 @@ bool MixDatabase::setLocalPath(const std::string& mix_id, const std::string& loc
 }
 
 std::vector<Mix> MixDatabase::getDownloadedMixes() {
-    const char* sql = "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' ORDER BY title";
+    const char* sql =
+        "SELECT * FROM mixes WHERE local_path IS NOT NULL AND local_path != '' AND is_deleted = 0 ORDER BY title";
     return executeQueryForMixes(sql);
 }
 
 std::vector<Mix> MixDatabase::getFavoriteMixes() {
-    const char* sql = "SELECT * FROM mixes WHERE is_favorite = 1 ORDER BY title";
+    const char* sql = "SELECT * FROM mixes WHERE is_favorite = 1 AND is_deleted = 0 ORDER BY title";
     return executeQueryForMixes(sql);
 }
 
 std::vector<Mix> MixDatabase::getRecentlyPlayed(int limit) {
-    const char* sql = "SELECT * FROM mixes WHERE last_played IS NOT NULL ORDER BY last_played DESC LIMIT ?";
+    const char* sql =
+        "SELECT * FROM mixes WHERE last_played IS NOT NULL AND is_deleted = 0 ORDER BY last_played DESC LIMIT ?";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
@@ -830,6 +870,7 @@ Mix MixDatabase::rowToMix(sqlite3_stmt* stmt) {
 
     mix.play_count = sqlite3_column_int(stmt, 11);
     mix.is_favorite = sqlite3_column_int(stmt, 12) != 0;
+    mix.is_deleted = sqlite3_column_int(stmt, 13) != 0;
 
     return mix;
 }
