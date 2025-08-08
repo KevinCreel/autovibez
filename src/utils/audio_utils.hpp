@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <fstream>
 
 namespace AutoVibez {
 namespace Utils {
@@ -24,6 +25,22 @@ private:
      * @return True if file exists and is readable
      */
     static bool fileExists(const std::string& file_path);
+    
+    /**
+     * @brief Check if the file contains valid MP3 frames
+     * @param file Open file stream to check
+     * @param start_offset Offset to start checking from
+     * @return True if valid MP3 frames found
+     */
+    static bool hasValidMP3Frames(std::ifstream& file, size_t start_offset);
+    
+    /**
+     * @brief Validate MP3 frame header
+     * @param data Pointer to frame header data
+     * @param available_bytes Number of bytes available
+     * @return True if frame header is valid
+     */
+    static bool isValidMP3FrameHeader(const char* data, size_t available_bytes);
 };
 
 }  // namespace Utils

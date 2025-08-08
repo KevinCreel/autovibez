@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <regex>
 #include <sstream>
+#include <ctime>
 
 #include "constants.hpp"
 
@@ -16,7 +17,8 @@ std::string DateTimeUtils::getCurrentDateTime() {
 
 std::string DateTimeUtils::formatDateTime(const std::chrono::system_clock::time_point& time) {
     auto time_t = std::chrono::system_clock::to_time_t(time);
-    auto tm = *std::localtime(&time_t);
+    std::tm tm;
+    localtime_r(&time_t, &tm);
 
     std::stringstream ss;
     ss << std::put_time(&tm, StringConstants::DATETIME_FORMAT);
@@ -26,7 +28,8 @@ std::string DateTimeUtils::formatDateTime(const std::chrono::system_clock::time_
 std::string DateTimeUtils::getCurrentDate() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
-    auto tm = *std::localtime(&time_t);
+    std::tm tm;
+    localtime_r(&time_t, &tm);
 
     std::stringstream ss;
     ss << std::put_time(&tm, StringConstants::DATE_FORMAT);
@@ -36,7 +39,8 @@ std::string DateTimeUtils::getCurrentDate() {
 std::string DateTimeUtils::getCurrentTime() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
-    auto tm = *std::localtime(&time_t);
+    std::tm tm;
+    localtime_r(&time_t, &tm);
 
     std::stringstream ss;
     ss << std::put_time(&tm, StringConstants::TIME_FORMAT);

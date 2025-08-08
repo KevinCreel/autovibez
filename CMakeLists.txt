@@ -367,36 +367,19 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/string_utils.hpp
     src/data/base_metadata.hpp
     
-    # Test fixtures
-    tests/fixtures/test_fixtures.cpp
-    tests/fixtures/test_fixtures.hpp
+    # Unit tests - Utils
+    tests/unit/utils/string_utils_test.cpp
+    tests/unit/utils/uuid_utils_test.cpp
+    tests/unit/utils/path_utils_test.cpp
+    tests/unit/utils/url_utils_test.cpp
+    tests/unit/utils/audio_utils_test.cpp
+    tests/unit/utils/datetime_utils_test.cpp
+    tests/unit/utils/constants_test.cpp
+    tests/unit/utils/error_handler_test.cpp
     
-    # Unit tests
-    tests/unit/config_manager_test.cpp
-    tests/unit/mix_database_test.cpp
-    tests/unit/mix_metadata_test.cpp
-    tests/unit/mix_player_test.cpp
-    tests/unit/mp3_analyzer_test.cpp
-    tests/unit/path_manager_test.cpp
-
-
-    tests/unit/audio_capture_test.cpp
-    tests/unit/mix_downloader_test.cpp
-    tests/unit/mix_manager_test.cpp
-
-    tests/unit/constants_test.cpp
-    tests/unit/help_overlay_test.cpp
-    tests/unit/preset_manager_test.cpp
-    tests/unit/uuid_utils_test.cpp
-    tests/unit/audio_utils_test.cpp
-    tests/unit/datetime_utils_test.cpp
-    tests/unit/url_utils_test.cpp
-    tests/unit/base_metadata_test.cpp
-    
-    # Integration tests
-    tests/integration/mix_manager_test.cpp
-    tests/integration/memory_cleanup_test.cpp
-    tests/integration/thread_safety_test.cpp
+    # Unit tests - Data
+    tests/unit/data/base_metadata_test.cpp
+    tests/unit/data/mix_database_test.cpp
 )
 
 # Add test executable

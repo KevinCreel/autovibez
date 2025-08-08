@@ -183,7 +183,7 @@ Mix MixMetadata::parseMixFromYaml(const YAML::Node& mix_node) {
         // Simple URL string format
         mix.url = mix_node.as<std::string>();
         // Generate ID from URL
-        mix.id = AutoVibez::Utils::UuidUtils::generateIdFromUrl(mix.url);
+        mix.id = AutoVibez::Utils::HashIdUtils::generateIdFromUrl(mix.url);
         // Extract original filename from URL
         mix.original_filename = AutoVibez::Utils::UrlUtils::extractFilenameFromUrl(mix.url);
     } else {

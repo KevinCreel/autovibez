@@ -848,7 +848,7 @@ bool MixManager::cleanupInconsistentIds() {
         // Check if this mix has a URL (should always have one)
         if (!mix.url.empty()) {
             // Generate the correct ID from URL
-            std::string correct_id = AutoVibez::Utils::UuidUtils::generateIdFromUrl(mix.url);
+            std::string correct_id = AutoVibez::Utils::HashIdUtils::generateIdFromUrl(mix.url);
 
             // If the current ID doesn't match the correct one, update it
             if (mix.id != correct_id) {

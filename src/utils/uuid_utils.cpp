@@ -8,25 +8,25 @@
 namespace AutoVibez {
 namespace Utils {
 
-std::string UuidUtils::generateIdFromUrl(const std::string& url) {
-    // Generate a deterministic UUID v5 based on URL hash
+std::string HashIdUtils::generateIdFromUrl(const std::string& url) {
+    // Generate a deterministic hash-based ID from URL
     std::hash<std::string> hasher;
     size_t hash = hasher(url);
-    return generateUuidFromHash(hash);
+    return generateIdFromHash(hash);
 }
 
-std::string UuidUtils::generateUuidFromHash(size_t hash) {
-    // Use the hash to generate a deterministic UUID v5 (name-based)
-    unsigned char uuid_bytes[Constants::UUID_BYTE_LENGTH];
+std::string HashIdUtils::generateIdFromHash(size_t hash) {
+    // Use the hash to generate a deterministic hash-based ID in UUID format
+    unsigned char id_bytes[Constants::UUID_BYTE_LENGTH];
 
     // Use first 16 bytes of hash (or repeat if shorter)
     for (int i = 0; i < Constants::UUID_BYTE_LENGTH; i++) {
-        uuid_bytes[i] = (hash >> (i % 8 * 8)) & 0xFF;
+        id_bytes[i] = (hash >> (i % 8 * 8)) & 0xFF;
     }
 
-    // Set version (5) and variant bits for deterministic UUID
-    uuid_bytes[6] = (uuid_bytes[6] & Constants::UUID_VERSION_MASK) | Constants::UUID_VERSION_5;  // Version 5
-    uuid_bytes[8] = (uuid_bytes[8] & Constants::UUID_VARIANT_MASK) | Constants::UUID_VARIANT_1;  // Variant 1
+    // Set version (5) and variant bits for deterministic ID
+    id_bytes[6] = (id_bytes[6] & Constants::UUID_VERSION_MASK) | Constants::UUID_VERSION_5;  // Version 5
+    id_bytes[8] = (id_bytes[8] & Constants::UUID_VARIANT_MASK) | Constants::UUID_VARIANT_1;  // Variant 1
 
     // Convert to UUID string format
     std::stringstream ss;
@@ -37,7 +37,7 @@ std::string UuidUtils::generateUuidFromHash(size_t hash) {
             i == Constants::UUID_POSITION_4) {
             ss << "-";
         }
-        ss << std::setw(2) << static_cast<int>(uuid_bytes[i]);
+        ss << std::setw(2) << static_cast<int>(id_bytes[i]);
     }
 
     return ss.str();
