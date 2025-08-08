@@ -16,6 +16,8 @@ extern std::chrono::milliseconds mock_fade_out_time;
 extern float mock_current_alpha;
 extern int mock_window_width;
 extern int mock_window_height;
+extern bool mock_temporarily_hidden;
+extern bool mock_color_transition_enabled;
 
 // Mock function implementations
 void mock_init(void* window, void* glContext);
@@ -26,6 +28,9 @@ void mock_hide_message();
 bool mock_is_visible();
 bool mock_is_imgui_ready();
 void mock_set_window_size(int width, int height);
+void mock_set_temporarily_hidden(bool hidden);
+bool mock_is_temporarily_hidden();
+void mock_set_color_transition(bool enabled);
 void* mock_get_default_config();
 void* mock_get_success_config();
 void* mock_get_error_config();
@@ -45,6 +50,8 @@ std::chrono::milliseconds mock_fade_out_time = std::chrono::milliseconds(300);
 float mock_current_alpha = 0.0f;
 int mock_window_width = 800;
 int mock_window_height = 600;
+bool mock_temporarily_hidden = false;
+bool mock_color_transition_enabled = false;
 
 void mock_init(void* window, void* glContext) {
     mock_initialized = true;
@@ -82,6 +89,18 @@ bool mock_is_imgui_ready() {
 void mock_set_window_size(int width, int height) {
     mock_window_width = width;
     mock_window_height = height;
+}
+
+void mock_set_temporarily_hidden(bool hidden) {
+    mock_temporarily_hidden = hidden;
+}
+
+bool mock_is_temporarily_hidden() {
+    return mock_temporarily_hidden;
+}
+
+void mock_set_color_transition(bool enabled) {
+    mock_color_transition_enabled = enabled;
 }
 
 void* mock_get_default_config() {
@@ -279,4 +298,47 @@ TEST_F(MessageOverlayTest, MultipleHideOperations) {
     MockMessageOverlay::mock_hide_message();
     EXPECT_FALSE(MockMessageOverlay::mock_visible);
     EXPECT_EQ(MockMessageOverlay::mock_current_alpha, 0.0f);
+}
+
+TEST_F(MessageOverlayTest, SetTemporarilyHidden) {
+    // Test setting temporarily hidden state
+    MockMessageOverlay::mock_temporarily_hidden = false;
+
+    MockMessageOverlay::mock_set_temporarily_hidden(true);
+    EXPECT_TRUE(MockMessageOverlay::mock_is_temporarily_hidden());
+
+    MockMessageOverlay::mock_set_temporarily_hidden(false);
+    EXPECT_FALSE(MockMessageOverlay::mock_is_temporarily_hidden());
+}
+
+TEST_F(MessageOverlayTest, IsTemporarilyHidden) {
+    // Test getting temporarily hidden state
+    MockMessageOverlay::mock_temporarily_hidden = true;
+    EXPECT_TRUE(MockMessageOverlay::mock_is_temporarily_hidden());
+
+    MockMessageOverlay::mock_temporarily_hidden = false;
+    EXPECT_FALSE(MockMessageOverlay::mock_is_temporarily_hidden());
+}
+
+TEST_F(MessageOverlayTest, SetColorTransition) {
+    // Test setting color transition state
+    MockMessageOverlay::mock_color_transition_enabled = false;
+
+    MockMessageOverlay::mock_set_color_transition(true);
+    EXPECT_TRUE(MockMessageOverlay::mock_color_transition_enabled);
+
+    MockMessageOverlay::mock_set_color_transition(false);
+    EXPECT_FALSE(MockMessageOverlay::mock_color_transition_enabled);
+}
+
+TEST_F(MessageOverlayTest, ColorTransitionStatePersistence) {
+    // Test that color transition state persists correctly
+    MockMessageOverlay::mock_set_color_transition(true);
+    EXPECT_TRUE(MockMessageOverlay::mock_color_transition_enabled);
+
+    MockMessageOverlay::mock_set_color_transition(false);
+    EXPECT_FALSE(MockMessageOverlay::mock_color_transition_enabled);
+
+    MockMessageOverlay::mock_set_color_transition(true);
+    EXPECT_TRUE(MockMessageOverlay::mock_color_transition_enabled);
 }

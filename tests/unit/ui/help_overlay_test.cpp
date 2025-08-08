@@ -17,6 +17,8 @@ bool mock_cursor_visible = true;
 bool mock_is_fullscreen = false;
 bool mock_needs_texture_rebind = false;
 bool mock_needs_deferred_texture_rebind = false;
+bool mock_message_overlay_connected = false;
+bool mock_message_overlay_hidden = false;
 
 // Dynamic information
 std::string current_preset;
@@ -29,6 +31,10 @@ float beat_sensitivity = 0.0f;
 
 // Mix table data
 bool show_favorites_only = false;
+
+// Mock function declarations
+void mock_set_message_overlay(void* messageOverlay);
+void mock_toggle_visibility();
 }  // namespace MockHelpOverlay
 
 class HelpOverlayTest : public ::testing::Test {
@@ -54,6 +60,10 @@ protected:
 
         // Reset mix table data
         MockHelpOverlay::show_favorites_only = false;
+
+        // Reset message overlay state
+        MockHelpOverlay::mock_message_overlay_connected = false;
+        MockHelpOverlay::mock_message_overlay_hidden = false;
     }
 
     void TearDown() override {
@@ -325,4 +335,72 @@ TEST_F(HelpOverlayTest, FilterLogic) {
 
     EXPECT_TRUE(should_show_mix1);
     EXPECT_FALSE(should_show_mix2);
+}
+
+// Mock function implementations
+void MockHelpOverlay::mock_set_message_overlay(void* messageOverlay) {
+    mock_message_overlay_connected = (messageOverlay != nullptr);
+}
+
+void MockHelpOverlay::mock_toggle_visibility() {
+    // Toggle visibility first
+    mock_visible = !mock_visible;
+
+    // Then set message overlay state based on new visibility
+    if (mock_visible) {
+        // Help overlay is now showing - hide message overlay
+        if (mock_message_overlay_connected) {
+            mock_message_overlay_hidden = true;
+        }
+    } else {
+        // Help overlay is now hiding - show message overlay
+        if (mock_message_overlay_connected) {
+            mock_message_overlay_hidden = false;
+        }
+    }
+}
+
+TEST_F(HelpOverlayTest, SetMessageOverlay) {
+    // Test setting message overlay connection
+    MockHelpOverlay::mock_message_overlay_connected = false;
+
+    MockHelpOverlay::mock_set_message_overlay(nullptr);
+    EXPECT_FALSE(MockHelpOverlay::mock_message_overlay_connected);
+
+    MockHelpOverlay::mock_set_message_overlay(reinterpret_cast<void*>(0x1234));
+    EXPECT_TRUE(MockHelpOverlay::mock_message_overlay_connected);
+}
+
+TEST_F(HelpOverlayTest, MessageOverlayCoordination) {
+    // Test message overlay coordination when help overlay toggles
+    MockHelpOverlay::mock_visible = false;
+    MockHelpOverlay::mock_message_overlay_connected = true;
+    MockHelpOverlay::mock_message_overlay_hidden = false;
+
+    // Toggle help overlay on (should hide message overlay)
+    MockHelpOverlay::mock_toggle_visibility();
+    EXPECT_TRUE(MockHelpOverlay::mock_visible);
+    EXPECT_TRUE(MockHelpOverlay::mock_message_overlay_hidden);
+
+    // Toggle help overlay off (should show message overlay)
+    MockHelpOverlay::mock_toggle_visibility();
+    EXPECT_FALSE(MockHelpOverlay::mock_visible);
+    EXPECT_FALSE(MockHelpOverlay::mock_message_overlay_hidden);
+}
+
+TEST_F(HelpOverlayTest, MessageOverlayCoordinationWithoutConnection) {
+    // Test message overlay coordination when no message overlay is connected
+    MockHelpOverlay::mock_visible = false;
+    MockHelpOverlay::mock_message_overlay_connected = false;
+    MockHelpOverlay::mock_message_overlay_hidden = false;
+
+    // Toggle help overlay on (should not affect message overlay)
+    MockHelpOverlay::mock_toggle_visibility();
+    EXPECT_TRUE(MockHelpOverlay::mock_visible);
+    EXPECT_FALSE(MockHelpOverlay::mock_message_overlay_hidden);
+
+    // Toggle help overlay off (should not affect message overlay)
+    MockHelpOverlay::mock_toggle_visibility();
+    EXPECT_FALSE(MockHelpOverlay::mock_visible);
+    EXPECT_FALSE(MockHelpOverlay::mock_message_overlay_hidden);
 }

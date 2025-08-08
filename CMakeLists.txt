@@ -445,6 +445,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     # Unit tests - UI
     tests/unit/ui/help_overlay_test.cpp
     tests/unit/ui/message_overlay_test.cpp
+    tests/unit/ui/message_overlay_wrapper_test.cpp
     
     # Source files needed for tests (autovibez_app.cpp depends on these)
     src/ui/imgui_manager.cpp
