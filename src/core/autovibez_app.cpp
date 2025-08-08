@@ -1,5 +1,7 @@
 #include "autovibez_app.hpp"
 
+#include <backends/imgui_impl_sdl2.h>
+
 #include <filesystem>
 #include <thread>
 #include <vector>
@@ -327,6 +329,15 @@ void AutoVibezApp::resizeWindow(unsigned int width_, unsigned int height_) {
 void AutoVibezApp::pollEvents() {
     SDL_Event evt;
     while (SDL_PollEvent(&evt)) {
+        // Pass events to ImGui when help overlay is visible and ImGui is ready
+        if (_helpOverlay && _helpOverlay->isVisible() && _helpOverlay->isImGuiReady()) {
+            ImGui_ImplSDL2_ProcessEvent(&evt);
+            // For mouse wheel events, let ImGui handle them exclusively when overlay is visible
+            if (evt.type == SDL_MOUSEWHEEL) {
+                continue;
+            }
+        }
+
         switch (evt.type) {
             case SDL_WINDOWEVENT:
                 handleWindowEvent(evt);

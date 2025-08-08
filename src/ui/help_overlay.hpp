@@ -24,6 +24,9 @@ public:
     bool isVisible() const {
         return _visible;
     }
+    bool isImGuiReady() const {
+        return _imguiReady;
+    }
     void setCursorVisibility(bool visible);
     void setFullscreenState(bool isFullscreen);
     void rebuildFontAtlas();              // Add method to rebuild font atlas

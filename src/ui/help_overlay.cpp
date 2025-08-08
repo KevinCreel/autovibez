@@ -114,8 +114,7 @@ void HelpOverlay::render() {
     ImGui::SetNextWindowBgAlpha(0.85f);  // Semi-transparent instead of opaque
 
     ImGui::Begin("AutoVibez Help", nullptr,
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                     ImGuiWindowFlags_NoBringToFrontOnFocus);
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
     // Set larger font size
     ImGui::SetWindowFontScale(1.0f);
