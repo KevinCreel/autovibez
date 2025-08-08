@@ -100,6 +100,16 @@ constexpr const char* UNKNOWN_TRACK = "Unknown Track";
 constexpr const char* DEFAULT_GENRE = "Electronic";
 constexpr const char* MP3_FORMAT = "MP3";
 
+// MixDownloader error messages
+constexpr const char* EMPTY_URL_ERROR = "Mix URL is empty";
+constexpr const char* INVALID_URL_ERROR = "Invalid URL format";
+constexpr const char* CURL_INIT_ERROR = "Failed to initialize CURL";
+constexpr const char* CURL_DOWNLOAD_ERROR = "Download failed";
+constexpr const char* FILE_CREATE_ERROR = "Failed to create local file";
+constexpr const char* FILE_COPY_ERROR = "Failed to copy local file";
+constexpr const char* MP3_ANALYZER_REQUIRED_ERROR = "MP3Analyzer is required for title-based naming";
+constexpr const char* INVALID_MIX_ID_ERROR = "Invalid mix ID format";
+
 // UI strings
 constexpr const char* APP_TITLE = "AutoVibez";
 constexpr const char* LOCKED_INDICATOR = " [locked]";

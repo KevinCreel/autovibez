@@ -382,6 +382,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/data/mix_database_test.cpp
     tests/unit/data/config_manager_test.cpp
     tests/unit/data/mix_metadata_test.cpp
+    tests/unit/data/mix_downloader_test.cpp
     
     # Unit tests - Audio
     tests/unit/audio/mp3_analyzer_test.cpp
