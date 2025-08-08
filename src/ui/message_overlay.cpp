@@ -38,7 +38,7 @@ void MessageOverlay::init(SDL_Window* window, SDL_GLContext glContext) {
 }
 
 void MessageOverlay::render() {
-    if (!_visible) {
+    if (!_visible || _temporarilyHidden) {
         return;
     }
 
@@ -93,6 +93,14 @@ void MessageOverlay::showMessage(const MessageConfig& config) {
 void MessageOverlay::hideMessage() {
     _visible = false;
     _currentAlpha = 0.0f;
+}
+
+void MessageOverlay::setTemporarilyHidden(bool hidden) {
+    _temporarilyHidden = hidden;
+}
+
+bool MessageOverlay::isTemporarilyHidden() const {
+    return _temporarilyHidden;
 }
 
 bool MessageOverlay::isVisible() const {

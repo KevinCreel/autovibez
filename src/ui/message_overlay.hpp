@@ -79,6 +79,17 @@ public:
     void hideMessage();
 
     /**
+     * @brief Temporarily hide the message (for overlay coordination)
+     */
+    void setTemporarilyHidden(bool hidden);
+
+    /**
+     * @brief Check if message is temporarily hidden
+     * @return true if message is temporarily hidden
+     */
+    bool isTemporarilyHidden() const;
+
+    /**
      * @brief Check if a message is currently visible
      * @return true if message is visible
      */
@@ -148,6 +159,7 @@ private:
     // Animation state
     float _currentAlpha = 0.0f;
     float _targetAlpha = 1.0f;
+    bool _temporarilyHidden = false;
 
     void initializeImGui();
     void updateAnimation();

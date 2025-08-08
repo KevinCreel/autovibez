@@ -14,6 +14,9 @@
 namespace AutoVibez {
 namespace UI {
 
+// Forward declaration
+class MessageOverlay;
+
 class HelpOverlay {
 public:
     HelpOverlay();
@@ -30,7 +33,7 @@ public:
     }
     void setCursorVisibility(bool visible);
     void setFullscreenState(bool isFullscreen);
-    void rebuildFontAtlas();  // Add method to rebuild font atlas
+    void rebuildFontAtlas();              // Add method to rebuild font atlas
     void triggerTextureRebind();          // Add method to trigger texture rebinding
     void triggerDeferredTextureRebind();  // Add method for deferred texture rebinding
 
@@ -44,6 +47,9 @@ public:
     // Mix table methods
     void setMixTableData(const std::vector<AutoVibez::Data::Mix>& mixes);
     void toggleMixTableFilter();
+
+    // Message overlay coordination
+    void setMessageOverlay(MessageOverlay* messageOverlay);
 
 private:
     SDL_Window* _window = nullptr;
@@ -74,6 +80,9 @@ private:
     // Alternative rendering
     TTF_Font* _font = nullptr;
     bool _useNativeRendering = false;
+
+    // Message overlay coordination
+    MessageOverlay* _messageOverlay = nullptr;
 
     // Key binding alignment helper
     struct KeyBinding {

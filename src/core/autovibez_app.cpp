@@ -479,6 +479,11 @@ void AutoVibezApp::initMessageOverlay() {
             if (_mixManager) {
                 _mixManager->setMessageOverlay(_messageOverlay.get());
             }
+
+            // Connect help overlay to message overlay for coordination
+            if (_helpOverlay) {
+                _helpOverlay->setMessageOverlay(_messageOverlay->getMessageOverlay());
+            }
         }
     }
 }

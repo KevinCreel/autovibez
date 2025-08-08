@@ -55,6 +55,12 @@ public:
      */
     void setWindowSize(int width, int height);
 
+    /**
+     * @brief Get the underlying MessageOverlay
+     * @return Pointer to the MessageOverlay
+     */
+    MessageOverlay* getMessageOverlay() const;
+
 private:
     std::unique_ptr<MessageOverlay> _messageOverlay;
     bool _initialized = false;

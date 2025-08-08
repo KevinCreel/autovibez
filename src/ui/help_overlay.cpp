@@ -421,16 +421,30 @@ void HelpOverlay::render() {
     glPopAttrib();
 }
 
+void HelpOverlay::setMessageOverlay(MessageOverlay* messageOverlay) {
+    _messageOverlay = messageOverlay;
+}
+
 void HelpOverlay::toggle() {
     _visible = !_visible;
 
     if (_visible) {
+        // Hide message overlay when help overlay is shown
+        if (_messageOverlay) {
+            _messageOverlay->setTemporarilyHidden(true);
+        }
+
         // Only hide cursor in fullscreen mode
         if (_isFullscreen) {
             _cursorWasVisible = SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
             SDL_SetRelativeMouseMode(SDL_TRUE);
         }
     } else {
+        // Show message overlay when help overlay is hidden
+        if (_messageOverlay) {
+            _messageOverlay->setTemporarilyHidden(false);
+        }
+
         // Only restore cursor if we're not in fullscreen mode
         if (!_isFullscreen) {
             SDL_SetRelativeMouseMode(SDL_FALSE);

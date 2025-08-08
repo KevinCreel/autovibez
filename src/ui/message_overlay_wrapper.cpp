@@ -48,5 +48,9 @@ void MessageOverlayWrapper::setWindowSize(int width, int height) {
     }
 }
 
+MessageOverlay* MessageOverlayWrapper::getMessageOverlay() const {
+    return _messageOverlay.get();
+}
+
 }  // namespace UI
 }  // namespace AutoVibez
