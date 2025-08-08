@@ -17,7 +17,7 @@ TEST(DateTimeUtilsTest, GetCurrentDateTime) {
     EXPECT_EQ(datetime.length(), 19);
 
     // Should match the expected datetime pattern (more robust than testing exact positions)
-    std::regex datetimePattern(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})");
+    static const std::regex datetimePattern(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})");
     EXPECT_TRUE(std::regex_match(datetime, datetimePattern));
 
     // Should contain expected separators at correct positions
@@ -34,7 +34,7 @@ TEST(DateTimeUtilsTest, GetCurrentDateTimeConsistency) {
     auto datetime2 = AutoVibez::Utils::DateTimeUtils::getCurrentDateTime();
 
     // Both should have same format
-    std::regex datetimePattern(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})");
+    static const std::regex datetimePattern(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})");
     EXPECT_TRUE(std::regex_match(datetime1, datetimePattern));
     EXPECT_TRUE(std::regex_match(datetime2, datetimePattern));
 

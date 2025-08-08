@@ -21,8 +21,9 @@ TEST(HashIdUtilsTest, GenerateIdFromUrl) {
 
     // Should generate valid UUID format (test behavior, not exact positions)
     EXPECT_EQ(id1.length(), 36);  // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    EXPECT_TRUE(std::regex_match(id1, std::regex(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")));
-    EXPECT_TRUE(std::regex_match(id2, std::regex(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")));
+    static const std::regex uuidPattern(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})");
+    EXPECT_TRUE(std::regex_match(id1, uuidPattern));
+    EXPECT_TRUE(std::regex_match(id2, uuidPattern));
 }
 
 TEST(HashIdUtilsTest, GenerateIdFromUrlEdgeCases) {
@@ -34,20 +35,18 @@ TEST(HashIdUtilsTest, GenerateIdFromUrlEdgeCases) {
     // Should handle empty URL
     auto emptyId = AutoVibez::Utils::HashIdUtils::generateIdFromUrl(emptyUrl);
     EXPECT_EQ(emptyId.length(), 36);
-    EXPECT_TRUE(
-        std::regex_match(emptyId, std::regex(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")));
+    static const std::regex uuidPattern(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})");
+    EXPECT_TRUE(std::regex_match(emptyId, uuidPattern));
 
     // Should handle special characters
     auto specialId = AutoVibez::Utils::HashIdUtils::generateIdFromUrl(specialChars);
     EXPECT_EQ(specialId.length(), 36);
-    EXPECT_TRUE(
-        std::regex_match(specialId, std::regex(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")));
+    EXPECT_TRUE(std::regex_match(specialId, uuidPattern));
 
     // Should handle long URLs
     auto longId = AutoVibez::Utils::HashIdUtils::generateIdFromUrl(longUrl);
     EXPECT_EQ(longId.length(), 36);
-    EXPECT_TRUE(
-        std::regex_match(longId, std::regex(R"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")));
+    EXPECT_TRUE(std::regex_match(longId, uuidPattern));
 
     // Should be deterministic for same input
     auto emptyId2 = AutoVibez::Utils::HashIdUtils::generateIdFromUrl(emptyUrl);

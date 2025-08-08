@@ -66,7 +66,7 @@ std::chrono::system_clock::time_point DateTimeUtils::parseDateTime(const std::st
 
 bool DateTimeUtils::isValidDateTime(const std::string& datetime_str) {
     // Check if string matches "YYYY-MM-DD HH:MM:SS" format
-    std::regex datetime_regex(StringConstants::DATETIME_REGEX_PATTERN);
+    static const std::regex datetime_regex(StringConstants::DATETIME_REGEX_PATTERN);
     return std::regex_match(datetime_str, datetime_regex);
 }
 
