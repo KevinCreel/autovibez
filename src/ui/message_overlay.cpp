@@ -15,11 +15,7 @@ namespace UI {
 MessageOverlay::MessageOverlay() {}
 
 MessageOverlay::~MessageOverlay() {
-    if (_visible && _imguiReady) {
-        ImGui_ImplOpenGL2_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        ImGui::DestroyContext();
-    }
+    // Cleanup handled by ImGuiManager
 }
 
 void MessageOverlay::init(SDL_Window* window, SDL_GLContext glContext) {

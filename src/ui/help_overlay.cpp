@@ -13,12 +13,6 @@ namespace UI {
 HelpOverlay::HelpOverlay() {}
 
 HelpOverlay::~HelpOverlay() {
-    if (_visible && _imguiReady) {
-        ImGui_ImplOpenGL2_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        ImGui::DestroyContext();
-    }
-
     // Free cursors
     if (_blankCursor) {
         SDL_FreeCursor(_blankCursor);
@@ -55,8 +49,6 @@ void HelpOverlay::render() {
         // This will be populated by the app when needed
         // For now, we'll leave it empty and let the app handle it
     }
-
-
 
     // Lazy initialize ImGui on first render
     if (!_imguiReady) {
