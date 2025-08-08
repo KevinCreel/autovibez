@@ -388,9 +388,12 @@ set(AUTOVIBEZ_TEST_SOURCES
     # Unit tests - Audio
     tests/unit/audio/mp3_analyzer_test.cpp
     tests/unit/audio/mix_player_test.cpp
+    tests/unit/audio/loopback_test.cpp
     
     # Unit tests - Core
     tests/unit/core/preset_manager_test.cpp
+    tests/unit/core/autovibez_app_test.cpp
+    tests/unit/core/setup_test.cpp
     
     # Unit tests - Platform
     tests/unit/platform/path_manager_test.cpp
