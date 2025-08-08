@@ -244,3 +244,26 @@ TEST_F(MixManagerTest, GetRandomGenreEmptyDatabase) {
     EXPECT_FALSE(random_genre.empty());
     EXPECT_EQ(random_genre, "techno");  // Fallback value
 }
+
+// ============================================================================
+// SOFT DELETE TESTS
+// ============================================================================
+
+TEST_F(MixManagerTest, SoftDeleteMethodExists) {
+    MixManager manager(db_path, data_path);
+    ASSERT_TRUE(manager.initialize());
+
+    // Test soft delete method is callable (behavior testing - interface exists)
+    // Should return false for non-existent mix without crashing
+    EXPECT_FALSE(manager.softDeleteMix("nonexistent-mix"));
+}
+
+TEST_F(MixManagerTest, SoftDeleteReturnsBooleanStatus) {
+    MixManager manager(db_path, data_path);
+    ASSERT_TRUE(manager.initialize());
+
+    // Test that soft delete returns a boolean status
+    // For non-existent mix, should return false
+    bool result = manager.softDeleteMix("another-nonexistent-mix");
+    EXPECT_FALSE(result);
+}

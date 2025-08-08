@@ -726,7 +726,8 @@ bool MixDatabase::softDeleteMix(const std::string& mix_id) {
     rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    return rc == SQLITE_DONE;
+    // Return true only if the UPDATE was successful AND at least one row was affected
+    return rc == SQLITE_DONE && sqlite3_changes(db) > 0;
 }
 
 bool MixDatabase::updatePlayStats(const std::string& mix_id) {
