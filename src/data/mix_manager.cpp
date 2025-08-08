@@ -11,6 +11,7 @@
 #include <sstream>
 
 #include "constants.hpp"
+#include "message_overlay_wrapper.hpp"
 #include "mix_database.hpp"
 #include "mix_downloader.hpp"
 #include "mix_metadata.hpp"
@@ -266,6 +267,13 @@ bool MixManager::playMix(const Mix& mix) {
         current_mix = mix;
         updatePlayStats(mix.id);
         setLocalPath(mix.id, local_path);
+
+        // Show success message with mix info
+        if (_messageOverlay) {
+            std::string message = mix.artist + " - " + mix.title;
+            _messageOverlay->showMessage(message, std::chrono::milliseconds(20000));
+        }
+
         return true;
     } else {
         setError("Failed to play mix: " + player->getLastError());

@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <memory>
 #include <string>
@@ -10,57 +10,57 @@
 
 // Mock SDL types and constants
 extern "C" {
-    typedef unsigned int SDL_AudioDeviceID;
-    typedef struct SDL_AudioSpec SDL_AudioSpec;
-    
-    // SDL audio constants
-    constexpr int SDL_AUDIO_ALLOW_FREQUENCY_CHANGE = 0x00000001;
-    constexpr int SDL_AUDIO_ALLOW_CHANNELS_CHANGE = 0x00000002;
-    constexpr int SDL_AUDIO_ALLOW_SAMPLES_CHANGE = 0x00000004;
-    constexpr int SDL_AUDIO_ALLOW_ANY_CHANGE = 0x00000007;
+typedef unsigned int SDL_AudioDeviceID;
+typedef struct SDL_AudioSpec SDL_AudioSpec;
+
+// SDL audio constants
+constexpr int SDL_AUDIO_ALLOW_FREQUENCY_CHANGE = 0x00000001;
+constexpr int SDL_AUDIO_ALLOW_CHANNELS_CHANGE = 0x00000002;
+constexpr int SDL_AUDIO_ALLOW_SAMPLES_CHANGE = 0x00000004;
+constexpr int SDL_AUDIO_ALLOW_ANY_CHANGE = 0x00000007;
 }
 
 // Global mock state variables
 namespace MockLoopback {
-    bool mock_initialized = false;
-    bool mock_configured = false;
-    bool mock_processing = false;
-    bool mock_cleaned_up = false;
-    
-    // Platform detection
-    bool mock_is_windows = false;
-    bool mock_is_linux = false;
-    bool mock_is_macos = false;
-    
-    // Audio system state
-    bool mock_audio_system_available = false;
-    bool mock_audio_system_initialized = false;
-    void* mock_audio_client = nullptr;
-    void* mock_capture_client = nullptr;
-    void* mock_device_enumerator = nullptr;
-    void* mock_audio_device = nullptr;
-    
-    // SDL audio state
-    bool mock_sdl_audio_available = false;
-    bool mock_sdl_audio_initialized = false;
-    SDL_AudioDeviceID mock_audio_device_id = 0;
-    
-    // Audio format state
-    int mock_sample_rate = 44100;
-    int mock_channels = 2;
-    int mock_bits_per_sample = 32;
-    int mock_buffer_size = 1024;
-    
-    // Frame processing state
-    bool mock_frame_available = false;
-    int mock_frames_processed = 0;
-    int mock_bytes_processed = 0;
-    float mock_audio_buffer[1024];
-    
-    // Error state
-    bool mock_error_occurred = false;
-    std::string mock_error_message;
-}
+bool mock_initialized = false;
+bool mock_configured = false;
+bool mock_processing = false;
+bool mock_cleaned_up = false;
+
+// Platform detection
+bool mock_is_windows = false;
+bool mock_is_linux = false;
+bool mock_is_macos = false;
+
+// Audio system state
+bool mock_audio_system_available = false;
+bool mock_audio_system_initialized = false;
+void* mock_audio_client = nullptr;
+void* mock_capture_client = nullptr;
+void* mock_device_enumerator = nullptr;
+void* mock_audio_device = nullptr;
+
+// SDL audio state
+bool mock_sdl_audio_available = false;
+bool mock_sdl_audio_initialized = false;
+SDL_AudioDeviceID mock_audio_device_id = 0;
+
+// Audio format state
+int mock_sample_rate = 44100;
+int mock_channels = 2;
+int mock_bits_per_sample = 32;
+int mock_buffer_size = 1024;
+
+// Frame processing state
+bool mock_frame_available = false;
+int mock_frames_processed = 0;
+int mock_bytes_processed = 0;
+float mock_audio_buffer[1024];
+
+// Error state
+bool mock_error_occurred = false;
+std::string mock_error_message;
+}  // namespace MockLoopback
 
 class LoopbackTest : public ::testing::Test {
 protected:
@@ -70,12 +70,12 @@ protected:
         MockLoopback::mock_configured = false;
         MockLoopback::mock_processing = false;
         MockLoopback::mock_cleaned_up = false;
-        
+
         // Reset platform detection
         MockLoopback::mock_is_windows = false;
         MockLoopback::mock_is_linux = false;
         MockLoopback::mock_is_macos = false;
-        
+
         // Reset audio system state
         MockLoopback::mock_audio_system_available = false;
         MockLoopback::mock_audio_system_initialized = false;
@@ -83,23 +83,23 @@ protected:
         MockLoopback::mock_capture_client = nullptr;
         MockLoopback::mock_device_enumerator = nullptr;
         MockLoopback::mock_audio_device = nullptr;
-        
+
         // Reset SDL audio state
         MockLoopback::mock_sdl_audio_available = false;
         MockLoopback::mock_sdl_audio_initialized = false;
         MockLoopback::mock_audio_device_id = 0;
-        
+
         // Reset audio format state
         MockLoopback::mock_sample_rate = 44100;
         MockLoopback::mock_channels = 2;
         MockLoopback::mock_bits_per_sample = 32;
         MockLoopback::mock_buffer_size = 1024;
-        
+
         // Reset frame processing state
         MockLoopback::mock_frame_available = false;
         MockLoopback::mock_frames_processed = 0;
         MockLoopback::mock_bytes_processed = 0;
-        
+
         // Reset error state
         MockLoopback::mock_error_occurred = false;
         MockLoopback::mock_error_message.clear();
@@ -124,16 +124,16 @@ TEST_F(LoopbackTest, PlatformDetection) {
     MockLoopback::mock_is_windows = true;
     MockLoopback::mock_is_linux = false;
     MockLoopback::mock_is_macos = false;
-    
+
     EXPECT_TRUE(MockLoopback::mock_is_windows);
     EXPECT_FALSE(MockLoopback::mock_is_linux);
     EXPECT_FALSE(MockLoopback::mock_is_macos);
-    
+
     // Test Linux detection
     MockLoopback::mock_is_windows = false;
     MockLoopback::mock_is_linux = true;
     MockLoopback::mock_is_macos = false;
-    
+
     EXPECT_FALSE(MockLoopback::mock_is_windows);
     EXPECT_TRUE(MockLoopback::mock_is_linux);
     EXPECT_FALSE(MockLoopback::mock_is_macos);
@@ -146,7 +146,7 @@ TEST_F(LoopbackTest, AudioSystemInitialization) {
     MockLoopback::mock_audio_system_initialized = true;
     MockLoopback::mock_audio_client = reinterpret_cast<void*>(0x12345678);
     MockLoopback::mock_capture_client = reinterpret_cast<void*>(0x87654321);
-    
+
     EXPECT_TRUE(MockLoopback::mock_is_windows);
     EXPECT_TRUE(MockLoopback::mock_audio_system_available);
     EXPECT_TRUE(MockLoopback::mock_audio_system_initialized);
@@ -160,7 +160,7 @@ TEST_F(LoopbackTest, SDLAudioInitialization) {
     MockLoopback::mock_sdl_audio_available = true;
     MockLoopback::mock_sdl_audio_initialized = true;
     MockLoopback::mock_audio_device_id = 1;
-    
+
     EXPECT_TRUE(MockLoopback::mock_is_linux);
     EXPECT_TRUE(MockLoopback::mock_sdl_audio_available);
     EXPECT_TRUE(MockLoopback::mock_sdl_audio_initialized);
@@ -173,7 +173,7 @@ TEST_F(LoopbackTest, AudioFormatConfiguration) {
     MockLoopback::mock_channels = 2;
     MockLoopback::mock_bits_per_sample = 32;
     MockLoopback::mock_buffer_size = 2048;
-    
+
     EXPECT_EQ(MockLoopback::mock_sample_rate, 48000);
     EXPECT_EQ(MockLoopback::mock_channels, 2);
     EXPECT_EQ(MockLoopback::mock_bits_per_sample, 32);
@@ -184,7 +184,7 @@ TEST_F(LoopbackTest, LoopbackInitialization) {
     // Test loopback initialization
     MockLoopback::mock_initialized = true;
     EXPECT_TRUE(MockLoopback::mock_initialized);
-    
+
     MockLoopback::mock_initialized = false;
     EXPECT_FALSE(MockLoopback::mock_initialized);
 }
@@ -193,7 +193,7 @@ TEST_F(LoopbackTest, LoopbackConfiguration) {
     // Test loopback configuration
     MockLoopback::mock_configured = true;
     EXPECT_TRUE(MockLoopback::mock_configured);
-    
+
     MockLoopback::mock_configured = false;
     EXPECT_FALSE(MockLoopback::mock_configured);
 }
@@ -204,7 +204,7 @@ TEST_F(LoopbackTest, FrameProcessing) {
     MockLoopback::mock_frame_available = true;
     MockLoopback::mock_frames_processed = 512;
     MockLoopback::mock_bytes_processed = 2048;
-    
+
     EXPECT_TRUE(MockLoopback::mock_processing);
     EXPECT_TRUE(MockLoopback::mock_frame_available);
     EXPECT_EQ(MockLoopback::mock_frames_processed, 512);
@@ -217,7 +217,7 @@ TEST_F(LoopbackTest, AudioBufferProcessing) {
     for (int i = 0; i < 1024; ++i) {
         MockLoopback::mock_audio_buffer[i] = static_cast<float>(i) / 1024.0f;
     }
-    
+
     // Verify buffer has data
     EXPECT_EQ(MockLoopback::mock_audio_buffer[0], 0.0f);
     EXPECT_EQ(MockLoopback::mock_audio_buffer[512], 0.5f);
@@ -230,7 +230,7 @@ TEST_F(LoopbackTest, LoopbackCleanup) {
     MockLoopback::mock_audio_client = nullptr;
     MockLoopback::mock_capture_client = nullptr;
     MockLoopback::mock_audio_device_id = 0;
-    
+
     EXPECT_TRUE(MockLoopback::mock_cleaned_up);
     EXPECT_EQ(MockLoopback::mock_audio_client, nullptr);
     EXPECT_EQ(MockLoopback::mock_capture_client, nullptr);
@@ -241,14 +241,14 @@ TEST_F(LoopbackTest, ErrorHandling) {
     // Test error handling
     MockLoopback::mock_error_occurred = true;
     MockLoopback::mock_error_message = "Audio system initialization failed";
-    
+
     EXPECT_TRUE(MockLoopback::mock_error_occurred);
     EXPECT_EQ(MockLoopback::mock_error_message, "Audio system initialization failed");
-    
+
     // Clear error
     MockLoopback::mock_error_occurred = false;
     MockLoopback::mock_error_message.clear();
-    
+
     EXPECT_FALSE(MockLoopback::mock_error_occurred);
     EXPECT_TRUE(MockLoopback::mock_error_message.empty());
 }
@@ -258,7 +258,7 @@ TEST_F(LoopbackTest, CompleteWorkflow) {
     // Step 1: Platform detection
     MockLoopback::mock_is_windows = true;
     EXPECT_TRUE(MockLoopback::mock_is_windows);
-    
+
     // Step 2: Audio system initialization
     MockLoopback::mock_audio_system_available = true;
     MockLoopback::mock_audio_system_initialized = true;
@@ -266,7 +266,7 @@ TEST_F(LoopbackTest, CompleteWorkflow) {
     EXPECT_TRUE(MockLoopback::mock_audio_system_available);
     EXPECT_TRUE(MockLoopback::mock_audio_system_initialized);
     EXPECT_NE(MockLoopback::mock_audio_client, nullptr);
-    
+
     // Step 3: Audio format configuration
     MockLoopback::mock_sample_rate = 48000;
     MockLoopback::mock_channels = 2;
@@ -274,15 +274,15 @@ TEST_F(LoopbackTest, CompleteWorkflow) {
     EXPECT_EQ(MockLoopback::mock_sample_rate, 48000);
     EXPECT_EQ(MockLoopback::mock_channels, 2);
     EXPECT_EQ(MockLoopback::mock_bits_per_sample, 32);
-    
+
     // Step 4: Loopback initialization
     MockLoopback::mock_initialized = true;
     EXPECT_TRUE(MockLoopback::mock_initialized);
-    
+
     // Step 5: Loopback configuration
     MockLoopback::mock_configured = true;
     EXPECT_TRUE(MockLoopback::mock_configured);
-    
+
     // Step 6: Frame processing
     MockLoopback::mock_processing = true;
     MockLoopback::mock_frame_available = true;
@@ -290,7 +290,7 @@ TEST_F(LoopbackTest, CompleteWorkflow) {
     EXPECT_TRUE(MockLoopback::mock_processing);
     EXPECT_TRUE(MockLoopback::mock_frame_available);
     EXPECT_EQ(MockLoopback::mock_frames_processed, 1024);
-    
+
     // Step 7: Cleanup
     MockLoopback::mock_cleaned_up = true;
     MockLoopback::mock_audio_client = nullptr;
@@ -303,7 +303,7 @@ TEST_F(LoopbackTest, LinuxWorkflow) {
     // Step 1: Platform detection
     MockLoopback::mock_is_linux = true;
     EXPECT_TRUE(MockLoopback::mock_is_linux);
-    
+
     // Step 2: SDL audio initialization
     MockLoopback::mock_sdl_audio_available = true;
     MockLoopback::mock_sdl_audio_initialized = true;
@@ -311,7 +311,7 @@ TEST_F(LoopbackTest, LinuxWorkflow) {
     EXPECT_TRUE(MockLoopback::mock_sdl_audio_available);
     EXPECT_TRUE(MockLoopback::mock_sdl_audio_initialized);
     EXPECT_EQ(MockLoopback::mock_audio_device_id, 2);
-    
+
     // Step 3: Audio format configuration
     MockLoopback::mock_sample_rate = 44100;
     MockLoopback::mock_channels = 2;
@@ -319,11 +319,11 @@ TEST_F(LoopbackTest, LinuxWorkflow) {
     EXPECT_EQ(MockLoopback::mock_sample_rate, 44100);
     EXPECT_EQ(MockLoopback::mock_channels, 2);
     EXPECT_EQ(MockLoopback::mock_bits_per_sample, 16);
-    
+
     // Step 4: Loopback initialization
     MockLoopback::mock_initialized = true;
     EXPECT_TRUE(MockLoopback::mock_initialized);
-    
+
     // Step 5: Frame processing
     MockLoopback::mock_processing = true;
     MockLoopback::mock_frames_processed = 512;
@@ -336,12 +336,12 @@ TEST_F(LoopbackTest, UnsupportedPlatformHandling) {
     MockLoopback::mock_is_windows = false;
     MockLoopback::mock_is_linux = false;
     MockLoopback::mock_is_macos = false;
-    
+
     // Should not initialize on unsupported platform
     MockLoopback::mock_initialized = false;
     MockLoopback::mock_error_occurred = true;
     MockLoopback::mock_error_message = "Loopback not supported on this platform";
-    
+
     EXPECT_FALSE(MockLoopback::mock_is_windows);
     EXPECT_FALSE(MockLoopback::mock_is_linux);
     EXPECT_FALSE(MockLoopback::mock_is_macos);
@@ -357,14 +357,14 @@ TEST_F(LoopbackTest, StateConsistency) {
     MockLoopback::mock_processing = true;
     MockLoopback::mock_is_windows = true;
     MockLoopback::mock_audio_system_initialized = true;
-    
+
     // All states should be consistent
     EXPECT_TRUE(MockLoopback::mock_initialized);
     EXPECT_TRUE(MockLoopback::mock_configured);
     EXPECT_TRUE(MockLoopback::mock_processing);
     EXPECT_TRUE(MockLoopback::mock_is_windows);
     EXPECT_TRUE(MockLoopback::mock_audio_system_initialized);
-    
+
     // Change one state
     MockLoopback::mock_processing = false;
     EXPECT_TRUE(MockLoopback::mock_initialized);

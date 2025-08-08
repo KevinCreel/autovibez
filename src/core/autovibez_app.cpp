@@ -295,16 +295,32 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
                     // Play a random mix in the new genre
                     Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
                     if (!genreMix.id.empty()) {
-                        _mixManager->downloadAndPlayMix(genreMix);
-                        _currentMix = genreMix;
+                        if (_mixManager->downloadAndPlayMix(genreMix)) {
+                            _currentMix = genreMix;
+                            if (_messageOverlay) {
+                                _messageOverlay->showMessage("Switched to " + newGenre + " genre!");
+                            }
+                        } else {
+                            if (_messageOverlay) {
+                                _messageOverlay->showMessage("Failed to load mix from " + newGenre + " genre");
+                            }
+                        }
                     }
                 } else {
                     // G: Random mix in current mix's genre
                     if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
                         Mix genreMix = _mixManager->getRandomMixByGenre(_currentMix.genre, _currentMix.id);
                         if (!genreMix.id.empty()) {
-                            _mixManager->downloadAndPlayMix(genreMix);
-                            _currentMix = genreMix;
+                            if (_mixManager->downloadAndPlayMix(genreMix)) {
+                                _currentMix = genreMix;
+                                if (_messageOverlay) {
+                                    _messageOverlay->showMessage("Loaded new mix in " + _currentMix.genre + " genre!");
+                                }
+                            } else {
+                                if (_messageOverlay) {
+                                    _messageOverlay->showMessage("Failed to load new mix");
+                                }
+                            }
                         }
                     }
                 }
@@ -324,6 +340,11 @@ void AutoVibezApp::resizeWindow(unsigned int width_, unsigned int height_) {
     }
 
     projectm_set_window_size(_projectM, _width, _height);
+
+    // Update message overlay window size
+    if (_messageOverlay) {
+        _messageOverlay->setWindowSize(_width, _height);
+    }
 }
 
 void AutoVibezApp::pollEvents() {
@@ -419,6 +440,7 @@ void AutoVibezApp::renderFrame() {
 
     // Render overlays
     renderHelpOverlay();
+    renderMessageOverlay();
 
     SDL_GL_SwapWindow(_sdlWindow);
 }
@@ -433,6 +455,9 @@ void AutoVibezApp::initialize(SDL_Window* window) {
 
     // Initialize help overlay
     initHelpOverlay();
+
+    // Initialize message overlay
+    initMessageOverlay();
 }
 
 void AutoVibezApp::initHelpOverlay() {
@@ -444,11 +469,31 @@ void AutoVibezApp::initHelpOverlay() {
     }
 }
 
+void AutoVibezApp::initMessageOverlay() {
+    if (!_messageOverlay) {
+        _messageOverlay = std::make_unique<AutoVibez::UI::MessageOverlayWrapper>();
+        if (_messageOverlay) {
+            _messageOverlay->init(_sdlWindow, _openGlContext);
+
+            // Connect message overlay to mix manager
+            if (_mixManager) {
+                _mixManager->setMessageOverlay(_messageOverlay.get());
+            }
+        }
+    }
+}
+
 void AutoVibezApp::renderHelpOverlay() {
     if (_helpOverlay) {
         // Update help overlay with current information
         updateHelpOverlayInfo();
         _helpOverlay->render();
+    }
+}
+
+void AutoVibezApp::renderMessageOverlay() {
+    if (_messageOverlay) {
+        _messageOverlay->render();
     }
 }
 
@@ -580,6 +625,11 @@ void AutoVibezApp::initMixManager() {
     std::string mixes_dir = PathManager::getMixesDirectory();
 
     _mixManager = std::make_unique<MixManager>(db_path, mixes_dir);
+
+    // Connect message overlay to mix manager
+    if (_messageOverlay) {
+        _mixManager->setMessageOverlay(_messageOverlay.get());
+    }
 
     // Set up callback for when first mix is added to empty database
     _mixManager->setFirstMixAddedCallback([this](const AutoVibez::Data::Mix& mix) {

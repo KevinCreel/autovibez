@@ -15,6 +15,13 @@
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
 
+// Forward declaration
+namespace AutoVibez {
+namespace UI {
+class MessageOverlayWrapper;
+}
+}  // namespace AutoVibez
+
 namespace AutoVibez {
 namespace Data {
 
@@ -168,6 +175,11 @@ public:
      */
     std::string findGenreCaseInsensitive(const std::string& target_genre);
 
+    // Message overlay
+    void setMessageOverlay(AutoVibez::UI::MessageOverlayWrapper* messageOverlay) {
+        _messageOverlay = messageOverlay;
+    }
+
 private:
     std::unique_ptr<MixDatabase> database;
     std::unique_ptr<MixMetadata> metadata;
@@ -182,6 +194,9 @@ private:
     std::string _current_genre;
     std::vector<std::string> _available_genres;
     FirstMixAddedCallback _first_mix_callback;
+
+    // Message overlay for user feedback
+    AutoVibez::UI::MessageOverlayWrapper* _messageOverlay = nullptr;
 
     // Crossfade state
     bool _crossfade_enabled{false};
