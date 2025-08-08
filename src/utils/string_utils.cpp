@@ -3,8 +3,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 std::string StringUtils::trim(const std::string& str) {
     static const char whitespace[] = " \n\t\v\r\f";
@@ -65,5 +64,4 @@ size_t StringUtils::findFirstOf(const std::string& str, char ch) {
     return str.find_first_of(ch);
 }
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

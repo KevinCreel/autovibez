@@ -4,8 +4,7 @@
 #include <cctype>
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Utility class for common string processing operations
@@ -84,5 +83,4 @@ public:
     static size_t findFirstOf(const std::string& str, char ch);
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

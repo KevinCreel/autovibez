@@ -7,8 +7,7 @@
 #include "constants.hpp"
 #include "setup.hpp"
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 HelpOverlay::HelpOverlay() {}
 
@@ -587,5 +586,4 @@ void HelpOverlay::renderKeyBindingSection(const std::string& sectionTitle, const
     ImGui::Spacing();
 }
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

@@ -5,8 +5,7 @@
 
 #include "constants.hpp"
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Base class for metadata structures with common fields
@@ -104,5 +103,4 @@ struct BaseMetadata {
     }
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

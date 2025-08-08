@@ -11,8 +11,7 @@
 #include "uuid_utils.hpp"
 // Mix struct is defined in this file
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Represents a DJ mix with all its metadata
@@ -72,5 +71,4 @@ public:
 private:
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

@@ -52,8 +52,7 @@
 
 using std::string;
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 class ConfigFile {
     // Data
@@ -259,5 +258,4 @@ void ConfigFile::add(string key, const T& value) {
     myContents[key] = v;
 }
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

@@ -2,8 +2,7 @@
 
 #include <sstream>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 std::string JsonUtils::vectorToJsonArray(const std::vector<std::string>& tags) {
     if (tags.empty()) {
@@ -152,5 +151,4 @@ std::string JsonUtils::unescapeJsonString(const std::string& str) {
     return result;
 }
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

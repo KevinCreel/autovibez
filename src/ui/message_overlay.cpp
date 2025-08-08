@@ -9,8 +9,7 @@
 #include "constants.hpp"
 #include "setup.hpp"
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 MessageOverlay::MessageOverlay() {}
 
@@ -322,5 +321,4 @@ ImVec2 MessageOverlay::calculateMessagePosition() {
     return ImVec2(x, y);
 }
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

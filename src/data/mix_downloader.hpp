@@ -8,14 +8,11 @@
 #include "error_handler.hpp"
 #include "mix_metadata.hpp"
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 class MP3Analyzer;
 }
-}  // namespace AutoVibez
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief RAII wrapper for FILE* handles
@@ -140,5 +137,4 @@ private:
     mutable std::mutex mutex_;  // For thread safety
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

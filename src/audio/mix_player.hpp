@@ -9,8 +9,7 @@
 #include "error_handler.hpp"
 #include "mix_metadata.hpp"
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 /**
  * @brief Handles audio playback of mix files
@@ -102,5 +101,4 @@ private:
     bool _verbose = false;
 };
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio

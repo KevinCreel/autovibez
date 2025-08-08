@@ -9,8 +9,7 @@
 #include "error_handler.hpp"
 #include "uuid_utils.hpp"
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 struct MP3Metadata : public Data::BaseMetadata {
     int bitrate = 0;
@@ -38,5 +37,4 @@ private:
     bool _verbose = false;
 };
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio

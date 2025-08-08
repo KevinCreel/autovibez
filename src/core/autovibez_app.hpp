@@ -100,8 +100,7 @@
 // DATADIR_PATH should be set by the root Makefile if this is being
 // built with autotools.
 
-namespace AutoVibez {
-namespace Core {
+namespace AutoVibez::Core {
 
 class AutoVibezApp {
 public:
@@ -246,5 +245,4 @@ private:
     void handleQuitEvent();
 };
 
-}  // namespace Core
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Core

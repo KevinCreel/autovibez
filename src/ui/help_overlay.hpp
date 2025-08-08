@@ -11,8 +11,7 @@
 #include "imgui_manager.hpp"
 #include "mix_metadata.hpp"
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 // Forward declaration
 class MessageOverlay;
@@ -95,5 +94,4 @@ private:
     void initializeImGui();
 };
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

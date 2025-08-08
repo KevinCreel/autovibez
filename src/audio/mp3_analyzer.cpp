@@ -20,8 +20,7 @@
 
 using AutoVibez::Audio::MP3Analyzer;
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 MP3Analyzer::MP3Analyzer() {
     // TagLib will handle MP3 files with stream size issues gracefully
@@ -152,5 +151,4 @@ MP3Metadata MP3Analyzer::analyzeFile(const std::string& file_path) {
     return metadata;
 }
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio

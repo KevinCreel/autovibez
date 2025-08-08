@@ -5,8 +5,7 @@
 #include "database_interfaces.hpp"
 #include "mix_metadata.hpp"
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Validates Mix objects for database operations
@@ -75,5 +74,4 @@ private:
     bool isNotJustWhitespace(const std::string& str) const;
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

@@ -2,8 +2,7 @@
 
 #include <utility>
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 // SqliteStatement Implementation
 SqliteStatement::SqliteStatement(sqlite3_stmt* stmt, sqlite3* db) : stmt_(stmt), db_(db), executed_(false) {}
@@ -195,5 +194,4 @@ void SqliteConnection::cleanup() {
     }
 }
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

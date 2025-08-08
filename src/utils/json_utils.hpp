@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Simple JSON utility for handling tag arrays
@@ -45,5 +44,4 @@ private:
     static std::string unescapeJsonString(const std::string& str);
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

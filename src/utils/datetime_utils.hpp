@@ -3,8 +3,7 @@
 #include <chrono>
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Utility functions for datetime operations
@@ -53,5 +52,4 @@ public:
 private:
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

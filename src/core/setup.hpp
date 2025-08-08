@@ -4,11 +4,9 @@
 
 #include "autovibez_app.hpp"
 
-namespace AutoVibez {
-namespace Core {
+namespace AutoVibez::Core {
 class AutoVibezApp;
 }
-}  // namespace AutoVibez
 
 void debugGL();
 

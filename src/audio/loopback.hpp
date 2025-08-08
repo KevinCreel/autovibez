@@ -4,19 +4,15 @@
 
 #include "autovibez_app.hpp"
 
-namespace AutoVibez {
-namespace Core {
+namespace AutoVibez::Core {
 class AutoVibezApp;
 }
-}  // namespace AutoVibez
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 bool initLoopback();
 void configureLoopback(Core::AutoVibezApp *app);
 bool processLoopbackFrame(Core::AutoVibezApp *app);
 bool cleanupLoopback();
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio

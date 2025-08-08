@@ -2,8 +2,7 @@
 
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Base class providing common error handling functionality
@@ -66,5 +65,4 @@ protected:
     bool success;
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

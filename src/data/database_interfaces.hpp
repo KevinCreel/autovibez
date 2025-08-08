@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Interface for database statement execution with RAII
@@ -155,5 +154,4 @@ struct ValidationResult {
     }
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

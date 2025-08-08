@@ -10,8 +10,7 @@
 #include "mix_validator.hpp"
 #include "smart_mix_selector.hpp"
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Manages SQLite database operations for mix metadata and user data
@@ -215,5 +214,4 @@ private:
     void bindMixToStatement(IStatement& stmt, const Mix& mix, bool include_id = false);
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

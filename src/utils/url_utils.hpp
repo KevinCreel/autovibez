@@ -2,8 +2,7 @@
 
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Utility functions for URL operations
@@ -68,5 +67,4 @@ private:
     static int hexToInt(char c);
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

@@ -5,8 +5,7 @@
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 // ref
 // https://blogs.msdn.microsoft.com/matthew_van_eerde/2008/12/16/sample-wasapi-loopback-capture-record-what-you-hear/
@@ -270,5 +269,4 @@ bool processLoopbackFrame(Core::AutoVibezApp *app) {
     return true;
 }
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio

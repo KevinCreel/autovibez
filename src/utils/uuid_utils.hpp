@@ -2,8 +2,7 @@
 
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Utility functions for generating deterministic hash-based IDs
@@ -26,5 +25,4 @@ private:
     static std::string generateIdFromHash(size_t hash);
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

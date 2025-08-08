@@ -1,7 +1,6 @@
 #include "message_overlay_wrapper.hpp"
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 MessageOverlayWrapper::MessageOverlayWrapper() {}
 
@@ -58,5 +57,4 @@ void MessageOverlayWrapper::setColorTransition(bool enabled) {
     }
 }
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

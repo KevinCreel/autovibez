@@ -8,8 +8,7 @@
 #include "mix_metadata.hpp"
 #include "mix_query_builder.hpp"
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Smart selection strategy configuration
@@ -131,5 +130,4 @@ private:
     Mix statementToMix(IStatement& stmt) const;
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

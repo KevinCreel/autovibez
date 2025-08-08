@@ -3,8 +3,7 @@
 #include <filesystem>
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Utility class for common file path operations
@@ -56,5 +55,4 @@ public:
     static bool hasExtension(const std::string& file_path, const std::string& extension);
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

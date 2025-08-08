@@ -3,8 +3,7 @@
 #include <fstream>
 #include <string>
 
-namespace AutoVibez {
-namespace Utils {
+namespace AutoVibez::Utils {
 
 /**
  * @brief Utility functions for audio file operations
@@ -43,5 +42,4 @@ private:
     static bool isValidMP3FrameHeader(const char* data, size_t available_bytes);
 };
 
-}  // namespace Utils
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Utils

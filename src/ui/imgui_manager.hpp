@@ -3,8 +3,7 @@
 #include <SDL2/SDL.h>
 #include <imgui.h>
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 /**
  * @brief Simple ImGui manager for centralized initialization only
@@ -39,5 +38,4 @@ private:
     static SDL_GLContext _glContext;
 };
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

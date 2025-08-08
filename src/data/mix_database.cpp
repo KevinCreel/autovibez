@@ -9,8 +9,7 @@
 #include "path_manager.hpp"
 #include "sqlite_connection.hpp"
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 MixDatabase::MixDatabase(const std::string& db_path) : db_path_(db_path) {
     connection_ = std::make_shared<SqliteConnection>(db_path);
@@ -403,5 +402,4 @@ void MixDatabase::bindMixToStatement(IStatement& stmt, const Mix& mix, bool incl
     }
 }
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

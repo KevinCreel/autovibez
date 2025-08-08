@@ -7,8 +7,7 @@
 
 #include "database_interfaces.hpp"
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief RAII wrapper for SQLite statement
@@ -74,5 +73,4 @@ private:
     void cleanup();
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

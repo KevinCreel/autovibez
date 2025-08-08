@@ -10,8 +10,7 @@
 
 using AutoVibez::Audio::MixPlayer;
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 MixPlayer::MixPlayer()
     : playing(false), current_position(0), duration(0), volume(Constants::MAX_VOLUME), current_music(nullptr) {
@@ -173,5 +172,4 @@ std::string MixPlayer::getLastError() const {
     return ErrorHandler::getLastError();
 }
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio

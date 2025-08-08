@@ -16,14 +16,11 @@
 #include "mp3_analyzer.hpp"
 
 // Forward declaration
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 class MessageOverlayWrapper;
 }
-}  // namespace AutoVibez
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 // Callback function type for first mix added
 using FirstMixAddedCallback = std::function<void(const Mix&)>;
@@ -218,5 +215,4 @@ private:
     size_t getRandomIndex(size_t max_index) const;
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

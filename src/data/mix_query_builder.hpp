@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 /**
  * @brief Selection criteria for mix queries
@@ -149,5 +148,4 @@ private:
     std::string buildWhereClause() const;
 };
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data

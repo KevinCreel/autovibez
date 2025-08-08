@@ -4,8 +4,7 @@
 
 #include "message_overlay.hpp"
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 /**
  * @brief Simple wrapper for MessageOverlay
@@ -72,5 +71,4 @@ private:
     bool _initialized = false;
 };
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

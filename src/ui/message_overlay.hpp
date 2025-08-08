@@ -12,8 +12,7 @@
 
 #include "imgui_manager.hpp"
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 /**
  * @brief Message overlay for displaying temporary messages with smooth transitions
@@ -179,5 +178,4 @@ private:
     ImVec2 calculateMessagePosition();
 };
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI
