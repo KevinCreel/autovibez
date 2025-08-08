@@ -385,6 +385,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     
     # Unit tests - Audio
     tests/unit/audio/mp3_analyzer_test.cpp
+    tests/unit/audio/mix_player_test.cpp
 )
 
 # Add test executable

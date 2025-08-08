@@ -15,15 +15,17 @@ namespace Audio {
 
 MixPlayer::MixPlayer()
     : playing(false), current_position(0), duration(0), volume(Constants::MAX_VOLUME), current_music(nullptr) {
-    // Initialize SDL_mixer
+    // Initialize SDL_mixer only if not already initialized
     if (Mix_OpenAudio(Constants::DEFAULT_SAMPLE_RATE, MIX_DEFAULT_FORMAT, Constants::DEFAULT_CHANNELS,
                       Constants::DEFAULT_BUFFER_SIZE) < 0) {
+        // SDL_mixer might already be initialized, which is fine
+        // We'll handle this gracefully
         setError("Failed to initialize SDL_mixer: " + std::string(Mix_GetError()));
         return;
     }
 
     // Set volume
-    Mix_Volume(-1, MIX_MAX_VOLUME);
+    Mix_Volume(-1, Constants::SDL_MIXER_MAX_VOLUME);
 }
 
 MixPlayer::~MixPlayer() {
@@ -38,6 +40,8 @@ MixPlayer::~MixPlayer() {
 }
 
 bool MixPlayer::playMix(const std::string& local_path) {
+    clearError();
+
     if (!std::filesystem::exists(local_path)) {
         setError("File does not exist: " + local_path);
         return false;
@@ -72,7 +76,7 @@ bool MixPlayer::playMix(const std::string& local_path) {
         return false;
     }
 
-    Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / Constants::MAX_VOLUME);
+    Mix_VolumeMusic((volume * Constants::SDL_MIXER_MAX_VOLUME) / Constants::MAX_VOLUME);
 
     playing = true;
     current_position = 0;
@@ -83,6 +87,8 @@ bool MixPlayer::playMix(const std::string& local_path) {
 }
 
 bool MixPlayer::togglePause() {
+    clearError();
+
     if (!playing) {
         setError("No music is currently playing");
         return false;
@@ -114,13 +120,15 @@ bool MixPlayer::stop() {
 }
 
 bool MixPlayer::setVolume(int new_volume, bool suppress_output) {
+    clearError();
+
     if (new_volume < Constants::MIN_VOLUME)
         new_volume = Constants::MIN_VOLUME;
     if (new_volume > Constants::MAX_VOLUME)
         new_volume = Constants::MAX_VOLUME;
 
     volume = new_volume;
-    Mix_VolumeMusic((volume * MIX_MAX_VOLUME) / Constants::MAX_VOLUME);
+    Mix_VolumeMusic((volume * Constants::SDL_MIXER_MAX_VOLUME) / Constants::MAX_VOLUME);
 
     return true;
 }

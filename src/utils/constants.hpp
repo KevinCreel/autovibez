@@ -62,6 +62,9 @@ constexpr int HEX_ALPHA_OFFSET = 10;
 constexpr int MIN_RESPONSE_LENGTH = 10;
 constexpr int MIN_YAML_RESPONSE_LENGTH = 50;  // Minimum valid YAML file size
 
+// SDL_mixer constants
+constexpr int SDL_MIXER_MAX_VOLUME = 128;  // SDL_mixer's MIX_MAX_VOLUME
+
 // UI/Window
 constexpr int DEFAULT_WINDOW_SIZE = 512;
 constexpr int DEFAULT_MESH_X = 32;
