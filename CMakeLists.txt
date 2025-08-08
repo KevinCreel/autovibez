@@ -394,6 +394,14 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/core/preset_manager_test.cpp
     tests/unit/core/autovibez_app_test.cpp
     tests/unit/core/setup_test.cpp
+    tests/unit/core/main_test.cpp
+    
+    # Unit tests - Integration
+    tests/unit/integration/app_workflow_test.cpp
+    tests/unit/integration/data_persistence_test.cpp
+    tests/unit/integration/config_chain_test.cpp
+    tests/unit/integration/threading_concurrency_test.cpp
+    tests/unit/integration/platform_integration_test.cpp
     
     # Unit tests - Platform
     tests/unit/platform/path_manager_test.cpp
