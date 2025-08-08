@@ -77,6 +77,7 @@ constexpr int DEFAULT_CHECK_INTERVAL_MS = 5000;
 // UI/Display
 constexpr int FRAME_DELAY_MS = 1000 / DEFAULT_FPS_VALUE;  // ~16.67ms
 constexpr float UI_PADDING = 40.0f;
+constexpr float HELP_OVERLAY_ALPHA = 0.7f;  // Help overlay transparency (0.0 = fully transparent, 1.0 = opaque)
 constexpr int BLANK_CURSOR_SIZE = 4;
 constexpr int CURSOR_DIMENSIONS = 1;
 constexpr int CURSOR_HOTSPOT = 0;

@@ -111,7 +111,7 @@ void HelpOverlay::render() {
     // Set up the main window with semi-transparent background
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
-    ImGui::SetNextWindowBgAlpha(0.85f);  // Semi-transparent instead of opaque
+    ImGui::SetNextWindowBgAlpha(Constants::HELP_OVERLAY_ALPHA);
 
     ImGui::Begin("AutoVibez Help", nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
