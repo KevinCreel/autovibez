@@ -52,5 +52,11 @@ MessageOverlay* MessageOverlayWrapper::getMessageOverlay() const {
     return _messageOverlay.get();
 }
 
+void MessageOverlayWrapper::setColorTransition(bool enabled) {
+    if (_messageOverlay) {
+        _messageOverlay->setColorTransition(enabled);
+    }
+}
+
 }  // namespace UI
 }  // namespace AutoVibez

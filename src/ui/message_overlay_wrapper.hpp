@@ -61,6 +61,12 @@ public:
      */
     MessageOverlay* getMessageOverlay() const;
 
+    /**
+     * @brief Enable/disable color transition effect
+     * @param enabled Whether to enable color transitions
+     */
+    void setColorTransition(bool enabled);
+
 private:
     std::unique_ptr<MessageOverlay> _messageOverlay;
     bool _initialized = false;

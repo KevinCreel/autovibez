@@ -270,6 +270,7 @@ bool MixManager::playMix(const Mix& mix) {
 
         if (_messageOverlay) {
             std::string message = mix.artist + " - " + mix.title;
+            _messageOverlay->setColorTransition(true);
             _messageOverlay->showMessage(message, std::chrono::milliseconds(20000));
         }
 

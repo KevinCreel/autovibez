@@ -4,6 +4,8 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <imgui.h>
 
+#include <cmath>
+
 #include "constants.hpp"
 #include "setup.hpp"
 
@@ -88,6 +90,11 @@ void MessageOverlay::showMessage(const MessageConfig& config) {
 
     _visible = true;
     _currentAlpha = 0.0f;
+
+    // Start color transition if enabled
+    if (_useColorTransition) {
+        _colorStartTime = now;
+    }
 }
 
 void MessageOverlay::hideMessage() {
@@ -101,6 +108,10 @@ void MessageOverlay::setTemporarilyHidden(bool hidden) {
 
 bool MessageOverlay::isTemporarilyHidden() const {
     return _temporarilyHidden;
+}
+
+void MessageOverlay::setColorTransition(bool enabled) {
+    _useColorTransition = enabled;
 }
 
 bool MessageOverlay::isVisible() const {
@@ -205,6 +216,27 @@ float MessageOverlay::calculateCurrentAlpha() {
     return _currentAlpha;
 }
 
+ImVec4 MessageOverlay::calculateColorTransition() {
+    if (!_useColorTransition) {
+        return _currentConfig.textColor;
+    }
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - _colorStartTime);
+    float timeSeconds = elapsed.count() / 1000.0f;
+
+    // Create a smooth color cycle through different colors
+    float cycleSpeed = 2.0f;  // Complete cycle every 2 seconds
+    float cycle = (timeSeconds * cycleSpeed);
+
+    // Use sine waves to create smooth color transitions
+    float r = 0.5f + 0.5f * std::sin(cycle * 2.0f * M_PI);
+    float g = 0.5f + 0.5f * std::sin(cycle * 2.0f * M_PI + 2.0f * M_PI / 3.0f);
+    float b = 0.5f + 0.5f * std::sin(cycle * 2.0f * M_PI + 4.0f * M_PI / 3.0f);
+
+    return ImVec4(r, g, b, 1.0f);
+}
+
 void MessageOverlay::renderMessageBox() {
     // Calculate font size based on window size
     float fontSize = std::max(24.0f, std::min(72.0f, _windowHeight * 0.04f));  // 4% of window height, min 24, max 72
@@ -239,8 +271,8 @@ void MessageOverlay::renderMessageBox() {
         // Set large font using ImGui's font system
         ImGui::SetWindowFontScale(fontSize / 13.0f);
 
-        // Apply alpha to text color using ImGui's color system
-        ImVec4 textColor = _currentConfig.textColor;
+        // Apply color transition and alpha to text color using ImGui's color system
+        ImVec4 textColor = calculateColorTransition();
         textColor.w *= _currentAlpha;
         ImGui::PushStyleColor(ImGuiCol_Text, textColor);
 

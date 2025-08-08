@@ -90,6 +90,12 @@ public:
     bool isTemporarilyHidden() const;
 
     /**
+     * @brief Enable/disable color transition effect
+     * @param enabled Whether to enable color transitions
+     */
+    void setColorTransition(bool enabled);
+
+    /**
      * @brief Check if a message is currently visible
      * @return true if message is visible
      */
@@ -161,9 +167,14 @@ private:
     float _targetAlpha = 1.0f;
     bool _temporarilyHidden = false;
 
+    // Color transition effect
+    std::chrono::steady_clock::time_point _colorStartTime;
+    bool _useColorTransition = false;
+
     void initializeImGui();
     void updateAnimation();
     float calculateCurrentAlpha();
+    ImVec4 calculateColorTransition();
     void renderMessageBox();
     ImVec2 calculateMessagePosition();
 };
