@@ -3,8 +3,7 @@
 #include <backends/imgui_impl_opengl2.h>
 #include <backends/imgui_impl_sdl2.h>
 
-namespace AutoVibez {
-namespace UI {
+namespace AutoVibez::UI {
 
 // Static member initialization
 bool ImGuiManager::_initialized = false;
@@ -35,8 +34,6 @@ bool ImGuiManager::initialize(SDL_Window* window, SDL_GLContext glContext) {
         return false;
     }
 
-
-
     _initialized = true;
     return true;
 }
@@ -56,5 +53,4 @@ void ImGuiManager::shutdown() {
     }
 }
 
-}  // namespace UI
-}  // namespace AutoVibez
+}  // namespace AutoVibez::UI

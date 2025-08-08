@@ -3,29 +3,31 @@
 #include "autovibez_app.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
-namespace AutoVibez {
-namespace Audio {
+namespace AutoVibez::Audio {
 
 void audioInputCallbackF32(void* userData, const float* buffer, int len) {
     AutoVibezApp* app = static_cast<AutoVibezApp*>(userData);
 
     // stream contains float data in native byte order, len is in bytes
     // Convert to float pointer safely
-    const float* floatStream = static_cast<const float*>(static_cast<const void*>(buffer));
+    const float* floatStream = static_cast<const float*>(buffer);
     int numSamples = len / sizeof(float) / app->getAudioChannelsCount();  // Use getter method
 
-    if (app->getAudioChannelsCount() == 1)
+    if (app->getAudioChannelsCount() == 1) {
+        // const_cast is necessary because projectM API expects non-const pointer
+        // but SDL provides const data. This is safe as projectM only reads the data.
         projectm_pcm_add_float(app->getProjectM(), const_cast<float*>(floatStream), numSamples, PROJECTM_MONO);
-    else if (app->getAudioChannelsCount() == 2)
+    } else if (app->getAudioChannelsCount() == 2) {
+        // const_cast is necessary because projectM API expects non-const pointer
+        // but SDL provides const data. This is safe as projectM only reads the data.
         projectm_pcm_add_float(app->getProjectM(), const_cast<float*>(floatStream), numSamples, PROJECTM_STEREO);
-    else {
+    } else {
         SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Multichannel audio not supported");
         SDL_Quit();
     }
 }
 
-}  // namespace Audio
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Audio
 
 int AutoVibezApp::initializeAudioInput() {
     SDL_AudioSpec desired, obtained;

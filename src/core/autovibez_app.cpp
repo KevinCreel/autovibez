@@ -25,8 +25,7 @@ using AutoVibez::Data::ConfigFile;
 using AutoVibez::Data::Mix;
 using AutoVibez::UI::HelpOverlay;
 
-namespace AutoVibez {
-namespace Core {
+namespace AutoVibez::Core {
 
 AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, const std::string& texturePath,
                            int audioDeviceIndex, bool showFps)
@@ -878,5 +877,4 @@ void AutoVibezApp::autoPlayFromLocalDatabase() {
     }
 }
 
-}  // namespace Core
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Core

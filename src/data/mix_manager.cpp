@@ -25,8 +25,7 @@ using AutoVibez::Audio::MixPlayer;
 using AutoVibez::Audio::MP3Analyzer;
 using AutoVibez::Audio::MP3Metadata;
 
-namespace AutoVibez {
-namespace Data {
+namespace AutoVibez::Data {
 
 // Static member definitions
 std::random_device MixManager::_random_device;
@@ -980,5 +979,4 @@ size_t MixManager::getRandomIndex(size_t max_index) const {
     return dis(_random_generator);
 }
 
-}  // namespace Data
-}  // namespace AutoVibez
+}  // namespace AutoVibez::Data
