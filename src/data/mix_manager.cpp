@@ -10,6 +10,7 @@
 #include <set>
 #include <sstream>
 
+#include "console_output.hpp"
 #include "constants.hpp"
 #include "message_overlay_wrapper.hpp"
 #include "mix_database.hpp"
@@ -59,8 +60,11 @@ bool MixManager::initialize() {
     database = std::make_unique<MixDatabase>(db_path);
     if (!database->initialize()) {
         setError("Failed to initialize database: " + database->getLastError());
+        AutoVibez::Utils::ConsoleOutput::error("Failed to initialize music database");
         return false;
     }
+
+    AutoVibez::Utils::ConsoleOutput::success("Music database initialized successfully");
 
     metadata = std::make_unique<MixMetadata>();
 

@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 
+#include "console_output.hpp"
 #include "constants.hpp"
 #include "mix_metadata.hpp"
 #include "mp3_analyzer.hpp"
@@ -266,16 +267,19 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
 
     if (mix.url.empty()) {
         setError(StringConstants::EMPTY_URL_ERROR);
+        AutoVibez::Utils::ConsoleOutput::error("Download failed: Empty URL for " + mix.title);
         return false;
     }
 
     if (!isValidMixId(mix.id)) {
         setError(StringConstants::INVALID_MIX_ID_ERROR);
+        AutoVibez::Utils::ConsoleOutput::error("Download failed: Invalid mix ID for " + mix.title);
         return false;
     }
 
     if (!mp3_analyzer) {
         setError(StringConstants::MP3_ANALYZER_REQUIRED_ERROR);
+        AutoVibez::Utils::ConsoleOutput::error("Download failed: MP3 analyzer not available");
         return false;
     }
 
@@ -285,6 +289,8 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
     if (isMixDownloaded(mix.id)) {
         return true;
     }
+
+    AutoVibez::Utils::ConsoleOutput::info("Downloading: " + mix.title);
 
     std::filesystem::create_directories(mixes_dir);
 
@@ -300,18 +306,22 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
             if (std::filesystem::exists(temp_path)) {
                 std::filesystem::rename(temp_path, final_path);
             }
+            AutoVibez::Utils::ConsoleOutput::success("Downloaded: " + mix.title);
             return true;
         } else {
+            AutoVibez::Utils::ConsoleOutput::error("Failed to copy local file: " + mix.title);
             return false;
         }
     }
 
     if (!AutoVibez::Utils::UrlUtils::isValidUrl(mix.url)) {
         setError(std::string(StringConstants::INVALID_URL_ERROR) + ": " + mix.url);
+        AutoVibez::Utils::ConsoleOutput::error("Download failed: Invalid URL for " + mix.title);
         return false;
     }
 
     if (!downloadFileWithCurl(mix.url, temp_path)) {
+        AutoVibez::Utils::ConsoleOutput::error("Download failed: " + mix.title);
         return false;
     }
 
@@ -332,6 +342,7 @@ bool MixDownloader::downloadMixWithTitleNaming(const Mix& mix, AutoVibez::Audio:
         std::filesystem::rename(temp_path, final_path);
     }
 
+    AutoVibez::Utils::ConsoleOutput::success("Downloaded: " + mix.title);
     return true;
 }
 

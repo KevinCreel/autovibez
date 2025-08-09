@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "config_manager.hpp"
+#include "console_output.hpp"
 #include "constants.hpp"
 #include "mix_downloader.hpp"
 #include "mix_manager.hpp"
@@ -342,6 +343,7 @@ void AutoVibezApp::initKeyBindingManager() {
             return;
         Mix prevMix = _mixManager->getPreviousMix(_currentMix.id);
         if (!prevMix.id.empty()) {
+            AutoVibez::Utils::ConsoleOutput::mixInfo(prevMix.artist, prevMix.title, prevMix.genre);
             _mixManager->downloadAndPlayMix(prevMix);
             _currentMix = prevMix;
         }
@@ -352,6 +354,7 @@ void AutoVibezApp::initKeyBindingManager() {
             return;
         Mix nextMix = _mixManager->getNextMix(_currentMix.id);
         if (!nextMix.id.empty()) {
+            AutoVibez::Utils::ConsoleOutput::mixInfo(nextMix.artist, nextMix.title, nextMix.genre);
             _mixManager->downloadAndPlayMix(nextMix);
             _currentMix = nextMix;
         }
@@ -359,7 +362,15 @@ void AutoVibezApp::initKeyBindingManager() {
 
     _keyBindingManager->registerAction(KeyAction::TOGGLE_FAVORITE, [this]() {
         if (!_currentMix.id.empty()) {
+            bool wasFavorite = _currentMix.is_favorite;
             _mixManager->toggleFavorite(_currentMix.id);
+            _currentMix.is_favorite = !wasFavorite;  // Update local state
+
+            if (_currentMix.is_favorite) {
+                AutoVibez::Utils::ConsoleOutput::success("Added to favorites: " + _currentMix.title);
+            } else {
+                AutoVibez::Utils::ConsoleOutput::info("Removed from favorites: " + _currentMix.title);
+            }
         }
     });
 
@@ -395,6 +406,8 @@ void AutoVibezApp::initKeyBindingManager() {
         if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
             Mix genreMix = _mixManager->getRandomMixByGenre(_currentMix.genre, _currentMix.id);
             if (!genreMix.id.empty()) {
+                AutoVibez::Utils::ConsoleOutput::info("Playing random " + _currentMix.genre + " mix");
+                AutoVibez::Utils::ConsoleOutput::mixInfo(genreMix.artist, genreMix.title, genreMix.genre);
                 if (_mixManager->downloadAndPlayMix(genreMix)) {
                     _currentMix = genreMix;
                     if (_messageOverlay) {
@@ -415,9 +428,11 @@ void AutoVibezApp::initKeyBindingManager() {
         if (!_mixManagerInitialized)
             return;
         std::string newGenre = _mixManager->getRandomGenre();
+        AutoVibez::Utils::ConsoleOutput::info("Switched to genre: " + newGenre);
 
         Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
         if (!genreMix.id.empty()) {
+            AutoVibez::Utils::ConsoleOutput::mixInfo(genreMix.artist, genreMix.title, genreMix.genre);
             if (_mixManager->downloadAndPlayMix(genreMix)) {
                 _currentMix = genreMix;
                 if (_messageOverlay) {
@@ -451,12 +466,24 @@ void AutoVibezApp::initKeyBindingManager() {
     _keyBindingManager->registerAction(KeyAction::RANDOM_PRESET, [this]() {
         if (_presetManager) {
             _presetManager->randomPreset();
+            std::string preset_name = getActivePresetName();
+            size_t last_slash = preset_name.find_last_of('/');
+            if (last_slash != std::string::npos) {
+                preset_name = preset_name.substr(last_slash + 1);
+            }
+            AutoVibez::Utils::ConsoleOutput::presetChange(preset_name);
         }
     });
 
     _keyBindingManager->registerAction(KeyAction::PREVIOUS_PRESET_BRACKET, [this]() {
         _manualPresetChange = true;
         projectm_playlist_play_previous(_playlist, true);
+        std::string preset_name = getActivePresetName();
+        size_t last_slash = preset_name.find_last_of('/');
+        if (last_slash != std::string::npos) {
+            preset_name = preset_name.substr(last_slash + 1);
+        }
+        AutoVibez::Utils::ConsoleOutput::presetChange(preset_name);
     });
 
     _keyBindingManager->registerAction(KeyAction::NEXT_PRESET_BRACKET, [this]() {
@@ -467,6 +494,7 @@ void AutoVibezApp::initKeyBindingManager() {
         if (last_slash != std::string::npos) {
             preset_name = preset_name.substr(last_slash + 1);
         }
+        AutoVibez::Utils::ConsoleOutput::presetChange(preset_name);
     });
 
     _keyBindingManager->registerAction(KeyAction::INCREASE_BEAT_SENSITIVITY, [this]() {
@@ -474,6 +502,8 @@ void AutoVibezApp::initKeyBindingManager() {
         if (newSensitivity > 1.0f)
             newSensitivity = 1.0f;
         setBeatSensitivity(newSensitivity);
+        AutoVibez::Utils::ConsoleOutput::info(
+            "Beat sensitivity: " + std::to_string(static_cast<int>(newSensitivity * 100)) + "%");
     });
 
     _keyBindingManager->registerAction(KeyAction::DECREASE_BEAT_SENSITIVITY, [this]() {
@@ -481,6 +511,8 @@ void AutoVibezApp::initKeyBindingManager() {
         if (newSensitivity < 0.0f)
             newSensitivity = 0.0f;
         setBeatSensitivity(newSensitivity);
+        AutoVibez::Utils::ConsoleOutput::info(
+            "Beat sensitivity: " + std::to_string(static_cast<int>(newSensitivity * 100)) + "%");
     });
 
     // Register action callbacks for application
@@ -494,21 +526,29 @@ void AutoVibezApp::initKeyBindingManager() {
         if (currentVolume > 0) {
             _previousVolume = currentVolume;
             _mixManager->setVolume(0, true);
+            AutoVibez::Utils::ConsoleOutput::info("Audio muted");
         } else {
             _mixManager->setVolume(_previousVolume, true);
+            AutoVibez::Utils::ConsoleOutput::info("Audio unmuted");
         }
     });
 
     _keyBindingManager->registerAction(KeyAction::VOLUME_UP, [this]() {
         if (_systemVolumeController && _systemVolumeController->isAvailable()) {
+            int oldVolume = _systemVolumeController->getCurrentVolume();
             _systemVolumeController->increaseVolume(Constants::VOLUME_STEP_SIZE);
+            int newVolume = _systemVolumeController->getCurrentVolume();
+            AutoVibez::Utils::ConsoleOutput::volumeChange(oldVolume, newVolume);
         }
         _volumeKeyPressed = true;
     });
 
     _keyBindingManager->registerAction(KeyAction::VOLUME_DOWN, [this]() {
         if (_systemVolumeController && _systemVolumeController->isAvailable()) {
+            int oldVolume = _systemVolumeController->getCurrentVolume();
             _systemVolumeController->decreaseVolume(Constants::VOLUME_STEP_SIZE);
+            int newVolume = _systemVolumeController->getCurrentVolume();
+            AutoVibez::Utils::ConsoleOutput::volumeChange(oldVolume, newVolume);
         }
         _volumeKeyPressed = true;
     });
@@ -605,6 +645,20 @@ void AutoVibezApp::presetSwitchedEvent(bool isHardCut, unsigned int index, void*
     if (presetName) {
         std::string presetNameString(presetName);
         app->_presetName = presetNameString;
+
+        // Add console output for automatic preset changes (only if not manual)
+        if (!app->_manualPresetChange) {
+            std::string displayName = presetNameString;
+            size_t lastSlash = displayName.find_last_of('/');
+            if (lastSlash != std::string::npos) {
+                displayName = displayName.substr(lastSlash + 1);
+            }
+            AutoVibez::Utils::ConsoleOutput::presetChange(displayName);
+        }
+
+        // Reset the manual preset change flag
+        app->_manualPresetChange = false;
+
         projectm_playlist_free_string(const_cast<char*>(presetName));
     }
 }
@@ -761,12 +815,16 @@ void AutoVibezApp::checkAndAutoPlayNext() {
         // Music has ended or stopped, play next random mix
         Mix nextMix = _mixManager->getSmartRandomMix(_currentMix.id, _mixManager->getCurrentGenre());
         if (!nextMix.id.empty()) {
+            AutoVibez::Utils::ConsoleOutput::info("Auto-playing next mix...");
+            AutoVibez::Utils::ConsoleOutput::mixInfo(nextMix.artist, nextMix.title, nextMix.genre);
             if (_mixManager->downloadAndPlayMix(nextMix)) {
                 _currentMix = nextMix;
             } else {
                 // Auto-play failed, try another mix
+                AutoVibez::Utils::ConsoleOutput::warning("Failed to play mix, trying another...");
                 nextMix = _mixManager->getSmartRandomMix(nextMix.id, _mixManager->getCurrentGenre());
                 if (!nextMix.id.empty()) {
+                    AutoVibez::Utils::ConsoleOutput::mixInfo(nextMix.artist, nextMix.title, nextMix.genre);
                     if (_mixManager->downloadAndPlayMix(nextMix)) {
                         _currentMix = nextMix;
                     }

@@ -35,6 +35,7 @@
 #include "constants.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
+#include "console_output.hpp"
 #include "mix_downloader.hpp"
 #include "mix_manager.hpp"
 #include "mix_metadata.hpp"
@@ -70,6 +71,7 @@ static int mainLoop(void* userData) {
 
     // Initialize mix manager on startup
     if (!app->isMixManagerInitialized()) {
+        AutoVibez::Utils::ConsoleOutput::info("Loading music database and audio system...");
         app->initMixManager();
     }
 
@@ -112,15 +114,24 @@ static int mainLoop(void* userData) {
 }
 
 int main(int argc, char* argv[]) {
+    using namespace AutoVibez::Utils;
+
     // Initialize logger for application lifecycle tracking
     AutoVibez::Utils::Logger logger;
     logger.logInfo("AutoVibez application starting...");
 
+    // Show startup banner
+    ConsoleOutput::printBanner("AutoVibez Music Visualizer");
+
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
 
     if (!app) {
+        ConsoleOutput::error("Failed to initialize AutoVibez application");
         return 1;
     }
+
+    ConsoleOutput::success("AutoVibez started successfully!");
+    ConsoleOutput::info("Press F1 for help overlay");
 
     int status = mainLoop(&app);
 
@@ -140,6 +151,7 @@ int main(int argc, char* argv[]) {
     }
 
     logger.logInfo("AutoVibez application shutdown completed");
+    ConsoleOutput::info("AutoVibez shutdown complete.");
 
     return status;
 }

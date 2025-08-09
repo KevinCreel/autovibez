@@ -191,6 +191,8 @@ add_executable(autovibez
     src/utils/logger.hpp
     src/utils/system_volume_controller.cpp
     src/utils/system_volume_controller.hpp
+    src/utils/console_output.cpp
+    src/utils/console_output.hpp
     src/data/base_metadata.hpp
 )
 
@@ -409,6 +411,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/logger.hpp
     src/utils/system_volume_controller.cpp
     src/utils/system_volume_controller.hpp
+    src/utils/console_output.cpp
+    src/utils/console_output.hpp
     src/data/base_metadata.hpp
     
     # Unit tests - Utils
@@ -418,6 +422,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/utils/url_utils_test.cpp
     tests/unit/utils/audio_utils_test.cpp
     tests/unit/utils/system_volume_controller_test.cpp
+    tests/unit/utils/console_output_test.cpp
     tests/unit/utils/datetime_utils_test.cpp
     tests/unit/utils/constants_test.cpp
     tests/unit/utils/error_handler_test.cpp
