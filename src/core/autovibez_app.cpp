@@ -14,6 +14,7 @@
 #include "overlay_messages.hpp"
 #include "path_manager.hpp"
 #include "setup.hpp"
+#include "utils/logger.hpp"
 #if defined _MSC_VER
 #include <direct.h>
 #else
@@ -627,7 +628,8 @@ void AutoVibezApp::cycleAudioDevice() {
 
     // Handle edge cases - no devices available
     if (numDevices <= 0) {
-        SDL_Log("No audio capture devices available");
+        ::AutoVibez::Utils::Logger logger;
+        logger.logWarning("No audio capture devices available");
         return;
     }
 

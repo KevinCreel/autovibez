@@ -2,10 +2,22 @@
 
 #include "loopback.hpp"
 
+#include <sstream>
+
 #include "autovibez_app.hpp"
+#include "utils/logger.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
 namespace AutoVibez::Audio {
+
+#ifdef WASAPI_LOOPBACK
+// Helper function to format HRESULT error messages
+std::string formatHResultError(const std::string &operation, HRESULT hr) {
+    std::ostringstream oss;
+    oss << operation << " failed: hr = 0x" << std::hex << std::uppercase << hr;
+    return oss.str();
+}
+#endif
 
 // ref
 // https://blogs.msdn.microsoft.com/matthew_van_eerde/2008/12/16/sample-wasapi-loopback-capture-record-what-you-hear/
@@ -30,14 +42,16 @@ HRESULT get_default_device(IMMDevice **ppMMDevice) {
     hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator),
                           static_cast<void **>(&pMMDeviceEnumerator));
     if (FAILED(hr)) {
-        ERR(L"CoCreateInstance(IMMDeviceEnumerator) failed: hr = 0x%08x", hr);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("CoCreateInstance(IMMDeviceEnumerator)", hr));
         return false;
     }
 
     // get the default render endpoint
     hr = pMMDeviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, ppMMDevice);
     if (FAILED(hr)) {
-        ERR(L"IMMDeviceEnumerator::GetDefaultAudioEndpoint failed: hr = 0x%08x", hr);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("IMMDeviceEnumerator::GetDefaultAudioEndpoint", hr));
         return false;
     }
 
@@ -51,7 +65,8 @@ bool initLoopback() {
 
     hr = CoInitialize(NULL);
     if (FAILED(hr)) {
-        ERR(L"CoInitialize failed: hr = 0x%08x", hr);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("CoInitialize", hr));
         return false;
     }
 
@@ -59,7 +74,8 @@ bool initLoopback() {
     if (NULL == pMMDevice) {
         hr = get_default_device(&pMMDevice);
         if (FAILED(hr)) {
-            ERR(L"Failed to get default audio device");
+            ::AutoVibez::Utils::Logger logger;
+            logger.logError("Failed to get default audio device");
             return false;
         }
     }
@@ -69,7 +85,8 @@ bool initLoopback() {
     // activate an IAudioClient
     hr = pMMDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, static_cast<void **>(&pAudioClient));
     if (FAILED(hr)) {
-        ERR(L"IMMDevice::Activate(IAudioClient) failed: hr = 0x%08x", hr);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("IMMDevice::Activate(IAudioClient)", hr));
         return false;
     }
 
@@ -77,14 +94,16 @@ bool initLoopback() {
     REFERENCE_TIME hnsDefaultDevicePeriod;
     hr = pAudioClient->GetDevicePeriod(&hnsDefaultDevicePeriod, NULL);
     if (FAILED(hr)) {
-        ERR(L"IAudioClient::GetDevicePeriod failed: hr = 0x%08x", hr);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("IAudioClient::GetDevicePeriod", hr));
         return false;
     }
 
     // get the default device format
     hr = pAudioClient->GetMixFormat(&pwfx);
     if (FAILED(hr)) {
-        ERR(L"IAudioClient::GetMixFormat failed: hr = 0x%08x", hr);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("IAudioClient::GetMixFormat", hr));
         return false;
     }
 
@@ -110,14 +129,20 @@ bool initLoopback() {
                     pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
                     pwfx->nAvgBytesPerSec = pwfx->nBlockAlign * pwfx->nSamplesPerSec;
                 } else {
-                    ERR(L"%s", L"Don't know how to coerce mix format to int-16");
+                    ::AutoVibez::Utils::Logger logger;
+                    logger.logError("Don't know how to coerce mix format to int-16");
                     return E_UNEXPECTED;
                 }
             } break;
 
-            default:
-                ERR(L"Don't know how to coerce WAVEFORMATEX with wFormatTag = 0x%08x to int-16", pwfx->wFormatTag);
+            default: {
+                ::AutoVibez::Utils::Logger logger;
+                std::ostringstream oss;
+                oss << "Don't know how to coerce WAVEFORMATEX with wFormatTag = 0x" << std::hex << std::uppercase
+                    << pwfx->wFormatTag << " to int-16";
+                logger.logError(oss.str());
                 return E_UNEXPECTED;
+            }
         }
     }
 
@@ -131,21 +156,24 @@ bool initLoopback() {
     // so we're going to do a timer-driven loop
     hr = pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, 0, 0, pwfx, 0);
     if (FAILED(hr)) {
-        ERR(L"pAudioClient->Initialize error");
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("pAudioClient->Initialize", hr));
         return false;
     }
 
     // activate an IAudioCaptureClient
     hr = pAudioClient->GetService(__uuidof(IAudioCaptureClient), static_cast<void **>(&pAudioCaptureClient));
     if (FAILED(hr)) {
-        ERR(L"pAudioClient->GetService error");
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("pAudioClient->GetService", hr));
         return false;
     }
 
     // call IAudioClient::Start
     hr = pAudioClient->Start();
     if (FAILED(hr)) {
-        ERR(L"pAudioClient->Start error");
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError(formatHResultError("pAudioClient->Start", hr));
         return false;
     }
 
@@ -211,15 +239,16 @@ void configureLoopback(Core::AutoVibezApp *app) {
     // Default to WASAPI loopback if it was enabled at compilation.
     app->wasapi = true;
     // Notify that loopback capture was started.
-    SDL_Log("Opened audio capture loopback.");
+    ::AutoVibez::Utils::Logger logger;
+    logger.logInfo("Opened audio capture loopback.");
 
     // Initialize the loopback
     if (!initLoopback()) {
-        SDL_Log("Failed to initialize WASAPI loopback - falling back to fake audio");
+        logger.logWarning("Failed to initialize WASAPI loopback - falling back to fake audio");
         app->fakeAudio = true;
         app->wasapi = false;
     } else {
-        SDL_Log("WASAPI loopback initialized successfully");
+        logger.logInfo("WASAPI loopback initialized successfully");
     }
 #endif
 }

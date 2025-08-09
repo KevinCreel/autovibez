@@ -187,6 +187,8 @@ add_executable(autovibez
     src/utils/json_utils.hpp
     src/utils/overlay_messages.cpp
     src/utils/overlay_messages.hpp
+    src/utils/logger.cpp
+    src/utils/logger.hpp
     src/data/base_metadata.hpp
 )
 
@@ -401,6 +403,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     src/utils/json_utils.hpp
     src/utils/overlay_messages.cpp
     src/utils/overlay_messages.hpp
+    src/utils/logger.cpp
+    src/utils/logger.hpp
     src/data/base_metadata.hpp
     
     # Unit tests - Utils
@@ -414,6 +418,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/utils/error_handler_test.cpp
     tests/unit/utils/json_utils_test.cpp
     tests/unit/utils/overlay_messages_test.cpp
+    tests/unit/utils/logger_test.cpp
     
     # Unit tests - Data
     tests/unit/data/base_metadata_test.cpp

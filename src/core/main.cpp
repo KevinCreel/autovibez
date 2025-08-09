@@ -41,6 +41,7 @@ using AutoVibez::Core::AutoVibezApp;
 #include "mix_player.hpp"
 #include "path_manager.hpp"
 #include "setup.hpp"
+#include "utils/logger.hpp"
 
 using AutoVibez::Audio::cleanupLoopback;
 using AutoVibez::Audio::MixPlayer;
@@ -111,7 +112,15 @@ static int mainLoop(void* userData) {
 }
 
 int main(int argc, char* argv[]) {
+    // Initialize logger for application lifecycle tracking
+    AutoVibez::Utils::Logger logger;
+    logger.logInfo("AutoVibez application starting...");
+
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
+
+    if (!app) {
+        return 1;
+    }
 
     int status = mainLoop(&app);
 
@@ -129,6 +138,8 @@ int main(int argc, char* argv[]) {
     if (window) {
         SDL_DestroyWindow(window);
     }
+
+    logger.logInfo("AutoVibez application shutdown completed");
 
     return status;
 }

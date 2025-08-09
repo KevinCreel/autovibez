@@ -1,6 +1,7 @@
 #include "audio_capture.hpp"
 
 #include "autovibez_app.hpp"
+#include "utils/logger.hpp"
 using AutoVibez::Core::AutoVibezApp;
 
 namespace AutoVibez::Audio {
@@ -22,7 +23,8 @@ void audioInputCallbackF32(void* userData, const float* buffer, int len) {
         // but SDL provides const data. This is safe as projectM only reads the data.
         projectm_pcm_add_float(app->getProjectM(), const_cast<float*>(floatStream), numSamples, PROJECTM_STEREO);
     } else {
-        SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Multichannel audio not supported");
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError("Multichannel audio not supported");
         SDL_Quit();
     }
 }
@@ -34,7 +36,8 @@ int AutoVibezApp::initializeAudioInput() {
 
     // Initialize SDL audio
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-        SDL_Log("SDL audio init failed: %s", SDL_GetError());
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError("SDL audio init failed: " + std::string(SDL_GetError()));
         return 0;
     }
 
@@ -65,7 +68,9 @@ int AutoVibezApp::initializeAudioInput() {
         deviceName = SDL_GetAudioDeviceName(_selectedAudioDeviceIndex, SDL_TRUE);
         if (!deviceName) {
             // Device name is null, fallback to default device
-            SDL_Log("Device name is null for index %d, falling back to default device", _selectedAudioDeviceIndex);
+            ::AutoVibez::Utils::Logger logger;
+            logger.logWarning("Device name is null for index " + std::to_string(_selectedAudioDeviceIndex) +
+                              ", falling back to default device");
             deviceName = nullptr;
             _selectedAudioDeviceIndex = -1;
         }
@@ -73,16 +78,17 @@ int AutoVibezApp::initializeAudioInput() {
 
     _audioDeviceId = SDL_OpenAudioDevice(deviceName, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     if (_audioDeviceId == 0) {
-        SDL_Log("Failed to open audio device: %s", SDL_GetError());
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError("Failed to open audio device: " + std::string(SDL_GetError()));
 
         // Try fallback to default device if we weren't already trying the default
         if (deviceName != nullptr) {
-            SDL_Log("Trying fallback to default audio device");
+            logger.logInfo("Trying fallback to default audio device");
             _selectedAudioDeviceIndex = -1;
             _audioDeviceId =
                 SDL_OpenAudioDevice(nullptr, SDL_TRUE, &desired, &obtained, SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
             if (_audioDeviceId == 0) {
-                SDL_Log("Failed to open default audio device: %s", SDL_GetError());
+                logger.logError("Failed to open default audio device: " + std::string(SDL_GetError()));
                 return 0;
             }
         } else {

@@ -4,6 +4,7 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 #include "path_manager.hpp"
+#include "utils/logger.hpp"
 using AutoVibez::Core::AutoVibezApp;
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_hints.h>
@@ -56,7 +57,8 @@ std::string getConfigFilePath(const std::string& datadir_path) {
         return config_path;
     }
 
-    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Config file not found: %s\n", config_path.c_str());
+    ::AutoVibez::Utils::Logger logger;
+    logger.logWarning("Config file not found: " + config_path);
     return "";
 }
 
@@ -199,7 +201,8 @@ AutoVibezApp* setupSDLApp() {
     seedRand();
 
     if (!initLoopback()) {
-        SDL_Log("Failed to initialize audio loopback device.");
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError("Failed to initialize audio loopback device.");
         exit(1);
     }
 
@@ -210,8 +213,9 @@ AutoVibezApp* setupSDLApp() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
     if (!SDL_VERSION_ATLEAST(2, 0, 5)) {
-        SDL_Log("SDL version 2.0.5 or greater is required. You have %i.%i.%i", SDL_MAJOR_VERSION, SDL_MINOR_VERSION,
-                SDL_PATCHLEVEL);
+        ::AutoVibez::Utils::Logger logger;
+        logger.logError("SDL version 2.0.5 or greater is required. You have " + std::to_string(SDL_MAJOR_VERSION) +
+                        "." + std::to_string(SDL_MINOR_VERSION) + "." + std::to_string(SDL_PATCHLEVEL));
         exit(1);
     }
 
