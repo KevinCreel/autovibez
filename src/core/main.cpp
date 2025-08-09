@@ -123,6 +123,8 @@ int main(int argc, char* argv[]) {
     // Show startup banner
     ConsoleOutput::printBanner("AutoVibez Music Visualizer");
 
+    ConsoleOutput::success("AutoVibez started successfully!");
+    
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
 
     if (!app) {
@@ -130,7 +132,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    ConsoleOutput::success("AutoVibez started successfully!");
     ConsoleOutput::info("Press H for help");
 
     int status = mainLoop(&app);
