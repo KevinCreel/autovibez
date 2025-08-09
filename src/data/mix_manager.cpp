@@ -17,6 +17,7 @@
 #include "mix_metadata.hpp"
 #include "mix_player.hpp"
 #include "mp3_analyzer.hpp"
+#include "overlay_messages.hpp"
 #include "path_manager.hpp"
 #include "string_utils.hpp"
 #include "uuid_utils.hpp"
@@ -268,9 +269,8 @@ bool MixManager::playMix(const Mix& mix) {
         setLocalPath(mix.id, local_path);
 
         if (_messageOverlay) {
-            std::string message = mix.artist + " - " + mix.title;
-            _messageOverlay->setColorTransition(true);
-            _messageOverlay->showMessage(message, std::chrono::milliseconds(20000));
+            auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", mix.artist, mix.title);
+            _messageOverlay->showMessage(config);
         }
 
         return true;

@@ -16,7 +16,7 @@ void OverlayMessages::initializeMessages() {
             std::string artist = args[0];
             std::string title = args[1];
             return NamedMessageConfig{[artist, title]() { return artist + " - " + title; },
-                                      std::chrono::milliseconds(20000), true};
+                                      std::chrono::milliseconds(5000), true};
         }
         return NamedMessageConfig{[]() { return "Unknown message"; }, std::chrono::milliseconds(3000), false};
     };

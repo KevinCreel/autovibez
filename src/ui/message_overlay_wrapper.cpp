@@ -31,6 +31,16 @@ void MessageOverlayWrapper::showMessage(const std::string& content, std::chrono:
     }
 }
 
+void MessageOverlayWrapper::showMessage(const AutoVibez::Utils::NamedMessageConfig& config) {
+    if (_messageOverlay) {
+        MessageOverlay::MessageConfig messageConfig = _messageOverlay->getDefaultConfig();
+        messageConfig.content = config.formatter();
+        messageConfig.duration = config.duration;
+        _messageOverlay->setColorTransition(config.colorTransition);
+        _messageOverlay->showMessage(messageConfig);
+    }
+}
+
 void MessageOverlayWrapper::hideMessage() {
     if (_messageOverlay) {
         _messageOverlay->hideMessage();

@@ -11,6 +11,7 @@
 #include "mix_downloader.hpp"
 #include "mix_manager.hpp"
 #include "mix_metadata.hpp"
+#include "overlay_messages.hpp"
 #include "path_manager.hpp"
 #include "setup.hpp"
 #if defined _MSC_VER
@@ -297,7 +298,9 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
                         if (_mixManager->downloadAndPlayMix(genreMix)) {
                             _currentMix = genreMix;
                             if (_messageOverlay) {
-                                _messageOverlay->showMessage("Switched to " + newGenre + " genre!");
+                                auto config = AutoVibez::Utils::OverlayMessages::createMessage(
+                                    "mix_info", _currentMix.artist, _currentMix.title);
+                                _messageOverlay->showMessage(config);
                             }
                         } else {
                             if (_messageOverlay) {
@@ -313,7 +316,9 @@ void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
                             if (_mixManager->downloadAndPlayMix(genreMix)) {
                                 _currentMix = genreMix;
                                 if (_messageOverlay) {
-                                    _messageOverlay->showMessage("Loaded new mix in " + _currentMix.genre + " genre!");
+                                    auto config = AutoVibez::Utils::OverlayMessages::createMessage(
+                                        "mix_info", _currentMix.artist, _currentMix.title);
+                                    _messageOverlay->showMessage(config);
                                 }
                             } else {
                                 if (_messageOverlay) {
@@ -799,6 +804,15 @@ void AutoVibezApp::handleMixControls(SDL_Event* event) {
             // L: Toggle mix table filter when help overlay is visible
             if (_helpOverlay && _helpOverlay->isVisible()) {
                 _helpOverlay->toggleMixTableFilter();
+            }
+            return;
+
+        case SDLK_i:
+            // I: Show current mix info
+            if (!_currentMix.id.empty() && _messageOverlay) {
+                auto config =
+                    AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
+                _messageOverlay->showMessage(config);
             }
             return;
     }

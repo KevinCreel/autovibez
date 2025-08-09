@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "message_overlay.hpp"
+#include "overlay_messages.hpp"
 
 namespace AutoVibez::UI {
 
@@ -35,6 +36,12 @@ public:
      * @param duration How long to display (default: 20 seconds)
      */
     void showMessage(const std::string& content, std::chrono::milliseconds duration = std::chrono::milliseconds(20000));
+
+    /**
+     * @brief Show a message using NamedMessageConfig
+     * @param config Message configuration from OverlayMessages
+     */
+    void showMessage(const AutoVibez::Utils::NamedMessageConfig& config);
 
     /**
      * @brief Hide the current message immediately

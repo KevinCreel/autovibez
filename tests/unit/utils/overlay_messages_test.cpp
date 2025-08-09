@@ -35,7 +35,7 @@ TEST_F(OverlayMessagesTest, MixInfoMessageCreation) {
     auto config = OverlayMessages::createMessage("mix_info", "Test Artist", "Test Title");
 
     EXPECT_EQ(config.formatter(), "Test Artist - Test Title");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -44,7 +44,7 @@ TEST_F(OverlayMessagesTest, MixInfoMessageWithEmptyStrings) {
     auto config = OverlayMessages::createMessage("mix_info", "", "");
 
     EXPECT_EQ(config.formatter(), " - ");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -53,7 +53,7 @@ TEST_F(OverlayMessagesTest, MixInfoMessageWithSpecialCharacters) {
     auto config = OverlayMessages::createMessage("mix_info", "Artist & Co.", "Title (Remix)");
 
     EXPECT_EQ(config.formatter(), "Artist & Co. - Title (Remix)");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -62,7 +62,7 @@ TEST_F(OverlayMessagesTest, MixInfoMessageWithUnicodeCharacters) {
     auto config = OverlayMessages::createMessage("mix_info", "Ártist", "Títle");
 
     EXPECT_EQ(config.formatter(), "Ártist - Títle");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -74,7 +74,7 @@ TEST_F(OverlayMessagesTest, MixInfoMessageWithLongStrings) {
     auto config = OverlayMessages::createMessage("mix_info", longArtist, longTitle);
 
     EXPECT_EQ(config.formatter(), longArtist + " - " + longTitle);
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -122,7 +122,7 @@ TEST_F(OverlayMessagesTest, MixInfoWithTooManyArguments) {
 
     // Should still work with first two arguments
     EXPECT_EQ(config.formatter(), "Artist - Title");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -135,7 +135,7 @@ TEST_F(OverlayMessagesTest, ArgumentTypeConversion) {
     auto config = OverlayMessages::createMessage("mix_info", artist, title);
 
     EXPECT_EQ(config.formatter(), "String Artist - String Title");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -147,7 +147,7 @@ TEST_F(OverlayMessagesTest, ConstCharPointerArguments) {
     auto config = OverlayMessages::createMessage("mix_info", artist, title);
 
     EXPECT_EQ(config.formatter(), "Const Artist - Const Title");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -159,7 +159,7 @@ TEST_F(OverlayMessagesTest, MixedArgumentTypes) {
     auto config = OverlayMessages::createMessage("mix_info", artist, title);
 
     EXPECT_EQ(config.formatter(), "Mixed Artist - Mixed Title");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
@@ -191,7 +191,7 @@ TEST_F(OverlayMessagesTest, MessageRegistryRobustness) {
             OverlayMessages::createMessage("mix_info", "Artist" + std::to_string(i), "Title" + std::to_string(i));
 
         EXPECT_EQ(config.formatter(), "Artist" + std::to_string(i) + " - Title" + std::to_string(i));
-        EXPECT_EQ(config.duration.count(), 20000);
+        EXPECT_EQ(config.duration.count(), 5000);
         EXPECT_TRUE(config.colorTransition);
     }
 }
@@ -201,7 +201,7 @@ TEST_F(OverlayMessagesTest, WhitespaceHandling) {
     auto config = OverlayMessages::createMessage("mix_info", "  Artist  ", "  Title  ");
 
     EXPECT_EQ(config.formatter(), "  Artist   -   Title  ");
-    EXPECT_EQ(config.duration.count(), 20000);
+    EXPECT_EQ(config.duration.count(), 5000);
     EXPECT_TRUE(config.colorTransition);
 }
 
