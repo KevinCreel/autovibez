@@ -130,55 +130,26 @@ void ConsoleOutput::downloadProgress(const std::string& filename, int percentage
 }
 
 void ConsoleOutput::printBanner(const std::string& title) {
-    // Calculate the visual width of content: title + emoji spacing
-    // Each emoji displays as approximately 2 characters wide in most terminals
-    std::string musicIcon = "🎵";
-    size_t titleLength = title.length();
-    size_t emojiVisualWidth = 2; // Each emoji takes about 2 character spaces visually
-    size_t contentVisualWidth = 1 + emojiVisualWidth + 1 + titleLength + 1 + emojiVisualWidth + 1; // " 🎵 title 🎵 "
-    
-    // Add padding for a nice border
-    size_t totalWidth = contentVisualWidth + 4; // 2 spaces on each side
-    
-    // Build the border strings
-    std::string horizontalBorder = "";
-    for (size_t i = 0; i < totalWidth; i++) {
-        horizontalBorder += "═";
-    }
-    
-    std::string topBorder = "╔" + horizontalBorder + "╗";
-    std::string bottomBorder = "╚" + horizontalBorder + "╝";
-    
-    // Empty line
-    std::string spaces = "";
-    for (size_t i = 0; i < totalWidth; i++) {
-        spaces += " ";
-    }
-    std::string emptyLine = "║" + spaces + "║";
-    
-    // Content line - build it with proper centering
-    std::string content = " " + musicIcon + " " + title + " " + musicIcon + " ";
-    size_t leftPadding = (totalWidth - contentVisualWidth) / 2;
-    size_t rightPadding = totalWidth - contentVisualWidth - leftPadding;
-    
-    std::string leftSpaces = "";
-    for (size_t i = 0; i < leftPadding; i++) {
-        leftSpaces += " ";
-    }
-    
-    std::string rightSpaces = "";
-    for (size_t i = 0; i < rightPadding; i++) {
-        rightSpaces += " ";
-    }
-    
-    std::string titleLine = "║" + leftSpaces + content + rightSpaces + "║";
-    
+    // Old-school BBS ANSI art style banner
     println("", Colors::RESET);
-    println(topBorder, Colors::BRIGHT_MAGENTA);
-    println(emptyLine, Colors::BRIGHT_MAGENTA);
-    println(titleLine, Colors::BRIGHT_CYAN);
-    println(emptyLine, Colors::BRIGHT_MAGENTA);
-    println(bottomBorder, Colors::BRIGHT_MAGENTA);
+    
+    // Classic ASCII art banner with retro BBS styling
+    println("  ▄▄▄       █    ██ ▄▄▄█████▓ ▒█████   ██▒   █▓ ██▓ ▄▄▄▄   ▓█████▒███████▒", Colors::BRIGHT_BLUE);
+    println(" ▒████▄     ██  ▓██▒▓  ██▒ ▓▒▒██▒  ██▒▓██░   █▒▓██▒▓█████▄ ▓█   ▀░  ▒   ▒▒", Colors::BRIGHT_CYAN);
+    println(" ▒██  ▀█▄  ▓██  ▒██░▒ ▓██░ ▒░▒██░  ██▒ ▓██  █▒░▒██▒▒██▒ ▄██▒███   ░      ░ ", Colors::BRIGHT_WHITE);
+    println(" ░██▄▄▄▄██ ▓▓█  ░██░░ ▓██▓ ░ ▒██   ██░  ▒██ █░░░██░▒██░█▀  ▒▓█  ▄ ░ ░  ░   ", Colors::BRIGHT_YELLOW);
+    println("  ▓█   ▓██▒▒▒█████▓   ▒██▒ ░ ░ ████▓▒░   ▒▀█░  ░██░░▓█  ▀█▓░▒████▒  ░      ", Colors::BRIGHT_RED);
+    println("  ▒▒   ▓▒█░░▒▓▒ ▒ ▒   ▒ ░░   ░ ▒░▒░▒░    ░ ▐░  ░▓  ░▒▓███▀▒░░ ▒░ ░  ░ ░    ", Colors::BRIGHT_MAGENTA);
+    println("   ▒   ▒▒ ░░░▒░ ░ ░     ░      ░ ▒ ▒░    ░ ░░   ▒ ░▒░▒   ░  ░ ░  ░    ░    ", Colors::BRIGHT_GREEN);
+    println("   ░   ▒    ░░░ ░ ░   ░      ░ ░ ░ ▒       ░░   ▒ ░ ░    ░    ░       ░    ", Colors::BLUE);
+    println("       ░  ░   ░                  ░ ░        ░   ░   ░         ░  ░         ", Colors::CYAN);
+    println("                                            ░         ░                    ", Colors::WHITE);
+    
+    // Classic BBS-style separator
+    println("═══════════════════════════════════════════════════════════════════════════════", Colors::BRIGHT_BLUE);
+    println("                        * MUSIC VISUALIZER SYSTEM *                           ", Colors::BRIGHT_YELLOW);
+    println("═══════════════════════════════════════════════════════════════════════════════", Colors::BRIGHT_BLUE);
+    
     println("", Colors::RESET);
 }
 
