@@ -130,7 +130,8 @@ void HelpOverlay::render() {
 
     // Calculate the maximum label width for alignment
     float maxLabelWidth = 0.0f;
-    std::vector<std::string> labels = {"Preset:", "Now playing:", "Genre:", "Volume:", "Device:", "Beat Sensitivity:"};
+    std::vector<std::string> labels = {
+        "Preset:", "Now playing:", "Genre:", "Volume:", "Device:", "Beat Sensitivity:"};
     for (const auto& label : labels) {
         float width = ImGui::CalcTextSize(("  " + label).c_str()).x;
         maxLabelWidth = std::max(maxLabelWidth, width);
@@ -154,7 +155,8 @@ void HelpOverlay::render() {
 
     // Volume level
     if (_volumeLevel >= 0) {
-        renderStatusLabel("Volume:", std::to_string(_volumeLevel) + "%", ImVec4(0.4f, 0.8f, 1.0f, 1.0f), maxLabelWidth);
+        renderStatusLabel("Volume:", std::to_string(_volumeLevel) + "%", ImVec4(0.4f, 0.8f, 1.0f, 1.0f),
+                          maxLabelWidth);
     }
 
     // Audio device

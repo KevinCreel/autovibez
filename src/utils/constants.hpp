@@ -44,7 +44,7 @@ constexpr int HTTP_TIMEOUT_SECONDS = 30;
 constexpr int HTTP_CONNECT_TIMEOUT_SECONDS = 10;
 
 // Volume control
-constexpr int VOLUME_STEP_SIZE = 10;
+constexpr int VOLUME_STEP_SIZE = 1;
 
 // UUID version constants
 constexpr int UUID_VERSION_5 = 0x50;

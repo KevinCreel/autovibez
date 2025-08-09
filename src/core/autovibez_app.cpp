@@ -48,6 +48,9 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     // Initialize KeyBindingManager
     _keyBindingManager = std::make_unique<KeyBindingManager>();
 
+    // Initialize System Volume Controller
+    _systemVolumeController = AutoVibez::Utils::SystemVolumeControllerFactory::create();
+
     // Load a random preset on startup
     if (_presetManager) {
         _presetManager->randomPreset();
@@ -497,18 +500,16 @@ void AutoVibezApp::initKeyBindingManager() {
     });
 
     _keyBindingManager->registerAction(KeyAction::VOLUME_UP, [this]() {
-        if (!_mixManagerInitialized)
-            return;
-        int currentVolume = _mixManager->getVolume();
-        _mixManager->setVolume(currentVolume + Constants::VOLUME_STEP_SIZE, true);
+        if (_systemVolumeController && _systemVolumeController->isAvailable()) {
+            _systemVolumeController->increaseVolume(Constants::VOLUME_STEP_SIZE);
+        }
         _volumeKeyPressed = true;
     });
 
     _keyBindingManager->registerAction(KeyAction::VOLUME_DOWN, [this]() {
-        if (!_mixManagerInitialized)
-            return;
-        int currentVolume = _mixManager->getVolume();
-        _mixManager->setVolume(currentVolume - Constants::VOLUME_STEP_SIZE, true);
+        if (_systemVolumeController && _systemVolumeController->isAvailable()) {
+            _systemVolumeController->decreaseVolume(Constants::VOLUME_STEP_SIZE);
+        }
         _volumeKeyPressed = true;
     });
 
@@ -550,7 +551,13 @@ void AutoVibezApp::updateHelpOverlayInfo() {
     }
 
     // Update volume level
-    if (_mixManager) {
+    if (_systemVolumeController && _systemVolumeController->isAvailable()) {
+        int systemVolume = _systemVolumeController->getCurrentVolume();
+        if (systemVolume >= 0) {
+            _helpOverlay->setVolumeLevel(systemVolume);
+        }
+    } else if (_mixManager) {
+        // Fallback to mix volume if system volume not available
         _helpOverlay->setVolumeLevel(_mixManager->getVolume());
     }
 

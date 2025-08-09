@@ -59,6 +59,7 @@
 #include "constants.hpp"
 #include "path_manager.hpp"
 #include "preset_manager.hpp"
+#include "system_volume_controller.hpp"
 
 #if defined _MSC_VER
 #include <direct.h>
@@ -235,6 +236,7 @@ private:
     // New modular components
     std::unique_ptr<PresetManager> _presetManager;
     std::unique_ptr<KeyBindingManager> _keyBindingManager;
+    std::unique_ptr<AutoVibez::Utils::ISystemVolumeController> _systemVolumeController;
 
     // Thread safety members
     std::future<void> _backgroundTask;
