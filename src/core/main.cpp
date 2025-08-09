@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
     }
 
     ConsoleOutput::success("AutoVibez started successfully!");
-    ConsoleOutput::info("Press F1 for help overlay");
+    ConsoleOutput::info("Press H for help");
 
     int status = mainLoop(&app);
 
