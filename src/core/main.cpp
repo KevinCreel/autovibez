@@ -73,6 +73,9 @@ static int mainLoop(void* userData) {
 
     // loop
     while (!app->done) {
+        // Check for pending autoplay (from background thread)
+        app->checkPendingAutoPlay();
+        
         // render
         app->renderFrame();
 
@@ -121,7 +124,6 @@ int main(int argc, char* argv[]) {
 
     ConsoleOutput::success("AutoVibez started successfully!");
     ConsoleOutput::info("Press H for help");
-    ConsoleOutput::info("Loading music database and audio system...");
     
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
 

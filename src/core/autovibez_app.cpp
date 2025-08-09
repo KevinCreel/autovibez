@@ -52,13 +52,12 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     // Initialize System Volume Controller
     _systemVolumeController = AutoVibez::Utils::SystemVolumeControllerFactory::create();
 
-    // Initialize mix manager early so database is ready
-    initMixManager();
-
-    // Load a random preset on startup
+    // Load a random preset on startup (lightweight operation)
     if (_presetManager) {
         _presetManager->randomPreset();
     }
+
+    // Heavy operations (database, mix loading) will be deferred to initialize()
 }
 
 AutoVibezApp::~AutoVibezApp() {
@@ -306,10 +305,8 @@ void AutoVibezApp::initialize(SDL_Window* window) {
     // Initialize key binding manager actions
     initKeyBindingManager();
 
-    // Now that message overlay is initialized, trigger autoplay if needed
-    if (_shouldAutoPlay && _mixManagerInitialized) {
-        autoPlayFromLocalDatabase();
-    }
+    // Start progressive loading in background after UI is ready
+    startProgressiveLoading();
 }
 
 void AutoVibezApp::initHelpOverlay() {
@@ -893,6 +890,106 @@ void AutoVibezApp::autoPlayFromLocalDatabase() {
                 if (_messageOverlay) {
                     auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
                     _messageOverlay->showMessage(config);
+                }
+            }
+        }
+    }
+}
+
+void AutoVibezApp::checkPendingAutoPlay() {
+    if (_pendingAutoPlay && _mixManagerInitialized && _messageOverlay) {
+        _pendingAutoPlay = false;
+        autoPlayFromLocalDatabase();
+    }
+}
+
+void AutoVibezApp::startProgressiveLoading() {
+    // Start database initialization in background thread
+    if (!_backgroundTaskRunning.load()) {
+        _backgroundTaskRunning.store(true);
+        _backgroundTask = std::async(std::launch::async, [this]() {
+            // Phase 1: Initialize mix manager (database operations)
+            initMixManagerAsync();
+            
+            // Phase 2: Auto-play if configured (after database is ready)
+            if (_shouldAutoPlay && _mixManagerInitialized) {
+                // Schedule autoplay on main thread to ensure UI safety
+                _pendingAutoPlay = true;
+            }
+            
+            _backgroundTaskRunning.store(false);
+        });
+    }
+}
+
+void AutoVibezApp::initMixManagerAsync() {
+    if (_mixManagerInitialized)
+        return;
+
+    std::string db_path = PathManager::getStateDirectory() + "/autovibez_mixes.db";
+    std::string mixes_dir = PathManager::getMixesDirectory();
+
+    _mixManager = std::make_unique<MixManager>(db_path, mixes_dir);
+
+    // Connect message overlay to mix manager (if available)
+    if (_messageOverlay) {
+        _mixManager->setMessageOverlay(_messageOverlay.get());
+    }
+
+    // Set up callback for when first mix is added to empty database
+    _mixManager->setFirstMixAddedCallback([this](const AutoVibez::Data::Mix& mix) {
+        // Only auto-play if we started with an empty database
+        if (!_hadMixesOnStartup) {
+            if (_mixManager->playMix(mix)) {
+                _currentMix = mix;
+            }
+        }
+    });
+
+    // Initialize database (this can be slow)
+    if (!_mixManager->initialize()) {
+        return;
+    }
+
+    // Load configuration
+    std::string configFilePath = findConfigFile();
+    std::string yaml_url;
+    std::string preferred_genre;
+
+    if (!configFilePath.empty()) {
+        ConfigFile config(configFilePath);
+
+        // Load preferred genre from config
+        config.readInto(preferred_genre, "preferred_genre");
+        _mixManager->setCurrentGenre(preferred_genre);
+
+        // Get YAML URL
+        yaml_url = config.getMixesUrl();
+        
+        // Set autoplay flag for later
+        if (config.getAutoDownload()) {
+            _shouldAutoPlay = true;
+        }
+    }
+
+    // Mark as initialized
+    _mixManagerInitialized = true;
+
+    // Check if there were mixes in the database when the app started
+    _hadMixesOnStartup = !_mixManager->getAllMixes().empty();
+
+    // Load mix metadata in background if available
+    if (!yaml_url.empty()) {
+        // Load mix metadata from YAML
+        if (_mixManager->loadMixMetadata(yaml_url)) {
+            // Check for new mixes from remote YAML
+            _mixManager->checkForNewMixes(yaml_url);
+
+            // Start background downloads if no local mixes were found
+            if (!configFilePath.empty()) {
+                ConfigFile config(configFilePath);
+                if (config.getAutoDownload()) {
+                    startBackgroundDownloads();
                 }
             }
         }

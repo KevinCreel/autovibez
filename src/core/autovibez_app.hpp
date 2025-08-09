@@ -116,6 +116,7 @@ public:
     void autoPlayFromLocalDatabase();
     void startBackgroundDownloads();
     void checkAndAutoPlayNext();
+    void checkPendingAutoPlay();
     bool isMixManagerInitialized() const {
         return _mixManagerInitialized;
     }
@@ -197,6 +198,7 @@ private:
     bool _mixManagerInitialized;
     bool _hadMixesOnStartup;
     bool _shouldAutoPlay{false};                 // Whether to autoplay on startup
+    bool _pendingAutoPlay{false};                // Autoplay pending from background thread
     bool _volumeKeyPressed{false};               // Track if volume key is being held
     bool _manualPresetChange{false};             // Track if preset change was manual
     int _previousVolume{Constants::MAX_VOLUME};  // Store volume before mute
@@ -223,6 +225,10 @@ private:
     void handleMouseButtonDownEvent(const SDL_Event& evt);
     void handleMouseButtonUpEvent(const SDL_Event& evt);
     void handleQuitEvent();
+    
+    // Progressive loading functions
+    void startProgressiveLoading();
+    void initMixManagerAsync();
 };
 
 }  // namespace AutoVibez::Core
