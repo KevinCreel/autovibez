@@ -69,11 +69,7 @@ static int mainLoop(void* userData) {
     const Uint32 frame_delay = Constants::FRAME_DELAY_MS;
     Uint32 last_time = SDL_GetTicks();
 
-    // Initialize mix manager on startup
-    if (!app->isMixManagerInitialized()) {
-        AutoVibez::Utils::ConsoleOutput::info("Loading music database and audio system...");
-        app->initMixManager();
-    }
+    // Mix manager is now initialized before mainLoop
 
     // loop
     while (!app->done) {
@@ -124,6 +120,8 @@ int main(int argc, char* argv[]) {
     ConsoleOutput::printBanner("AutoVibez Music Visualizer");
 
     ConsoleOutput::success("AutoVibez started successfully!");
+    ConsoleOutput::info("Press H for help");
+    ConsoleOutput::info("Loading music database and audio system...");
     
     std::unique_ptr<AutoVibez::Core::AutoVibezApp> app(setupSDLApp());
 
@@ -132,7 +130,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    ConsoleOutput::info("Press H for help");
+    // Mix manager is initialized in the app constructor
 
     int status = mainLoop(&app);
 

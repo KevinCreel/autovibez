@@ -52,6 +52,9 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     // Initialize System Volume Controller
     _systemVolumeController = AutoVibez::Utils::SystemVolumeControllerFactory::create();
 
+    // Initialize mix manager early so database is ready
+    initMixManager();
+
     // Load a random preset on startup
     if (_presetManager) {
         _presetManager->randomPreset();
@@ -302,6 +305,11 @@ void AutoVibezApp::initialize(SDL_Window* window) {
 
     // Initialize key binding manager actions
     initKeyBindingManager();
+
+    // Now that message overlay is initialized, trigger autoplay if needed
+    if (_shouldAutoPlay && _mixManagerInitialized) {
+        autoPlayFromLocalDatabase();
+    }
 }
 
 void AutoVibezApp::initHelpOverlay() {
@@ -765,12 +773,12 @@ void AutoVibezApp::initMixManager() {
     // Check if there were mixes in the database when the app started
     _hadMixesOnStartup = !_mixManager->getAllMixes().empty();
 
-    // IMMEDIATELY try to play from local database (non-blocking)
+    // Store config for later autoplay (after UI initialization)
+    _shouldAutoPlay = false;
     if (!configFilePath.empty()) {
         ConfigFile config(configFilePath);
         if (config.getAutoDownload()) {
-            // Try to play existing mix immediately
-            autoPlayFromLocalDatabase();
+            _shouldAutoPlay = true;
         }
     }
 
@@ -853,12 +861,24 @@ void AutoVibezApp::autoPlayFromLocalDatabase() {
     if (!randomMix.id.empty()) {
         if (_mixManager->playMix(randomMix)) {
             _currentMix = randomMix;
+            AutoVibez::Utils::ConsoleOutput::mixInfo(randomMix.artist, randomMix.title, randomMix.genre);
+            // Show message overlay for the initial mix
+            if (_messageOverlay) {
+                auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
+                _messageOverlay->showMessage(config);
+            }
         } else {
             // Play failed, try another mix
             randomMix = _mixManager->getSmartRandomMix(randomMix.id, _mixManager->getCurrentGenre());
             if (!randomMix.id.empty()) {
                 if (_mixManager->playMix(randomMix)) {
                     _currentMix = randomMix;
+                    AutoVibez::Utils::ConsoleOutput::mixInfo(randomMix.artist, randomMix.title, randomMix.genre);
+                    // Show message overlay for the fallback mix
+                    if (_messageOverlay) {
+                        auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
+                        _messageOverlay->showMessage(config);
+                    }
                 }
             }
         }
@@ -868,6 +888,12 @@ void AutoVibezApp::autoPlayFromLocalDatabase() {
         if (!randomMix.id.empty()) {
             if (_mixManager->playMix(randomMix)) {
                 _currentMix = randomMix;
+                AutoVibez::Utils::ConsoleOutput::mixInfo(randomMix.artist, randomMix.title, randomMix.genre);
+                // Show message overlay for the random mix
+                if (_messageOverlay) {
+                    auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
+                    _messageOverlay->showMessage(config);
+                }
             }
         }
     }
