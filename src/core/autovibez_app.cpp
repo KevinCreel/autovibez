@@ -44,6 +44,9 @@ AutoVibezApp::AutoVibezApp(SDL_GLContext glCtx, const std::string& presetPath, c
     // Initialize PresetManager
     _presetManager = std::make_unique<PresetManager>(_playlist);
 
+    // Initialize KeyBindingManager
+    _keyBindingManager = std::make_unique<KeyBindingManager>();
+
     // Load a random preset on startup
     if (_presetManager) {
         _presetManager->randomPreset();
@@ -152,187 +155,6 @@ void AutoVibezApp::toggleFullScreen() {
     }
 }
 
-void AutoVibezApp::keyHandler(SDL_Event* sdl_evt) {
-    if (!_mixManagerInitialized) {
-        initMixManager();
-    }
-
-    // Handle mix controls first
-    handleMixControls(sdl_evt);
-
-    SDL_Keymod sdl_mod = (SDL_Keymod)sdl_evt->key.keysym.mod;
-    SDL_Keycode sdl_keycode = sdl_evt->key.keysym.sym;
-
-    // Left or Right Gui or Left Ctrl
-    if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
-        keymod = true;
-    }
-
-    switch (sdl_keycode) {
-        case SDLK_q:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
-                // cmd/ctrl-q = quit
-                done = true;
-                return;
-            }
-            break;
-
-        case SDLK_i:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
-                toggleAudioInput();
-                return;  // handled
-            }
-            break;
-
-        case SDLK_s:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
-                // command-s: [s]tretch monitors
-                if (!this->stretch) {
-                    stretchMonitors();
-                    this->stretch = true;
-                } else {
-                    toggleFullScreen();  // else, just toggle full screen so we leave stretch mode.
-                    this->stretch = false;
-                }
-                return;  // handled
-            }
-
-        case SDLK_m:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
-                // command-m: change [m]onitor
-                nextMonitor();
-                this->stretch = false;
-                return;  // handled
-            }
-
-        case SDLK_f:
-            if (sdl_mod & KMOD_LGUI || sdl_mod & KMOD_RGUI || sdl_mod & KMOD_LCTRL) {
-                // command-f: fullscreen
-                toggleFullScreen();
-                this->stretch = false;
-                return;  // handled
-            }
-            break;
-
-        case SDLK_UP:
-            if (_mixManagerInitialized && _mixManager->isPlaying()) {
-                // Volume up handled in handleMixControls
-            }
-            break;
-
-        case SDLK_DOWN:
-            if (_mixManagerInitialized && _mixManager->isPlaying()) {
-                // Volume down handled in handleMixControls
-            }
-            break;
-
-        case SDLK_EQUALS:
-        case SDLK_PLUS: {
-            float newSensitivity = getBeatSensitivity() + 0.1f;
-            if (newSensitivity > 1.0f)
-                newSensitivity = 1.0f;
-            setBeatSensitivity(newSensitivity);
-        } break;
-
-        case SDLK_MINUS: {
-            float newSensitivity = getBeatSensitivity() - 0.1f;
-            if (newSensitivity < 0.0f)
-                newSensitivity = 0.0f;
-            setBeatSensitivity(newSensitivity);
-        } break;
-
-        case SDLK_F11:
-            // F11: toggle fullscreen
-            toggleFullScreen();
-            break;
-
-        case SDLK_h:
-            // H: toggle help overlay
-            if (_helpOverlay) {
-                _helpOverlay->toggle();
-            }
-            break;
-
-        case SDLK_TAB:
-            // Tab: cycle through audio devices
-            cycleAudioDevice();
-            break;
-
-        case SDLK_SPACE:
-            // SPACE: Pause/Resume (universal media standard)
-            if (_mixManagerInitialized) {
-                _mixManager->togglePause();
-            }
-            break;
-
-        case SDLK_LEFTBRACKET:
-            // [: Previous preset
-            _manualPresetChange = true;
-            projectm_playlist_play_previous(_playlist, true);
-            break;
-
-        case SDLK_RIGHTBRACKET:
-            // ]: Next preset
-            _manualPresetChange = true;
-            projectm_playlist_play_next(_playlist, true);
-            {
-                std::string preset_name = getActivePresetName();
-                size_t last_slash = preset_name.find_last_of('/');
-                if (last_slash != std::string::npos) {
-                    preset_name = preset_name.substr(last_slash + 1);
-                }
-            }
-            break;
-
-        case SDLK_g:
-            // G: Random mix in current genre
-            if (_mixManagerInitialized) {
-                // Check for modifier keys
-                if (sdl_mod & KMOD_LSHIFT || sdl_mod & KMOD_RSHIFT) {
-                    // Shift+G: Switch to random genre
-                    std::string newGenre = _mixManager->getRandomGenre();
-
-                    // Play a random mix in the new genre
-                    Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
-                    if (!genreMix.id.empty()) {
-                        if (_mixManager->downloadAndPlayMix(genreMix)) {
-                            _currentMix = genreMix;
-                            if (_messageOverlay) {
-                                auto config = AutoVibez::Utils::OverlayMessages::createMessage(
-                                    "mix_info", _currentMix.artist, _currentMix.title);
-                                _messageOverlay->showMessage(config);
-                            }
-                        } else {
-                            if (_messageOverlay) {
-                                _messageOverlay->showMessage("Failed to load mix from " + newGenre + " genre");
-                            }
-                        }
-                    }
-                } else {
-                    // G: Random mix in current mix's genre
-                    if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
-                        Mix genreMix = _mixManager->getRandomMixByGenre(_currentMix.genre, _currentMix.id);
-                        if (!genreMix.id.empty()) {
-                            if (_mixManager->downloadAndPlayMix(genreMix)) {
-                                _currentMix = genreMix;
-                                if (_messageOverlay) {
-                                    auto config = AutoVibez::Utils::OverlayMessages::createMessage(
-                                        "mix_info", _currentMix.artist, _currentMix.title);
-                                    _messageOverlay->showMessage(config);
-                                }
-                            } else {
-                                if (_messageOverlay) {
-                                    _messageOverlay->showMessage("Failed to load new mix");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            break;
-    }
-}
-
 void AutoVibezApp::resizeWindow(unsigned int width_, unsigned int height_) {
     _width = width_;
     _height = height_;
@@ -405,7 +227,17 @@ void AutoVibezApp::handleWindowEvent(const SDL_Event& evt) {
 }
 
 void AutoVibezApp::handleKeyDownEvent(const SDL_Event& evt) {
-    keyHandler(const_cast<SDL_Event*>(&evt));
+    // Ensure mix manager is initialized before handling any keys
+    if (!_mixManagerInitialized) {
+        initMixManager();
+    }
+
+    // Try KeyBindingManager first - this should handle ALL keys
+    if (_keyBindingManager && _keyBindingManager->handleKey(const_cast<SDL_Event*>(&evt))) {
+        return;  // Key was handled successfully
+    }
+
+    // No fallback needed if KeyBindingManager is complete
 }
 
 void AutoVibezApp::handleKeyUpEvent(const SDL_Event& evt) {
@@ -462,6 +294,9 @@ void AutoVibezApp::initialize(SDL_Window* window) {
 
     // Initialize message overlay
     initMessageOverlay();
+
+    // Initialize key binding manager actions
+    initKeyBindingManager();
 }
 
 void AutoVibezApp::initHelpOverlay() {
@@ -490,6 +325,193 @@ void AutoVibezApp::initMessageOverlay() {
             }
         }
     }
+}
+
+void AutoVibezApp::initKeyBindingManager() {
+    if (!_keyBindingManager) {
+        return;
+    }
+
+    // Register action callbacks for mix management
+    _keyBindingManager->registerAction(KeyAction::PREVIOUS_MIX, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        Mix prevMix = _mixManager->getPreviousMix(_currentMix.id);
+        if (!prevMix.id.empty()) {
+            _mixManager->downloadAndPlayMix(prevMix);
+            _currentMix = prevMix;
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::NEXT_MIX, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        Mix nextMix = _mixManager->getNextMix(_currentMix.id);
+        if (!nextMix.id.empty()) {
+            _mixManager->downloadAndPlayMix(nextMix);
+            _currentMix = nextMix;
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::TOGGLE_FAVORITE, [this]() {
+        if (!_currentMix.id.empty()) {
+            _mixManager->toggleFavorite(_currentMix.id);
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::SHOW_MIX_INFO, [this]() {
+        if (!_currentMix.id.empty() && _messageOverlay) {
+            auto config =
+                AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
+            _messageOverlay->showMessage(config);
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::SOFT_DELETE_MIX, [this]() {
+        if (!_currentMix.id.empty()) {
+            _mixManager->softDeleteMix(_currentMix.id);
+            // Skip to next mix since current one is now deleted
+            Mix nextMix = _mixManager->getNextMix(_currentMix.id);
+            if (!nextMix.id.empty()) {
+                _mixManager->downloadAndPlayMix(nextMix);
+                _currentMix = nextMix;
+            }
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::TOGGLE_MIX_TABLE_FILTER, [this]() {
+        if (_helpOverlay && _helpOverlay->isVisible()) {
+            _helpOverlay->toggleMixTableFilter();
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::RANDOM_MIX_CURRENT_GENRE, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        if (!_currentMix.id.empty() && !_currentMix.genre.empty()) {
+            Mix genreMix = _mixManager->getRandomMixByGenre(_currentMix.genre, _currentMix.id);
+            if (!genreMix.id.empty()) {
+                if (_mixManager->downloadAndPlayMix(genreMix)) {
+                    _currentMix = genreMix;
+                    if (_messageOverlay) {
+                        auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist,
+                                                                                       _currentMix.title);
+                        _messageOverlay->showMessage(config);
+                    }
+                } else {
+                    if (_messageOverlay) {
+                        _messageOverlay->showMessage("Failed to load new mix");
+                    }
+                }
+            }
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::RANDOM_GENRE_AND_MIX, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        std::string newGenre = _mixManager->getRandomGenre();
+
+        Mix genreMix = _mixManager->getRandomMixByGenre(newGenre, _currentMix.id);
+        if (!genreMix.id.empty()) {
+            if (_mixManager->downloadAndPlayMix(genreMix)) {
+                _currentMix = genreMix;
+                if (_messageOverlay) {
+                    auto config = AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist,
+                                                                                   _currentMix.title);
+                    _messageOverlay->showMessage(config);
+                }
+            } else {
+                if (_messageOverlay) {
+                    _messageOverlay->showMessage("Failed to load mix from " + newGenre + " genre");
+                }
+            }
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::PAUSE_RESUME_MIX, [this]() {
+        if (_mixManagerInitialized) {
+            _mixManager->togglePause();
+        }
+    });
+
+    // Register action callbacks for visualizer controls
+    _keyBindingManager->registerAction(KeyAction::TOGGLE_HELP_OVERLAY, [this]() {
+        if (_helpOverlay) {
+            _helpOverlay->toggle();
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::TOGGLE_FULLSCREEN, [this]() { toggleFullScreen(); });
+
+    _keyBindingManager->registerAction(KeyAction::RANDOM_PRESET, [this]() {
+        if (_presetManager) {
+            _presetManager->randomPreset();
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::PREVIOUS_PRESET_BRACKET, [this]() {
+        _manualPresetChange = true;
+        projectm_playlist_play_previous(_playlist, true);
+    });
+
+    _keyBindingManager->registerAction(KeyAction::NEXT_PRESET_BRACKET, [this]() {
+        _manualPresetChange = true;
+        projectm_playlist_play_next(_playlist, true);
+        std::string preset_name = getActivePresetName();
+        size_t last_slash = preset_name.find_last_of('/');
+        if (last_slash != std::string::npos) {
+            preset_name = preset_name.substr(last_slash + 1);
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::INCREASE_BEAT_SENSITIVITY, [this]() {
+        float newSensitivity = getBeatSensitivity() + 0.1f;
+        if (newSensitivity > 1.0f)
+            newSensitivity = 1.0f;
+        setBeatSensitivity(newSensitivity);
+    });
+
+    _keyBindingManager->registerAction(KeyAction::DECREASE_BEAT_SENSITIVITY, [this]() {
+        float newSensitivity = getBeatSensitivity() - 0.1f;
+        if (newSensitivity < 0.0f)
+            newSensitivity = 0.0f;
+        setBeatSensitivity(newSensitivity);
+    });
+
+    // Register action callbacks for application
+    _keyBindingManager->registerAction(KeyAction::QUIT_WITH_MODIFIER, [this]() { done = true; });
+
+    // Register action callbacks for audio controls
+    _keyBindingManager->registerAction(KeyAction::TOGGLE_MUTE, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        int currentVolume = _mixManager->getVolume();
+        if (currentVolume > 0) {
+            _previousVolume = currentVolume;
+            _mixManager->setVolume(0, true);
+        } else {
+            _mixManager->setVolume(_previousVolume, true);
+        }
+    });
+
+    _keyBindingManager->registerAction(KeyAction::VOLUME_UP, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        int currentVolume = _mixManager->getVolume();
+        _mixManager->setVolume(currentVolume + Constants::VOLUME_STEP_SIZE, true);
+        _volumeKeyPressed = true;
+    });
+
+    _keyBindingManager->registerAction(KeyAction::VOLUME_DOWN, [this]() {
+        if (!_mixManagerInitialized)
+            return;
+        int currentVolume = _mixManager->getVolume();
+        _mixManager->setVolume(currentVolume - Constants::VOLUME_STEP_SIZE, true);
+        _volumeKeyPressed = true;
+    });
+
+    _keyBindingManager->registerAction(KeyAction::CYCLE_AUDIO_DEVICE, [this]() { cycleAudioDevice(); });
 }
 
 void AutoVibezApp::renderHelpOverlay() {
@@ -708,113 +730,6 @@ void AutoVibezApp::initMixManager() {
             }
             _backgroundTaskRunning.store(false);
         });
-    }
-}
-
-void AutoVibezApp::handleMixControls(SDL_Event* event) {
-    if (!_mixManagerInitialized)
-        return;
-
-    SDL_Keycode keycode = event->key.keysym.sym;
-
-    switch (keycode) {
-        case SDLK_r:
-            // R: Random preset
-            if (_presetManager) {
-                _presetManager->randomPreset();
-            }
-            return;
-
-        case SDLK_LEFT:
-            // ←: Previous mix
-            {
-                Mix prevMix = _mixManager->getPreviousMix(_currentMix.id);
-                if (!prevMix.id.empty()) {
-                    _mixManager->downloadAndPlayMix(prevMix);
-                    _currentMix = prevMix;
-                }
-            }
-            return;
-
-        case SDLK_RIGHT:
-            // →: Next mix
-            {
-                Mix nextMix = _mixManager->getNextMix(_currentMix.id);
-                if (!nextMix.id.empty()) {
-                    _mixManager->downloadAndPlayMix(nextMix);
-                    _currentMix = nextMix;
-                }
-            }
-            return;
-
-        case SDLK_UP:
-            // ↑: Volume up
-            {
-                int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume + Constants::VOLUME_STEP_SIZE, true);
-                _volumeKeyPressed = true;
-            }
-            return;
-
-        case SDLK_DOWN:
-            // ↓: Volume down
-            {
-                int currentVolume = _mixManager->getVolume();
-                _mixManager->setVolume(currentVolume - Constants::VOLUME_STEP_SIZE, true);
-                _volumeKeyPressed = true;
-            }
-            return;
-
-        case SDLK_m:
-            // M: Mute/Unmute (universal media standard)
-            if (_mixManagerInitialized) {
-                int currentVolume = _mixManager->getVolume();
-                if (currentVolume > 0) {
-                    // Store current volume and mute
-                    _previousVolume = currentVolume;
-                    _mixManager->setVolume(0, true);
-                } else {
-                    // Unmute by restoring previous volume
-                    _mixManager->setVolume(_previousVolume, true);
-                }
-            }
-            return;
-
-        case SDLK_f:
-            // F: Toggle favorite
-            if (!_currentMix.id.empty()) {
-                _mixManager->toggleFavorite(_currentMix.id);
-            }
-            return;
-
-        case SDLK_d:
-            // D: Soft delete current mix
-            if (!_currentMix.id.empty()) {
-                _mixManager->softDeleteMix(_currentMix.id);
-                // Skip to next mix since current one is now deleted
-                Mix nextMix = _mixManager->getNextMix(_currentMix.id);
-                if (!nextMix.id.empty()) {
-                    _mixManager->downloadAndPlayMix(nextMix);
-                    _currentMix = nextMix;
-                }
-            }
-            return;
-
-        case SDLK_l:
-            // L: Toggle mix table filter when help overlay is visible
-            if (_helpOverlay && _helpOverlay->isVisible()) {
-                _helpOverlay->toggleMixTableFilter();
-            }
-            return;
-
-        case SDLK_i:
-            // I: Show current mix info
-            if (!_currentMix.id.empty() && _messageOverlay) {
-                auto config =
-                    AutoVibez::Utils::OverlayMessages::createMessage("mix_info", _currentMix.artist, _currentMix.title);
-                _messageOverlay->showMessage(config);
-            }
-            return;
     }
 }
 

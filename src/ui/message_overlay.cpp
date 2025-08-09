@@ -188,7 +188,6 @@ void MessageOverlay::initializeImGui() {
     if (AutoVibez::UI::ImGuiManager::initialize(_window, _glContext)) {
         // Configure ImGui for this overlay
         ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
         // Add default font
         io.Fonts->AddFontDefault();

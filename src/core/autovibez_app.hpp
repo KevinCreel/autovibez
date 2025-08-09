@@ -49,6 +49,7 @@
 #include "config_manager.hpp"
 #include "help_overlay.hpp"
 #include "imgui_manager.hpp"
+#include "key_binding_manager.hpp"
 #include "message_overlay_wrapper.hpp"
 #include "mix_downloader.hpp"
 #include "mix_manager.hpp"
@@ -134,7 +135,12 @@ public:
     // Mix management
 
     void initMixManager();
-    void handleMixControls(SDL_Event* event);
+    void initKeyBindingManager();
+
+    KeyBindingManager* getKeyBindingManager() {
+        return _keyBindingManager.get();
+    }
+
     void autoPlayFromLocalDatabase();
     void startBackgroundDownloads();
     void checkAndAutoPlayNext();
@@ -196,7 +202,6 @@ private:
     void UpdateWindowTitle();
 
     // Mouse wheel function declarations removed
-    void keyHandler(SDL_Event*);
 
     projectm_handle _projectM{nullptr};
     projectm_playlist_handle _playlist{nullptr};
@@ -231,6 +236,7 @@ private:
 
     // New modular components
     std::unique_ptr<PresetManager> _presetManager;
+    std::unique_ptr<KeyBindingManager> _keyBindingManager;
 
     // Thread safety members
     std::future<void> _backgroundTask;

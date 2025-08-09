@@ -152,6 +152,8 @@ add_executable(autovibez
     # User interface
     src/core/preset_manager.cpp
     src/core/preset_manager.hpp
+    src/core/key_binding_manager.cpp
+    src/core/key_binding_manager.hpp
     src/ui/help_overlay.cpp
     src/ui/help_overlay.hpp
     src/ui/imgui_manager.cpp
@@ -370,6 +372,8 @@ set(AUTOVIBEZ_TEST_SOURCES
     # User interface
     src/core/preset_manager.cpp
     src/core/preset_manager.hpp
+    src/core/key_binding_manager.cpp
+    src/core/key_binding_manager.hpp
     src/ui/help_overlay.cpp
     src/ui/help_overlay.hpp
     
@@ -433,6 +437,7 @@ set(AUTOVIBEZ_TEST_SOURCES
     tests/unit/core/autovibez_app_test.cpp
     tests/unit/core/setup_test.cpp
     tests/unit/core/main_test.cpp
+    tests/unit/core/key_binding_manager_test.cpp
     
     # Unit tests - Integration
     tests/unit/integration/app_workflow_test.cpp

@@ -22,6 +22,10 @@ bool ImGuiManager::initialize(SDL_Window* window, SDL_GLContext glContext) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
+    // Configure ImGui IO to not capture arrow keys for navigation
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;  // Disable keyboard navigation
+
     // Setup Platform/Renderer backends
     if (!ImGui_ImplSDL2_InitForOpenGL(_window, _glContext)) {
         ImGui::DestroyContext();
